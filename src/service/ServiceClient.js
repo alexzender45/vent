@@ -1,3 +1,5 @@
+const axios = require('axios');
+const { google } = require('googleapis');
 const serviceClientSchema = require('../models/serviceClientModel');
 const Wallet = require('../models/wallet');
 const {throwError} = require("../utils/handleErrors");
@@ -6,6 +8,16 @@ const util = require("../utils/util");
 const {validateParameters} = require('../utils/util');
 const {sendResetPasswordToken, verificationCode, SuccessfulPasswordReset } = require('../utils/sendgrid');
 const {getCachedData} = require('./Redis');
+const {GOOGLE_CONFIG_CLIENT_ID, GOOGLE_CONFIG_CLIENT_SECRET, GOOGLE_CONFIG_REDIRECT_URI} = require('../core/config');
+// GOOGLE_CLIENT_ID='882942001497-mgn6rn2lrhjjrvevade0mknpq3t72vj2.apps.googleusercontent.com'
+// GOOGLE_CLIENT_SECRET='AODrAoHQaMfHjG2-gpitTYG7'
+// GOOGLE_REDIRECT_URL='http://localhost:3000'
+
+const oauth2Client = new google.auth.OAuth2(
+  GOOGLE_CONFIG_CLIENT_ID,
+  GOOGLE_CONFIG_CLIENT_SECRET,
+  GOOGLE_CONFIG_REDIRECT_URI,
+);
 
 class ServiceClient {
     constructor(data) {
@@ -160,7 +172,79 @@ class ServiceClient {
         return updateServiceClient;
       }
 
-      // signup service client with google 
+      // google sign in
+      async googleUrl() {
+        try {
+          const scopes = [
+            'https://www.googleapis.com/auth/userinfo.email',
+            'https://www.googleapis.com/auth/userinfo.profile',
+          ].join(' ');
+
+          const googleLoginUrl = oauth2Client.generateAuthUrl({
+            access_type: 'offline',
+            scope: scopes,
+          });
+          return { googleLoginUrl };
+        } catch (ex) {
+          logger.log({
+            level: 'error',
+            message: ex.message,
+          });
+          return { error: ex };
+        }
+      }
+      async getGoogleUserInfo(access_token) {
+        try {
+          const { data } = await axios({
+            url: 'https://www.googleapis.com/oauth2/v2/userinfo',
+            method: 'get',
+            headers: {
+              // eslint-disable-next-line camelcase
+              Authorization: `Bearer ${access_token}`,
+            },
+          });
+          return data;
+        } catch (ex) {
+          logger.log({
+            level: 'error',
+            message: ex.message,
+          });
+          return { error: ex };
+        }
+      }
+
+      async googleAccessToken() {
+          const code = this.data;
+          const tokens = await oauth2Client.getToken(code);
+
+          // eslint-disable-next-line camelcase
+          const { access_token } = tokens.tokens;
+
+          // eslint-disable-next-line camelcase
+          if (access_token) {
+            const {
+              // eslint-disable-next-line camelcase
+              email, given_name, family_name,
+            } = await this.getGoogleUserInfo(access_token);
+            if (email) {
+              const userExist = await serviceClientSchema.findOne({ email });
+              if (!userExist) {
+                const password = await bcrypt.hash(given_name, 10);
+                const newUser = await serviceClientSchema.create({
+                  email,
+                  password,
+                  fullName: given_name + family_name,
+                });
+
+                // eslint-disable-next-line no-use-before-define
+                return await newUser;
+              }
+              // eslint-disable-next-line no-use-before-define
+              return await userExist;
+            }
+          }
+          return { error: 'Error signing in' };
+      }
 };
 
 module.exports = ServiceClient;

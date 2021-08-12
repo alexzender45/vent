@@ -4,7 +4,7 @@ module.exports = {
   MONGODB_URI: process.env.MONGODB_URI,
   MONGODB_TEST_URI: process.env.MONGODB_TEST_URI,
   JWT_SECRETE_KEY: process.env.JWT_SECRETE_KEY,
-  PORT: process.env.PORT || 6000,
+  PORT: process.env.PORT || 3000,
   TOKEN_DURATION: process.env.TOKEN_DURATION || '720h',
   AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,

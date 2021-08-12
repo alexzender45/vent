@@ -109,5 +109,5 @@ serviceProviderSchema
 serviceProviderSchema
 .plugin(uniqueValidator, { message: '{TYPE} must be unique.' });
 
-const ServiceProviderModel = model('User', serviceProviderSchema);
+const ServiceProviderModel = model('ServiceProvider', serviceProviderSchema);
 module.exports = ServiceProviderModel;

@@ -94,3 +94,31 @@ exports.changePassword = async (req, res) => {
         return error(res, { code: err.code, message: err.message });
     }
 }
+
+// google sign in
+exports.googleSignIn = async (req, res) => {
+    try {
+        const serviceClient = await new ServiceClient().googleUrl();
+        return success(res, { serviceClient });
+    } catch (err) {
+        logger.error("Unable to complete service client update request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+exports.googleAccessToken = async (req, res) => {
+    try {
+        const code = req.query.code;
+        const newServiceClient = await new ServiceClient(code).googleAccessToken();
+        const token = await generateAuthToken({ 
+            userId: newServiceClient._id, 
+            userType: newServiceClient.userType,
+            role: newServiceClient.role,
+        })
+        await registrationSuccessful(newServiceClient.email, newServiceClient.fullName);
+        return success(res, { newServiceClient, token, message: `<h1>Successfully logged in</h1>` });
+    } catch (err) {
+        logger.error("Unable to complete service client update request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}

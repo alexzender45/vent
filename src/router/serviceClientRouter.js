@@ -23,4 +23,12 @@ serviceClientRoute.route('/service/clients/reset-password')
 serviceClientRoute.route('/service/clients/change-password')
     .post(authenticate, permit([USER_TYPE.SERVICE_CLIENT]), serviceClientController.changePassword);
 
+// google sign in
+serviceClientRoute.route('/service/clients/google-sign-in')
+    .get(serviceClientController.googleSignIn);
+
+serviceClientRoute.route('/service/clients/access')
+    .get(serviceClientController.googleAccessToken);
+
+
 module.exports = serviceClientRoute;
