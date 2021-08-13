@@ -105,5 +105,5 @@ serviceClientSchema.statics.findByCredentials = async (loginId, password) => {
 
 serviceClientSchema.plugin(uniqueValidator, { message: '{TYPE} must be unique.' });
 
-const ServiceClientModel = model('ServiceClientModel', serviceClientSchema);
+const ServiceClientModel = model('ServiceClient', serviceClientSchema);
 module.exports = ServiceClientModel;
