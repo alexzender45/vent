@@ -94,3 +94,48 @@ exports.changePassword = async (req, res) => {
         return error(res, { code: err.code, message: err.message });
     }
 }
+
+// google sign in
+exports.googleSignIn = async (req, res) => {
+    try {
+        const serviceProvider = await new ServiceProvider().googleUrl();
+        return success(res, { serviceProvider });
+    } catch (err) {
+        logger.error("Unable to complete service provider update request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+exports.googleAccessToken = async (req, res) => {
+    try {
+        const code = req.query.code;
+        const newServiceProvider = await new ServiceProvider(code).googleAccessToken();
+        const token = await generateAuthToken({ 
+            userId: newServiceProvider._id, 
+            userType: newServiceProvider.userType,
+            role: newServiceProvider.role,
+        })
+        await registrationSuccessful(newServiceProvider.email, newServiceProvider.fullName);
+        return success(res, { token, message: `<h1>Successfully logged in</h1>` });
+    } catch (err) {
+        logger.error("Unable to complete service provider update request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+exports.uploadProfileImage = async (req, res) => {
+    try {
+      const originalname = req.files[0].originalname;
+      const path = req.files[0].path;
+      const userId = req.user._id;
+      await new ServiceProvider({
+        originalname,
+        path,
+        userId,
+      }).uploadProfileImage();
+      return success(res, {message: "Profile Image Uploaded Successfully" });
+    } catch (err) {
+      logger.error("Unable to complete host update request", err);
+      return error(res, { code: err.code, message: err.message });
+    }
+  };

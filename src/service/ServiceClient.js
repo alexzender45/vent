@@ -9,9 +9,7 @@ const {validateParameters} = require('../utils/util');
 const {sendResetPasswordToken, verificationCode, SuccessfulPasswordReset } = require('../utils/sendgrid');
 const {getCachedData} = require('./Redis');
 const {GOOGLE_CONFIG_CLIENT_ID, GOOGLE_CONFIG_CLIENT_SECRET, GOOGLE_CONFIG_REDIRECT_URI} = require('../core/config');
-// GOOGLE_CLIENT_ID='882942001497-mgn6rn2lrhjjrvevade0mknpq3t72vj2.apps.googleusercontent.com'
-// GOOGLE_CLIENT_SECRET='AODrAoHQaMfHjG2-gpitTYG7'
-// GOOGLE_REDIRECT_URL='http://localhost:3000'
+const cloud = require("../utils/cloudinaryConfig");
 
 const oauth2Client = new google.auth.OAuth2(
   GOOGLE_CONFIG_CLIENT_ID,
@@ -233,7 +231,7 @@ class ServiceClient {
                 const newUser = await serviceClientSchema.create({
                   email,
                   password,
-                  fullName: given_name + family_name,
+                  fullName: `${given_name} ${family_name}`,
                 });
 
                 // eslint-disable-next-line no-use-before-define
@@ -244,6 +242,25 @@ class ServiceClient {
             }
           }
           return { error: 'Error signing in' };
+      }
+
+      async uploadProfileImage() {
+        const { originalname, userId, path } = this.data;
+        let attempt = {
+          imageName: originalname,
+          imageUrl: path,
+        };
+        cloud.uploads(attempt.imageUrl).then(async (result) => {
+          const imageUrl = result.url;
+          const serviceClient = await serviceClientSchema.findByIdAndUpdate(
+            { _id: userId },
+            { $set: { profilePictureUrl: imageUrl } },
+            {
+              new: true,
+            }
+          );
+          return serviceClient;
+        });
       }
 };
 
