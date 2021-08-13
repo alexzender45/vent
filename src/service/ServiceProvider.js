@@ -263,6 +263,13 @@ class ServiceProvider {
           return serviceProvider;
         });
       }
+
+      // service provider can delete their account
+      async deleteAccount() { 
+        const { userId } = this.data;
+        const serviceProvider = await serviceProviderSchema.findByIdAndRemove({ _id: userId });
+        return serviceProvider;
+      }
 };
 
 module.exports = ServiceProvider;

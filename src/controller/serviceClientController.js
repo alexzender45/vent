@@ -139,3 +139,15 @@ exports.uploadProfileImage = async (req, res) => {
       return error(res, { code: err.code, message: err.message });
     }
   };
+
+// service client can delete their account
+exports.deleteAccount = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        await new ServiceClient({ userId }).deleteAccount();
+        return success(res, { message: "Account Deleted Successfully" });
+    } catch (err) {
+        logger.error("Unable to complete service client update request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}

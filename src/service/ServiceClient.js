@@ -262,6 +262,15 @@ class ServiceClient {
           return serviceClient;
         });
       }
+
+      // service client can delete their account
+      async deleteAccount() {
+        const { userId } = this.data;
+        const serviceClient = await serviceClientSchema.findByIdAndRemove(
+         { _id: userId },
+        );
+        return serviceClient;
+      }
 };
 
 module.exports = ServiceClient;

@@ -65,4 +65,13 @@ serviceProviderRoute
     serviceProviderController.uploadProfileImage
   );
 
+// service client can delete their account
+serviceProviderRoute
+  .route("/service/providers/delete")
+  .delete(
+    authenticate,
+    permit([USER_TYPE.SERVICE_PROVIDER]),
+    serviceProviderController.deleteAccount 
+  );
+
 module.exports = serviceProviderRoute;
