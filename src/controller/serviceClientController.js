@@ -151,3 +151,25 @@ exports.deleteAccount = async (req, res) => {
         return error(res, { code: err.code, message: err.message });
     }
 }
+
+// get service client by id
+exports.getServiceClientById = async (req, res) => {
+    try {
+        const serviceClient = await new ServiceClient(req.params.id).getServiceClientById();
+        return success(res, { serviceClient });
+    } catch (err) {
+        logger.error("Unable to complete request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+// delete service client by id
+exports.deleteServiceClientById = async (req, res) => {
+    try {
+        const serviceClient = await new ServiceClient(req.params.id).deleteServiceClientById();
+        return success(res, { serviceClient });
+    } catch (err) {
+        logger.error("Unable to complete request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}

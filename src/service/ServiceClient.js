@@ -32,15 +32,6 @@ class ServiceClient {
         return {emailExist: false};
     }
 
-    async phoneNumberExist() {
-        const findPhoneNumber = await serviceClientSchema.findOne({phoneNumber: this.data.phoneNumber}).exec();
-        if (findPhoneNumber) {
-            this.errors.push('Phone Number already exists');
-            return true;
-        }
-        return false;
-    }
-
     async signup() {
         const otp = this.data.otp;
         if (!otp) {
@@ -64,7 +55,7 @@ class ServiceClient {
             });
             throwError(this.errors)
         }
-        await Promise.all([this.emailExist(), this.phoneNumberExist()]);
+        await Promise.all([this.emailExist()]);
         if (this.errors.length) {
             throwError(this.errors)
         }
@@ -271,6 +262,22 @@ class ServiceClient {
         );
         return serviceClient;
       }
+
+     // get service client by id
+     async getServiceClientById() {
+       const id = this.data;
+       const serviceClient = await serviceClientSchema.findById(id);
+       return serviceClient;
+     }
+
+     // delete service client by id
+     async deleteServiceClientById() {
+       const id = this.data;
+       const serviceClient = await serviceClientSchema.findByIdAndRemove(
+         { _id: id },
+       );
+       return serviceClient;
+     }
 };
 
 module.exports = ServiceClient;

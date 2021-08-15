@@ -74,4 +74,22 @@ serviceClientRoute
     serviceClientController.deleteAccount
   );
 
+// get service client by id
+serviceClientRoute
+  .route("/service/clients/:id")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    serviceClientController.getServiceClientById
+  );
+
+// delete service client by id
+serviceClientRoute
+  .route("/service/clients/:id/delete")
+  .delete(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    serviceClientController.deleteServiceClientById
+  );
+
 module.exports = serviceClientRoute;
