@@ -30,13 +30,7 @@ const serviceProviderSchema
     },
     phoneNumber: {
       type: String,
-      unique: true,
-      validate(value) {
-        if (!validator.isMobilePhone(value, SUPPORTED_PHONE_FORMAT)) {
-          throw new Error('Invalid Phone Number!');
-        }
-        return validator.isMobilePhone(value);
-      },
+      trim: true,
     },
     password: {
       type: String,

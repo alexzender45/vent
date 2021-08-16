@@ -151,3 +151,25 @@ exports.deleteAccount = async (req, res) => {
         return error(res, { code: err.code, message: err.message });
     }
 }
+
+// get service provider by id
+exports.getServiceProviderById = async (req, res) => {
+    try {
+        const serviceProvider = await new ServiceProvider(req.params.id).getServiceProviderById();
+        return success(res, { serviceProvider });
+    } catch (err) {
+        logger.error("Unable to complete request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+// delete service provider by id
+exports.deleteServiceProviderById = async (req, res) => {
+    try {
+        const serviceProvider = await new ServiceProvider(req.params.id).deleteServiceProviderById();
+        return success(res, { serviceProvider });
+    } catch (err) {
+        logger.error("Unable to complete request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}

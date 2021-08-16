@@ -74,4 +74,22 @@ serviceProviderRoute
     serviceProviderController.deleteAccount 
   );
 
+// get service provider by id
+serviceProviderRoute
+  .route("/service/providers/:id")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_PROVIDER]),
+    serviceProviderController.getServiceProviderById
+  );
+
+// delete service provider by id
+serviceProviderRoute
+  .route("/service/providers/:id/delete")
+  .delete(
+    authenticate,
+    permit([USER_TYPE.SERVICE_PROVIDER]),
+    serviceProviderController.deleteServiceProviderById
+  );
+
 module.exports = serviceProviderRoute;
