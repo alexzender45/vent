@@ -224,6 +224,7 @@ class ServiceClient {
                 const newUser = await serviceClientSchema.create({
                   email,
                   fullName: `${given_name} ${family_name}`,
+                  accountType: ACCOUNT_TYPE.GOOGLE_ACCOUNT
                 });
 
                 // eslint-disable-next-line no-use-before-define
