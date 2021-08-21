@@ -92,4 +92,12 @@ serviceClientRoute
     serviceClientController.deleteServiceClientById
   );
 
+serviceClientRoute
+    .route("/service/clients/facebook-sign-in")
+    .get(serviceClientController.initiateFacebookSignIn);
+
+serviceClientRoute
+    .route("/service/clients/facebook-authenticate")
+    .get(serviceClientController.facebookAuthenticate);
+
 module.exports = serviceClientRoute;

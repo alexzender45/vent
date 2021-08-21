@@ -16,6 +16,9 @@ const oauth2Client = new google.auth.OAuth2(
     GOOGLE_CONFIG_CLIENT_SECRET,
     GOOGLE_CONFIG_REDIRECT_URI2,
   );
+const {ACCOUNT_TYPE} = require('../utils/constants');
+const socialAuthService = require('../integration/socialAuthClient');
+const PROVIDERS = 'providers';
 
 class ServiceProvider {
     constructor(data) {
@@ -55,7 +58,7 @@ class ServiceProvider {
             });
             throwError(this.errors)
         }
-        await Promise.all([this.emailExist()]);
+        await this.emailExist();
         if (this.errors.length) {
             throwError(this.errors)
         }
@@ -167,6 +170,7 @@ class ServiceProvider {
           const scopes = [
             'https://www.googleapis.com/auth/userinfo.email',
             'https://www.googleapis.com/auth/userinfo.profile',
+            'https://www.googleapis.com/auth/user.gender.read',
           ].join(' ');
 
           const googleLoginUrl = oauth2Client.generateAuthUrl({
@@ -218,11 +222,10 @@ class ServiceProvider {
             if (email) {
               const userExist = await serviceProviderSchema.findOne({ email });
               if (!userExist) {
-                const password = await bcrypt.hash(given_name, 10);
                 const newUser = await serviceProviderSchema.create({
                   email,
-                  password,
                   fullName: `${given_name} ${family_name}`,
+                  accountType: ACCOUNT_TYPE.GOOGLE_ACCOUNT
                 });
 
                 // eslint-disable-next-line no-use-before-define
@@ -256,7 +259,7 @@ class ServiceProvider {
       }
 
       // service provider can delete their account
-      async deleteAccount() { 
+      async deleteAccount() {
         const { userId } = this.data;
         const serviceProvider = await serviceProviderSchema.findByIdAndRemove({ _id: userId });
         return serviceProvider;
@@ -274,6 +277,28 @@ class ServiceProvider {
       const id = this.data;
       const serviceProvider = await serviceProviderSchema.findByIdAndRemove({ _id: id });
       return serviceProvider;
+    }
+
+    static getFacebookSignInUrl() {
+        return socialAuthService.getFacebookSignInUrl(PROVIDERS);
+    }
+
+    async getFacebookAccessToken() {
+        const accessToken = await socialAuthService.getFacebookAccessToken(this.data, PROVIDERS);
+        const { email, first_name, last_name, gender } = await socialAuthService.getFacebookUserData(accessToken);
+        if (email) {
+            let user = await serviceProviderSchema.findOne({ email });
+            if (!user) {
+                user = await serviceProviderSchema.create({
+                    email,
+                    fullName: `${first_name} ${last_name}`,
+                    gender: gender.toUpperCase(),
+                    accountType: ACCOUNT_TYPE.FACEBOOK_ACCOUNT
+                });
+            }
+            return user;
+        }
+        throwError('Error signing in');
     }
 };
 

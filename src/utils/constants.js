@@ -15,4 +15,9 @@ module.exports = {
     ROLE: {
         USER: 'USER',
     },
+    ACCOUNT_TYPE: {
+        FACEBOOK_ACCOUNT: "FACEBOOK_ACCOUNT",
+        GOOGLE_ACCOUNT: "GOOGLE_ACCOUNT",
+        VENT_ACCOUNT: "VENT_ACCOUNT"
+    }
 }

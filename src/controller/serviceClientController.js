@@ -173,3 +173,20 @@ exports.deleteServiceClientById = async (req, res) => {
         return error(res, { code: err.code, message: err.message });
     }
 }
+
+exports.facebookAuthenticate = async (req, res) => {
+    try {
+        const code = req.query.code;
+        const newServiceProvider = await new ServiceClient(code).getFacebookAccessToken();
+        const token = await generateAuthToken({
+            userId: newServiceProvider._id,
+            userType: newServiceProvider.userType,
+            role: newServiceProvider.role,
+        })
+        await registrationSuccessful(newServiceProvider.email, newServiceProvider.fullName);
+        return success(res, { token, message: newServiceProvider });
+    } catch (err) {
+        logger.error("Unable to complete service provider update request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}

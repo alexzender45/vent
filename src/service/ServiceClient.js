@@ -6,16 +6,18 @@ const {throwError} = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
 const util = require("../utils/util");
 const {validateParameters} = require('../utils/util');
-const {sendResetPasswordToken, verificationCode, SuccessfulPasswordReset } = require('../utils/sendgrid');
+const {sendResetPasswordToken, verificationCode, SuccessfulPasswordReset} = require('../utils/sendgrid');
 const {getCachedData} = require('./Redis');
 const {GOOGLE_CONFIG_CLIENT_ID, GOOGLE_CONFIG_CLIENT_SECRET, GOOGLE_CONFIG_REDIRECT_URI} = require('../core/config');
 const cloud = require("../utils/cloudinaryConfig");
-
+const {ACCOUNT_TYPE} = require('../utils/constants');
 const oauth2Client = new google.auth.OAuth2(
   GOOGLE_CONFIG_CLIENT_ID,
   GOOGLE_CONFIG_CLIENT_SECRET,
   GOOGLE_CONFIG_REDIRECT_URI,
 );
+const socialAuthService = require('../integration/socialAuthClient');
+const CLIENTS = 'clients';
 
 class ServiceClient {
     constructor(data) {
@@ -55,7 +57,7 @@ class ServiceClient {
             });
             throwError(this.errors)
         }
-        await Promise.all([this.emailExist()]);
+        await this.emailExist();
         if (this.errors.length) {
             throwError(this.errors)
         }
@@ -167,6 +169,7 @@ class ServiceClient {
           const scopes = [
             'https://www.googleapis.com/auth/userinfo.email',
             'https://www.googleapis.com/auth/userinfo.profile',
+            'https://www.googleapis.com/auth/user.gender.read',
           ].join(' ');
 
           const googleLoginUrl = oauth2Client.generateAuthUrl({
@@ -218,11 +221,10 @@ class ServiceClient {
             if (email) {
               const userExist = await serviceClientSchema.findOne({ email });
               if (!userExist) {
-                const password = await bcrypt.hash(given_name, 10);
                 const newUser = await serviceClientSchema.create({
                   email,
-                  password,
                   fullName: `${given_name} ${family_name}`,
+                  accountType: ACCOUNT_TYPE.GOOGLE_ACCOUNT
                 });
 
                 // eslint-disable-next-line no-use-before-define
@@ -278,6 +280,28 @@ class ServiceClient {
        );
        return serviceClient;
      }
+
+    static getFacebookSignInUrl() {
+        return socialAuthService.getFacebookSignInUrl(CLIENTS);
+    }
+
+    async getFacebookAccessToken() {
+        const accessToken = await socialAuthService.getFacebookAccessToken(this.data, CLIENTS);
+        const { email, first_name, last_name, gender } = await socialAuthService.getFacebookUserData(accessToken);
+        if (email) {
+            let user = await serviceClientSchema.findOne({ email });
+            if (!user) {
+                user = await serviceClientSchema.create({
+                    email,
+                    fullName: `${first_name} ${last_name}`,
+                    gender: gender.toUpperCase(),
+                    accountType: ACCOUNT_TYPE.FACEBOOK_ACCOUNT
+                });
+            }
+            return user;
+        }
+        throwError('Error signing in');
+    }
 };
 
 module.exports = ServiceClient;

@@ -71,7 +71,7 @@ serviceProviderRoute
   .delete(
     authenticate,
     permit([USER_TYPE.SERVICE_PROVIDER]),
-    serviceProviderController.deleteAccount 
+    serviceProviderController.deleteAccount
   );
 
 // get service provider by id
@@ -91,5 +91,13 @@ serviceProviderRoute
     permit([USER_TYPE.SERVICE_PROVIDER]),
     serviceProviderController.deleteServiceProviderById
   );
+
+serviceProviderRoute
+    .route("/service/providers/facebook-sign-in")
+    .get(serviceProviderController.initiateFacebookSignIn);
+
+serviceProviderRoute
+    .route("/service/providers/facebook-authenticate")
+    .get(serviceProviderController.facebookAuthenticate);
 
 module.exports = serviceProviderRoute;
