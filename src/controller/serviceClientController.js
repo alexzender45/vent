@@ -140,12 +140,36 @@ exports.uploadProfileImage = async (req, res) => {
     }
   };
 
-exports.initiateFacebookSignIn = (req, res) => {
+// service client can delete their account
+exports.deleteAccount = async (req, res) => {
     try {
-        const serviceProvider = ServiceClient.getFacebookSignInUrl();
-        return success(res, { serviceProvider });
+        const userId = req.user._id;
+        await new ServiceClient({ userId }).deleteAccount();
+        return success(res, { message: "Account Deleted Successfully" });
     } catch (err) {
-        logger.error("Unable to complete service provider update request", err);
+        logger.error("Unable to complete service client update request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+// get service client by id
+exports.getServiceClientById = async (req, res) => {
+    try {
+        const serviceClient = await new ServiceClient(req.params.id).getServiceClientById();
+        return success(res, { serviceClient });
+    } catch (err) {
+        logger.error("Unable to complete request", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+// delete service client by id
+exports.deleteServiceClientById = async (req, res) => {
+    try {
+        const serviceClient = await new ServiceClient(req.params.id).deleteServiceClientById();
+        return success(res, { serviceClient });
+    } catch (err) {
+        logger.error("Unable to complete request", err);
         return error(res, { code: err.code, message: err.message });
     }
 }

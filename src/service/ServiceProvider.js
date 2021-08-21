@@ -8,8 +8,9 @@ const util = require("../utils/util");
 const {validateParameters} = require('../utils/util');
 const {sendResetPasswordToken, verificationCode, SuccessfulPasswordReset } = require('../utils/sendgrid');
 const {getCachedData} = require('./Redis');
-const {GOOGLE_CONFIG_CLIENT_ID, GOOGLE_CONFIG_CLIENT_SECRET, GOOGLE_CONFIG_REDIRECT_URI2, FACEBOOK_SIGN_IN_URL, FACEBOOK_ACCESS_TOKEN_URL, FACEBOOK_REDIRECT_URL, FACEBOOK_CLIENT_SECRET, FACEBOOK_CLIENT_ID, FACEBOOK_USER_DATA_URL} = require('../core/config');
+const {GOOGLE_CONFIG_CLIENT_ID, GOOGLE_CONFIG_CLIENT_SECRET, GOOGLE_CONFIG_REDIRECT_URI2} = require('../core/config');
 const cloud = require("../utils/cloudinaryConfig");
+
 const oauth2Client = new google.auth.OAuth2(
     GOOGLE_CONFIG_CLIENT_ID,
     GOOGLE_CONFIG_CLIENT_SECRET,
@@ -32,15 +33,6 @@ class ServiceProvider {
             return {emailExist: true, user: existingUser};
         }
         return {emailExist: false};
-    }
-
-    async phoneNumberExist() {
-        const findPhoneNumber = await serviceProviderSchema.findOne({phoneNumber: this.data.phoneNumber}).exec();
-        if (findPhoneNumber) {
-            this.errors.push('Phone Number already exists');
-            return true;
-        }
-        return false;
     }
 
     async signup() {
@@ -66,7 +58,7 @@ class ServiceProvider {
             });
             throwError(this.errors)
         }
-        await Promise.all([this.emailExist(), this.phoneNumberExist()]);
+        await this.emailExist();
         if (this.errors.length) {
             throwError(this.errors)
         }
@@ -265,6 +257,27 @@ class ServiceProvider {
           return serviceProvider;
         });
       }
+
+      // service provider can delete their account
+      async deleteAccount() {
+        const { userId } = this.data;
+        const serviceProvider = await serviceProviderSchema.findByIdAndRemove({ _id: userId });
+        return serviceProvider;
+      }
+
+      // get service provider by id
+      async getServiceProviderById() {
+        const id = this.data;
+        const serviceProvider = await serviceProviderSchema.findById(id);
+        return serviceProvider;
+      }
+
+    // delete service provider by id
+    async deleteServiceProviderById() {
+      const id = this.data;
+      const serviceProvider = await serviceProviderSchema.findByIdAndRemove({ _id: id });
+      return serviceProvider;
+    }
 
     static getFacebookSignInUrl() {
         return socialAuthService.getFacebookSignInUrl(PROVIDERS);
