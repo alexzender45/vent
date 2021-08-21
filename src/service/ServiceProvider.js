@@ -8,14 +8,16 @@ const util = require("../utils/util");
 const {validateParameters} = require('../utils/util');
 const {sendResetPasswordToken, verificationCode, SuccessfulPasswordReset } = require('../utils/sendgrid');
 const {getCachedData} = require('./Redis');
-const {GOOGLE_CONFIG_CLIENT_ID, GOOGLE_CONFIG_CLIENT_SECRET, GOOGLE_CONFIG_REDIRECT_URI2} = require('../core/config');
+const {GOOGLE_CONFIG_CLIENT_ID, GOOGLE_CONFIG_CLIENT_SECRET, GOOGLE_CONFIG_REDIRECT_URI2, FACEBOOK_SIGN_IN_URL, FACEBOOK_ACCESS_TOKEN_URL, FACEBOOK_REDIRECT_URL, FACEBOOK_CLIENT_SECRET, FACEBOOK_CLIENT_ID, FACEBOOK_USER_DATA_URL} = require('../core/config');
 const cloud = require("../utils/cloudinaryConfig");
-
 const oauth2Client = new google.auth.OAuth2(
     GOOGLE_CONFIG_CLIENT_ID,
     GOOGLE_CONFIG_CLIENT_SECRET,
     GOOGLE_CONFIG_REDIRECT_URI2,
   );
+const {ACCOUNT_TYPE} = require('../utils/constants');
+const socialAuthService = require('../integration/socialAuthClient');
+const PROVIDERS = 'providers';
 
 class ServiceProvider {
     constructor(data) {
@@ -176,6 +178,7 @@ class ServiceProvider {
           const scopes = [
             'https://www.googleapis.com/auth/userinfo.email',
             'https://www.googleapis.com/auth/userinfo.profile',
+            'https://www.googleapis.com/auth/user.gender.read',
           ].join(' ');
 
           const googleLoginUrl = oauth2Client.generateAuthUrl({
@@ -227,11 +230,10 @@ class ServiceProvider {
             if (email) {
               const userExist = await serviceProviderSchema.findOne({ email });
               if (!userExist) {
-                const password = await bcrypt.hash(given_name, 10);
                 const newUser = await serviceProviderSchema.create({
                   email,
-                  password,
                   fullName: `${given_name} ${family_name}`,
+                  accountType: ACCOUNT_TYPE.GOOGLE_ACCOUNT
                 });
 
                 // eslint-disable-next-line no-use-before-define
@@ -263,6 +265,28 @@ class ServiceProvider {
           return serviceProvider;
         });
       }
+
+    static getFacebookSignInUrl() {
+        return socialAuthService.getFacebookSignInUrl(PROVIDERS);
+    }
+
+    async getFacebookAccessToken() {
+        const accessToken = await socialAuthService.getFacebookAccessToken(this.data, PROVIDERS);
+        const { email, first_name, last_name, gender } = await socialAuthService.getFacebookUserData(accessToken);
+        if (email) {
+            let user = await serviceProviderSchema.findOne({ email });
+            if (!user) {
+                user = await serviceProviderSchema.create({
+                    email,
+                    fullName: `${first_name} ${last_name}`,
+                    gender: gender.toUpperCase(),
+                    accountType: ACCOUNT_TYPE.FACEBOOK_ACCOUNT
+                });
+            }
+            return user;
+        }
+        throwError('Error signing in');
+    }
 };
 
 module.exports = ServiceProvider;

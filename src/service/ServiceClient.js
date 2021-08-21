@@ -1,21 +1,23 @@
 const axios = require('axios');
-const { google } = require('googleapis');
+const {google} = require('googleapis');
 const serviceClientSchema = require('../models/serviceClientModel');
 const Wallet = require('../models/wallet');
 const {throwError} = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
 const util = require("../utils/util");
 const {validateParameters} = require('../utils/util');
-const {sendResetPasswordToken, verificationCode, SuccessfulPasswordReset } = require('../utils/sendgrid');
+const {sendResetPasswordToken, verificationCode, SuccessfulPasswordReset} = require('../utils/sendgrid');
 const {getCachedData} = require('./Redis');
 const {GOOGLE_CONFIG_CLIENT_ID, GOOGLE_CONFIG_CLIENT_SECRET, GOOGLE_CONFIG_REDIRECT_URI} = require('../core/config');
 const cloud = require("../utils/cloudinaryConfig");
-
+const {ACCOUNT_TYPE} = require('../utils/constants');
 const oauth2Client = new google.auth.OAuth2(
-  GOOGLE_CONFIG_CLIENT_ID,
-  GOOGLE_CONFIG_CLIENT_SECRET,
-  GOOGLE_CONFIG_REDIRECT_URI,
+    GOOGLE_CONFIG_CLIENT_ID,
+    GOOGLE_CONFIG_CLIENT_SECRET,
+    GOOGLE_CONFIG_REDIRECT_URI,
 );
+const socialAuthService = require('../integration/socialAuthClient');
+const CLIENTS = 'clients';
 
 class ServiceClient {
     constructor(data) {
@@ -107,26 +109,26 @@ class ServiceClient {
     }
 
     async forgotPassword() {
-        const { email } = this.data;
+        const {email} = this.data;
         const verificationCode = Math.floor(100000 + Math.random() * 100000);
         if (!email) {
-          throwError("Please Input Your Email");
+            throwError("Please Input Your Email");
         }
         const updateServiceClient = await serviceClientSchema.findOneAndUpdate(
-          { email },
-          { token: verificationCode },
-          { new: true }
+            {email},
+            {token: verificationCode},
+            {new: true}
         );
         if (!updateServiceClient) {
-          throwError("Invalid Email");
+            throwError("Invalid Email");
         }
         await sendResetPasswordToken(
-          updateServiceClient.email,
-          updateServiceClient.firstName,
-          updateServiceClient.token
+            updateServiceClient.email,
+            updateServiceClient.firstName,
+            updateServiceClient.token
         );
         return updateServiceClient;
-      }
+    }
 
     async resetPassword() {
         const {token, newPassword} = this.data;
@@ -149,119 +151,142 @@ class ServiceClient {
         return updateServiceClient;
     };
 
-    async changePassword() { 
-        const { oldPassword, newPassword, userId } = this.data;
+    async changePassword() {
+        const {oldPassword, newPassword, userId} = this.data;
         if (!oldPassword || !newPassword) {
-          throwError("Please Input Your Old Password and New Password");
+            throwError("Please Input Your Old Password and New Password");
         }
         const user = await serviceClientSchema.findById(userId);
         if (!bcrypt.compareSync(oldPassword, user.password)) {
-          throwError("Incorrect Old Password");
+            throwError("Incorrect Old Password");
         }
         const changedPassword = await bcrypt.hash(newPassword, 10);
         const updateServiceClient = await serviceClientSchema.findByIdAndUpdate(
-          { _id: userId },
-          { password: changedPassword },
-          { new: true }
+            {_id: userId},
+            {password: changedPassword},
+            {new: true}
         );
         if (!updateServiceClient) {
-          throwError('Invalid Token');
-      }
+            throwError('Invalid Token');
+        }
         return updateServiceClient;
-      }
+    }
 
-      // google sign in
-      async googleUrl() {
+    // google sign in
+    async googleUrl() {
         try {
-          const scopes = [
-            'https://www.googleapis.com/auth/userinfo.email',
-            'https://www.googleapis.com/auth/userinfo.profile',
-          ].join(' ');
+            const scopes = [
+                'https://www.googleapis.com/auth/userinfo.email',
+                'https://www.googleapis.com/auth/userinfo.profile',
+            ].join(' ');
 
-          const googleLoginUrl = oauth2Client.generateAuthUrl({
-            access_type: 'offline',
-            scope: scopes,
-          });
-          return { googleLoginUrl };
+            const googleLoginUrl = oauth2Client.generateAuthUrl({
+                access_type: 'offline',
+                scope: scopes,
+            });
+            return {googleLoginUrl};
         } catch (ex) {
-          logger.log({
-            level: 'error',
-            message: ex.message,
-          });
-          return { error: ex };
+            logger.log({
+                level: 'error',
+                message: ex.message,
+            });
+            return {error: ex};
         }
-      }
-      async getGoogleUserInfo(access_token) {
+    }
+
+    async getGoogleUserInfo(access_token) {
         try {
-          const { data } = await axios({
-            url: 'https://www.googleapis.com/oauth2/v2/userinfo',
-            method: 'get',
-            headers: {
-              // eslint-disable-next-line camelcase
-              Authorization: `Bearer ${access_token}`,
-            },
-          });
-          return data;
+            const {data} = await axios({
+                url: 'https://www.googleapis.com/oauth2/v2/userinfo',
+                method: 'get',
+                headers: {
+                    // eslint-disable-next-line camelcase
+                    Authorization: `Bearer ${access_token}`,
+                },
+            });
+            return data;
         } catch (ex) {
-          logger.log({
-            level: 'error',
-            message: ex.message,
-          });
-          return { error: ex };
+            logger.log({
+                level: 'error',
+                message: ex.message,
+            });
+            return {error: ex};
         }
-      }
+    }
 
-      async googleAccessToken() {
-          const code = this.data;
-          const tokens = await oauth2Client.getToken(code);
+    async googleAccessToken() {
+        const code = this.data;
+        const tokens = await oauth2Client.getToken(code);
 
-          // eslint-disable-next-line camelcase
-          const { access_token } = tokens.tokens;
+        // eslint-disable-next-line camelcase
+        const {access_token} = tokens.tokens;
 
-          // eslint-disable-next-line camelcase
-          if (access_token) {
+        // eslint-disable-next-line camelcase
+        if (access_token) {
             const {
-              // eslint-disable-next-line camelcase
-              email, given_name, family_name,
+                // eslint-disable-next-line camelcase
+                email, given_name, family_name,
             } = await this.getGoogleUserInfo(access_token);
             if (email) {
-              const userExist = await serviceClientSchema.findOne({ email });
-              if (!userExist) {
-                const password = await bcrypt.hash(given_name, 10);
-                const newUser = await serviceClientSchema.create({
-                  email,
-                  password,
-                  fullName: `${given_name} ${family_name}`,
-                });
+                const userExist = await serviceClientSchema.findOne({email});
+                if (!userExist) {
+                    const password = await bcrypt.hash(given_name, 10);
+                    const newUser = await serviceClientSchema.create({
+                        email,
+                        password,
+                        fullName: `${given_name} ${family_name}`,
+                    });
 
+                    // eslint-disable-next-line no-use-before-define
+                    return await newUser;
+                }
                 // eslint-disable-next-line no-use-before-define
-                return await newUser;
-              }
-              // eslint-disable-next-line no-use-before-define
-              return await userExist;
+                return await userExist;
             }
-          }
-          return { error: 'Error signing in' };
-      }
+        }
+        return {error: 'Error signing in'};
+    }
 
-      async uploadProfileImage() {
-        const { originalname, userId, path } = this.data;
+    async uploadProfileImage() {
+        const {originalname, userId, path} = this.data;
         let attempt = {
-          imageName: originalname,
-          imageUrl: path,
+            imageName: originalname,
+            imageUrl: path,
         };
         cloud.uploads(attempt.imageUrl).then(async (result) => {
-          const imageUrl = result.url;
-          const serviceClient = await serviceClientSchema.findByIdAndUpdate(
-            { _id: userId },
-            { $set: { profilePictureUrl: imageUrl } },
-            {
-              new: true,
-            }
-          );
-          return serviceClient;
+            const imageUrl = result.url;
+            const serviceClient = await serviceClientSchema.findByIdAndUpdate(
+                {_id: userId},
+                {$set: {profilePictureUrl: imageUrl}},
+                {
+                    new: true,
+                }
+            );
+            return serviceClient;
         });
-      }
+    }
+
+    static getFacebookSignInUrl() {
+        return socialAuthService.getFacebookSignInUrl(CLIENTS);
+    }
+
+    async getFacebookAccessToken() {
+        const accessToken = await socialAuthService.getFacebookAccessToken(this.data, CLIENTS);
+        const { email, first_name, last_name, gender } = await socialAuthService.getFacebookUserData(accessToken);
+        if (email) {
+            let user = await serviceClientSchema.findOne({ email });
+            if (!user) {
+                user = await serviceClientSchema.create({
+                    email,
+                    fullName: `${first_name} ${last_name}`,
+                    gender: gender.toUpperCase(),
+                    accountType: ACCOUNT_TYPE.FACEBOOK_ACCOUNT
+                });
+            }
+            return user;
+        }
+        throwError('Error signing in');
+    }
 };
 
 module.exports = ServiceClient;

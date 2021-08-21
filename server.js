@@ -29,6 +29,4 @@ app.use("/api", serviceProviderRouter);
 app.use("/api", serviceClientRouter);
 app.use("/api", bankRouter);
 
-app.listen(PORT, () =>
-  logger.info(`Ventmode Backend Service Started on port ${PORT}`)
-);
+app.listen(PORT, () => logger.info(`Ventmode Backend Service Started on port ${PORT}`));

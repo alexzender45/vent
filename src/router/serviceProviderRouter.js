@@ -65,4 +65,12 @@ serviceProviderRoute
     serviceProviderController.uploadProfileImage
   );
 
+serviceProviderRoute
+    .route("/service/providers/facebook-sign-in")
+    .get(serviceProviderController.initiateFacebookSignIn);
+
+serviceProviderRoute
+    .route("/service/providers/facebook-authenticate")
+    .get(serviceProviderController.facebookAuthenticate);
+
 module.exports = serviceProviderRoute;
