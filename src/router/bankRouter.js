@@ -4,14 +4,14 @@ const { authenticate, permit } = require('../core/userAuth');
 const { ADMIN_ROLES, USER_TYPE } = require('../utils/constants');
 
 bankRoute.route('/banks')
-    .post(authenticate, permit([USER_TYPE.DRIVER]), bankController.addBank);
+    .post(authenticate, permit([USER_TYPE.SERVICE_PROVIDER]), bankController.addBank);
 
 bankRoute.route('/banks/all')
     .get(authenticate, permit(Object.keys(ADMIN_ROLES)), bankController.getAllBanks);
 
 bankRoute.route('/banks/:id')
-    .get(authenticate, permit([USER_TYPE.DRIVER]), bankController.getBank)
-    .put(authenticate, permit([USER_TYPE.DRIVER]), bankController.makeDefaultBank)
-    .delete(authenticate, permit([USER_TYPE.DRIVER]), bankController.deleteBank);
+    .get(authenticate, permit([USER_TYPE.SERVICE_PROVIDER]), bankController.getBank)
+    .put(authenticate, permit([USER_TYPE.SERVICE_PROVIDER]), bankController.makeDefaultBank)
+    .delete(authenticate, permit([USER_TYPE.SERVICE_PROVIDER]), bankController.deleteBank);
 
 module.exports = bankRoute;

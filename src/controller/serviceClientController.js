@@ -1,7 +1,7 @@
 const { error, success } = require("../utils/baseController");
 const { generateAuthToken } = require("../core/userAuth");
 const { logger } = require("../utils/logger");
-const { registrationSuccessful } = require("../utils/sendgrid");
+const { sendSuccessfulRegistrationEmail } = require("../utils/sendgrid");
 const ServiceClient = require("../service/ServiceClient");
 
 exports.signup = async (req, res) => {
@@ -13,7 +13,7 @@ exports.signup = async (req, res) => {
       userType: newServiceClient.userType,
       role: newServiceClient.role,
     });
-    await registrationSuccessful(
+    await sendSuccessfulRegistrationEmail(
       newServiceClient.email,
       newServiceClient.fullName
     );
@@ -142,6 +142,10 @@ exports.googleAccessToken = async (req, res) => {
       userType: newServiceClient.userType,
       role: newServiceClient.role,
     });
+    await sendSuccessfulRegistrationEmail(
+      newServiceClient.email,
+      newServiceClient.fullName
+    );
     return success(res, { token, message: `<h1>Successfully logged in</h1>` });
   } catch (err) {
     logger.error("Unable to complete service client update request", err);
@@ -214,24 +218,34 @@ exports.initiateFacebookSignIn = (req, res) => {
   }
 };
 
-exports.facebookAuthenticate = async (req, res) => {
+exports.initiateFacebookSignIn = (req, res) => {
+  try {
+    const facebookSignInUrl = ServiceClient.getFacebookSignInUrl();
+    return success(res, { facebookSignInUrl });
+  } catch (err) {
+    logger.error("Unable to get facebook sign in url", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.facebookAuthentication = async (req, res) => {
   try {
     const code = req.query.code;
     const newServiceClient = await new ServiceClient(
       code
-    ).getFacebookAccessToken();
+    ).processFacebookSignIn();
     const token = await generateAuthToken({
       userId: newServiceClient._id,
       userType: newServiceClient.userType,
       role: newServiceClient.role,
     });
-    await registrationSuccessful(
+    await sendSuccessfulRegistrationEmail(
       newServiceClient.email,
       newServiceClient.fullName
     );
     return success(res, { token, message: newServiceClient });
   } catch (err) {
-    logger.error("Unable to complete service client update request", err);
+    logger.error("Unable to complete service provider update request", err);
     return error(res, { code: err.code, message: err.message });
   }
 };

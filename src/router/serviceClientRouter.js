@@ -98,6 +98,6 @@ serviceClientRoute
 
 serviceClientRoute
     .route("/service/clients/facebook-authenticate")
-    .get(serviceClientController.facebookAuthenticate);
+    .get(serviceClientController.facebookAuthentication);
 
 module.exports = serviceClientRoute;
