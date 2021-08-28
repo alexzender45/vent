@@ -4,7 +4,6 @@ const validator = require('validator');
 const uniqueValidator = require('mongoose-unique-validator');
 const { throwError } = require("../utils/handleErrors");
 const { GENDER, USER_TYPE, ROLE, ACCOUNT_TYPE } = require('../utils/constants');
-const { SUPPORTED_PHONE_FORMAT } = require('../core/config')
 
 const serviceProviderSchema
  = new Schema(

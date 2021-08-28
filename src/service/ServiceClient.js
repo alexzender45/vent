@@ -285,7 +285,7 @@ class ServiceClient {
         return socialAuthService.getFacebookSignInUrl(CLIENTS);
     }
 
-    async getFacebookAccessToken() {
+    async processFacebookSignIn() {
         const accessToken = await socialAuthService.getFacebookAccessToken(this.data, CLIENTS);
         const { email, first_name, last_name, gender } = await socialAuthService.getFacebookUserData(accessToken);
         if (email) {

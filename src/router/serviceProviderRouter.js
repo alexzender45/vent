@@ -17,7 +17,7 @@ serviceProviderRoute
     permit([USER_TYPE.SERVICE_PROVIDER]),
     serviceProviderController.updateServiceProviderDetails
   );
-
+//TODO Should this be exposed to SERVICE_PROVIDER??
 serviceProviderRoute
   .route("/service/providers/all")
   .get(
@@ -98,6 +98,6 @@ serviceProviderRoute
 
 serviceProviderRoute
     .route("/service/providers/facebook-authenticate")
-    .get(serviceProviderController.facebookAuthenticate);
+    .get(serviceProviderController.facebookAuthentication);
 
 module.exports = serviceProviderRoute;
