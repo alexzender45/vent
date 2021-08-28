@@ -142,10 +142,6 @@ exports.googleAccessToken = async (req, res) => {
       userType: newServiceClient.userType,
       role: newServiceClient.role,
     });
-    await registrationSuccessful(
-      newServiceClient.email,
-      newServiceClient.fullName
-    );
     return success(res, { token, message: `<h1>Successfully logged in</h1>` });
   } catch (err) {
     logger.error("Unable to complete service client update request", err);
