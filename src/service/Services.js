@@ -1,8 +1,8 @@
-const serviceSchema = require('../models/serviceModel');
+const serviceSchema = require('../models/servicesModel');
 const {throwError} = require("../utils/handleErrors");
 const {validateParameters} = require('../utils/util');
 
-class Service {
+class Services {
     constructor(data) {
         this.data = data;
         this.errors = [];
@@ -46,4 +46,4 @@ class Service {
     }
 };
 
-module.exports = Service;
+module.exports = Services;
