@@ -13,6 +13,8 @@ const baseRouter = require("./src/router");
 const serviceProviderRouter = require("./src/router/serviceProviderRouter");
 const serviceClientRouter = require("./src/router/serviceClientRouter");
 const bankRouter = require("./src/router/bankRouter");
+const categoryRouter = require("./src/router/categoryRouter");
+const servicesRouter = require("./src/router/servicesRouter");
 
 // App Init
 const app = express();
@@ -28,5 +30,7 @@ app.use("/", baseRouter);
 app.use("/api", serviceProviderRouter);
 app.use("/api", serviceClientRouter);
 app.use("/api", bankRouter);
+app.use("/api", categoryRouter);
+app.use("/api", servicesRouter);
 
 app.listen(PORT, () => logger.info(`Ventmode Backend Service Started on port ${PORT}`));
