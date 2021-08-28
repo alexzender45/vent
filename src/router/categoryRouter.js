@@ -24,3 +24,5 @@ categoryRoute
 categoryRoute
     .route("/categories/:type")
     .get(categoryController.getCategoryByType);
+
+module.exports = categoryRoute;

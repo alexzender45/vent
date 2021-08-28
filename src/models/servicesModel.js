@@ -66,5 +66,5 @@ const serviceSchema = new Schema(
 
 serviceSchema.plugin(uniqueValidator, { message: '{TYPE} must be unique.' });
 
-const ServiceModel = model('Service', serviceSchema);
-module.exports = ServiceModel;
+const ServicesModel = model('Service', serviceSchema);
+module.exports = ServicesModel;
