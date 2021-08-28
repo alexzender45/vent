@@ -65,7 +65,7 @@ function sendResetPasswordToken(Email, firstName, token) {
     });
 }
 
-function registrationSuccessful(Email, firstName) {
+function sendSuccessfulRegistrationEmail(Email, firstName) {
   const msg = {
     to: Email, // Change to your recipient
     from: VERIFIED_EMAIL, // Change to your verified sender
@@ -236,7 +236,7 @@ module.exports = {
   passwordEmail,
   SuccessfulPasswordReset,
   deleteAccountEmail,
-  registrationSuccessful,
+  sendSuccessfulRegistrationEmail,
   sendResetPasswordToken,
   sendResetPasswordTokenToSms,
   verificationCode,

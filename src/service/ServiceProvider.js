@@ -102,7 +102,6 @@ class ServiceProvider {
 
     async forgotPassword() {
         const { email } = this.data;
-        const verificationCode = Math.floor(100000 + Math.random() * 100000);
         if (!email) {
           throwError("Please Input Your Email");
         }
@@ -260,30 +259,24 @@ class ServiceProvider {
 
       // service provider can delete their account
       async deleteAccount() {
-        const { userId } = this.data;
-        const serviceProvider = await serviceProviderSchema.findByIdAndRemove({ _id: userId });
-        return serviceProvider;
+          return await serviceProviderSchema.findByIdAndRemove({_id: this.data});
       }
 
       // get service provider by id
       async getServiceProviderById() {
-        const id = this.data;
-        const serviceProvider = await serviceProviderSchema.findById(id);
-        return serviceProvider;
+        return await serviceProviderSchema.findById(this.data);
       }
 
     // delete service provider by id
     async deleteServiceProviderById() {
-      const id = this.data;
-      const serviceProvider = await serviceProviderSchema.findByIdAndRemove({ _id: id });
-      return serviceProvider;
+        return await serviceProviderSchema.findByIdAndRemove({_id: this.data});
     }
 
     static getFacebookSignInUrl() {
         return socialAuthService.getFacebookSignInUrl(PROVIDERS);
     }
 
-    async getFacebookAccessToken() {
+    async processFacebookSignIn() {
         const accessToken = await socialAuthService.getFacebookAccessToken(this.data, PROVIDERS);
         const { email, first_name, last_name, gender } = await socialAuthService.getFacebookUserData(accessToken);
         if (email) {

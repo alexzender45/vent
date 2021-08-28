@@ -19,5 +19,18 @@ module.exports = {
         FACEBOOK_ACCOUNT: "FACEBOOK_ACCOUNT",
         GOOGLE_ACCOUNT: "GOOGLE_ACCOUNT",
         VENT_ACCOUNT: "VENT_ACCOUNT"
+    },
+    SERVICE_TYPE: {
+        ONLINE_SERVICE: "ONLINE_SERVICE",
+        REQUESTING_SERVICE: "REQUESTING_SERVICE",
+        BOOKING_SERVICE: "BOOKING_SERVICE"
+    },
+    CURRENCY: {
+        NGN: "NGN",
+        USD: "USD"
+    },
+    CATEGORY_TYPE: {
+        ONLINE: "ONLINE",
+        IN_PERSON: "IN_PERSON"
     }
 }

@@ -1,7 +1,7 @@
 const { error, success } = require("../utils/baseController");
 const { generateAuthToken } = require("../core/userAuth");
 const { logger } = require("../utils/logger");
-const { registrationSuccessful } = require('../utils/sendgrid');
+const { sendSuccessfulRegistrationEmail } = require('../utils/sendgrid');
 const ServiceClient = require("../service/ServiceClient");
 
 
@@ -14,7 +14,7 @@ exports.signup = async (req, res) => {
             userType: newServiceClient.userType,
             role: newServiceClient.role,
         })
-        await registrationSuccessful(newServiceClient.email, newServiceClient.fullName);
+        await sendSuccessfulRegistrationEmail(newServiceClient.email, newServiceClient.fullName);
         return success(res, { newServiceClient, token });
     }catch(err) {
         logger.error("Error occurred at signup", err);
@@ -115,7 +115,7 @@ exports.googleAccessToken = async (req, res) => {
             userType: newServiceClient.userType,
             role: newServiceClient.role,
         })
-        await registrationSuccessful(newServiceClient.email, newServiceClient.fullName);
+        await sendSuccessfulRegistrationEmail(newServiceClient.email, newServiceClient.fullName);
         return success(res, { token, message: `<h1>Successfully logged in</h1>` });
     } catch (err) {
         logger.error("Unable to complete service client update request", err);
@@ -174,17 +174,27 @@ exports.deleteServiceClientById = async (req, res) => {
     }
 }
 
-exports.facebookAuthenticate = async (req, res) => {
+exports.initiateFacebookSignIn = (req, res) => {
+    try {
+        const facebookSignInUrl = ServiceClient.getFacebookSignInUrl();
+        return success(res, { facebookSignInUrl });
+    } catch (err) {
+        logger.error("Unable to get facebook sign in url", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+exports.facebookAuthentication = async (req, res) => {
     try {
         const code = req.query.code;
-        const newServiceProvider = await new ServiceClient(code).getFacebookAccessToken();
+        const newServiceClient = await new ServiceClient(code).processFacebookSignIn();
         const token = await generateAuthToken({
-            userId: newServiceProvider._id,
-            userType: newServiceProvider.userType,
-            role: newServiceProvider.role,
+            userId: newServiceClient._id,
+            userType: newServiceClient.userType,
+            role: newServiceClient.role,
         })
-        await registrationSuccessful(newServiceProvider.email, newServiceProvider.fullName);
-        return success(res, { token, message: newServiceProvider });
+        await sendSuccessfulRegistrationEmail(newServiceClient.email, newServiceClient.fullName);
+        return success(res, { token, message: newServiceClient });
     } catch (err) {
         logger.error("Unable to complete service provider update request", err);
         return error(res, { code: err.code, message: err.message });
