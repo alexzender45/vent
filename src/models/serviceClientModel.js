@@ -3,13 +3,7 @@ const { Schema, model } = require("mongoose");
 const validator = require("validator");
 const uniqueValidator = require("mongoose-unique-validator");
 const { throwError } = require("../utils/handleErrors");
-const {
-  GENDER,
-  USER_TYPE,
-  ROLE,
-  ACCOUNT_TYPE,
-  GENDER,
-} = require("../utils/constants");
+const { GENDER, USER_TYPE, ROLE, ACCOUNT_TYPE } = require("../utils/constants");
 const { SUPPORTED_PHONE_FORMAT } = require("../core/config");
 
 const serviceClientSchema = new Schema(
@@ -71,10 +65,6 @@ const serviceClientSchema = new Schema(
     },
     state: {
       type: String,
-    },
-    gender: {
-      type: String,
-      enum: Object.keys(GENDER),
     },
     occupation: {
       type: String,

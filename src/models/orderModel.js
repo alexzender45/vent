@@ -25,32 +25,20 @@ const orderSchema = new Schema(
       default: "BOOKED",
       required: true,
     },
-    rating: {
+    numberOfItems: {
       type: Number,
     },
-    review: {
-      type: String,
+    notes: String,
+    dateRequested: {
+      type: Date,
+      default: Date.now(),
     },
-    serviceLocation: {
-      type: String,
-      required: true,
-    },
-    availabilityPeriod: {
-      type: Array,
-      required: true,
-    },
-    notes: {
+    location: {
       type: String,
       required: true,
+      default: false,
     },
-    serviceCount: {
-      type: Number,
-      required: true,
-    },
-    servicePrice: {
-      type: String,
-      required: true,
-    },
+    specifiedTime: String,
   },
   {
     strictQuery: "throw",
