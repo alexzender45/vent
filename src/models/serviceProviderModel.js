@@ -1,20 +1,17 @@
-const bcrypt = require('bcrypt');
-const { Schema, model } = require('mongoose');
-const validator = require('validator');
-const uniqueValidator = require('mongoose-unique-validator');
+const bcrypt = require("bcrypt");
+const { Schema, model } = require("mongoose");
+const validator = require("validator");
+const uniqueValidator = require("mongoose-unique-validator");
 const { throwError } = require("../utils/handleErrors");
-const { GENDER, USER_TYPE, ROLE, ACCOUNT_TYPE } = require('../utils/constants');
+const { GENDER, USER_TYPE, ROLE, ACCOUNT_TYPE } = require("../utils/constants");
 
-const serviceProviderSchema
- = new Schema(
+const serviceProviderSchema = new Schema(
   {
     fullName: {
       type: String,
       required: true,
     },
-    dateOfBirth: {
-      type: Date
-    },
+    dateOfBirth: String,
     email: {
       type: String,
       required: true,
@@ -22,7 +19,7 @@ const serviceProviderSchema
       trim: true,
       validate(value) {
         if (!validator.isEmail(value)) {
-          throw new Error('Invalid Email!');
+          throw new Error("Invalid Email!");
         }
         return validator.isEmail(value);
       },
@@ -31,18 +28,14 @@ const serviceProviderSchema
       type: String,
       trim: true,
     },
-    password: {
-      type: String
-    },
-    profilePictureUrl: {
-      type: String,
-    },
+    password: String,
+    profilePictureUrl: String,
     location: {
-      type: String,
+      country: String,
+      state: String,
+      address: String,
     },
-    token: {
-      type: String,
-    },
+    token: String,
     userType: {
       type: String,
       enum: Object.keys(USER_TYPE),
@@ -50,7 +43,7 @@ const serviceProviderSchema
     },
     gender: {
       type: String,
-      enum: Object.keys(GENDER)
+      enum: Object.keys(GENDER),
     },
     accountType: {
       type: String,
@@ -60,7 +53,11 @@ const serviceProviderSchema
     role: {
       type: String,
       default: ROLE.USER,
-    }
+    },
+    rating: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
@@ -78,37 +75,38 @@ const serviceProviderSchema
     },
   },
   {
-    strictQuery: 'throw'
+    strictQuery: "throw",
   }
 );
 
-serviceProviderSchema
-.pre('save', async function save(next) {
+serviceProviderSchema.pre("save", async function save(next) {
   try {
     const user = this;
 
-    if (!user.isModified('password')) {
+    if (!user.isModified("password")) {
       return next();
     }
-      user.password = await bcrypt.hash(user.password, 10);
+    user.password = await bcrypt.hash(user.password, 10);
     next();
   } catch (e) {
     next(e);
   }
 });
 
-serviceProviderSchema
-.statics.findByCredentials = async (loginId, password) => {
-  const user = await ServiceProviderModel.findOne({ $or: [{ phoneNumber: loginId }, { email: loginId }] }).orFail(() => throwError('Invalid Login Details', 404));
+serviceProviderSchema.statics.findByCredentials = async (loginId, password) => {
+  const user = await ServiceProviderModel.findOne({
+    $or: [{ phoneNumber: loginId }, { email: loginId }],
+  }).orFail(() => throwError("Invalid Login Details", 404));
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) {
-    throwError('Incorrect Password');
+    throwError("Incorrect Password");
   }
   return user;
 };
 
-serviceProviderSchema
-.plugin(uniqueValidator, { message: '{TYPE} must be unique.' });
+serviceProviderSchema.plugin(uniqueValidator, {
+  message: "{TYPE} must be unique.",
+});
 
-const ServiceProviderModel = model('ServiceProvider', serviceProviderSchema);
+const ServiceProviderModel = model("ServiceProvider", serviceProviderSchema);
 module.exports = ServiceProviderModel;
