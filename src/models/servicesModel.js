@@ -58,6 +58,10 @@ const serviceSchema = new Schema(
       type: String,
       enum: Object.keys(CURRENCY),
     },
+    price: {
+      type: Number,
+      required: true,
+    },
   },
   {
     timestamps: true,

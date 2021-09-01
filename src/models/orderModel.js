@@ -22,7 +22,7 @@ const orderSchema = new Schema(
     status: {
       type: String,
       enum: Object.values(ORDER_STATUS),
-      default: "BOOKED",
+      default: ORDER_STATUS.PENDING,
       required: true,
     },
     numberOfItems: {

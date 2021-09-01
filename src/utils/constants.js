@@ -33,4 +33,11 @@ module.exports = {
     ONLINE: "ONLINE",
     IN_PERSON: "IN_PERSON",
   },
+  ORDER_STATUS: {
+    PENDING: "PENDING",
+    ACCEPTED: "ACCEPTED",
+    REJECTED: "REJECTED",
+    PAID: "PAID",
+    CANCELLED: "CANCELLED",
+  },
 };

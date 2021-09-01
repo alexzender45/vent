@@ -1,6 +1,9 @@
 const orderSchema = require("../models/orderModel");
+const cartSchema = require("../models/cartModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
+const { ORDER_STATUS } = require("../utils/constants");
+const Service = require("./Services");
 
 class Order {
   constructor(data) {
@@ -9,8 +12,26 @@ class Order {
   }
 
   async create() {
-    let parameters = this.data;
-    const order = new orderSchema(parameters);
+    const {
+      clientId,
+      serviceId,
+      numberOfItems,
+      notes,
+      dateRequested,
+      location,
+      specifiedTime,
+    } = this.data;
+    const service = await Servive.findOne({ clientId });
+    const order = new orderSchema({
+      providerId: service.providerId,
+      clientId,
+      serviceId,
+      numberOfItems,
+      notes,
+      dateRequested,
+      location,
+      specifiedTime,
+    });
     let validationError = order.validateSync();
     if (validationError) {
       Object.values(validationError.errors).forEach((e) => {
@@ -19,8 +40,12 @@ class Order {
       });
       throwError(this.errors);
     }
-
-    return await order.save();
+    await order.save();
+    new cartSchema({
+      clientId: order.clientId,
+      orderId: order._id,
+    }).save();
+    return order;
   }
 
   async getOder() {
@@ -41,12 +66,11 @@ class Order {
       .orFail(() => throwError("No Order Found", 404));
   }
 
-  async deleteOrder() {
-    return await orderSchema.findByIdAndRemove(this.data);
-  }
-
-  async updateOrder() {
-    throwError("NOT SUPPORTED");
+  // cancel order
+  async cancelOrder() {
+    const order = await this.getOder();
+    order.status = ORDER_STATUS.REJECTED;
+    return await order.save();
   }
 }
 
