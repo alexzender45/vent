@@ -1,15 +1,11 @@
-const {resetPasswordMessage} = require("./messages");
-const {generateAuthToken} = require("../core/userAuth");
 const {throwError} = require("./handleErrors");
 const { EMAIL_SENDER } = require("../core/config");
-const { error, success } = require("../utils/baseController");
-const msg = require('./sendgrid');
 
 exports.validateParameters = (expectedParameters, actualParameters) => {
   const messages = [];
-  let isValid = false;
+  let isValid = true;
 
-  if(!actualParameters || !actualParameters.length){
+  if(!actualParameters){
       throwError("Invalid Parameters")
   }
 
