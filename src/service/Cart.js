@@ -1,4 +1,5 @@
 const cartSchema = require("../models/cartModel");
+const orderSchema = require("../models/orderModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
 const { ORDER_STATUS } = require("../utils/constants");
@@ -8,7 +9,6 @@ class Cart {
     this.data = data;
     this.errors = [];
   }
-
   async deleteItemFromCart() {
     const cartItem = await cartSchema.findById(this.data);
     // cancel order
@@ -21,7 +21,7 @@ class Cart {
   async getAllClientCartItems() {
     return await cartSchema
       .find({ clientId: this.data })
-      .populate("serviceId orderId", "name type status price")
+      .populate("orderId clientId serviceId", "status fullName price type name")
       .orFail(() => throwError(`No Order Found For ${type} Type`, 404));
   }
 }

@@ -4,30 +4,26 @@ const { authenticate, permit } = require("../core/userAuth");
 const { USER_TYPE } = require("../utils/constants");
 
 ratingRoute
-  .route("/ratings")
+  .route("/ratings/:orderId")
   .post(
     authenticate,
-    permit(Object.keys(USER_TYPE.SERVICE_CLIENT)),
-    ratingController.create
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    ratingController.createRating
   );
 
 ratingRoute
-  .route("/ratings/:providerId")
+  .route("/ratings/:providerId/provider-ratings")
   .get(
     authenticate,
-    permit(
-      Object.keys([USER_TYPE.SERVICE_CLIENT], [USER_TYPE.SERVICE_PROVIDER])
-    ),
+    permit([USER_TYPE.SERVICE_CLIENT], [USER_TYPE.SERVICE_PROVIDER]),
     ratingController.getAllProviderRating
   );
 
 ratingRoute
-  .route("/ratings/:serviceId")
+  .route("/ratings/:serviceId/service-ratings")
   .get(
     authenticate,
-    permit(
-      Object.keys([USER_TYPE.SERVICE_CLIENT], [USER_TYPE.SERVICE_PROVIDER])
-    ),
+    permit([USER_TYPE.SERVICE_CLIENT], [USER_TYPE.SERVICE_PROVIDER]),
     ratingController.getAllServiceRating
   );
 

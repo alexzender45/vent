@@ -7,15 +7,15 @@ cartRoute
   .route("/carts")
   .get(
     authenticate,
-    permit(Object.keys(USER_TYPE.SERVICE_CLIENT)),
+    permit([USER_TYPE.SERVICE_CLIENT]),
     cartController.getAllClientCartItems
   );
 
 cartRoute
-  .route("/cart/:id")
+  .route("/carts/:id")
   .delete(
     authenticate,
-    permit(Object.keys(USER_TYPE.SERVICE_CLIENT)),
+    permit([USER_TYPE.SERVICE_CLIENT]),
     cartController.deleteItemFromCart
   );
 

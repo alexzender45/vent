@@ -2,16 +2,18 @@ const { error, success } = require("../utils/baseController");
 const { logger } = require("../utils/logger");
 const Rating = require("../service/Rating");
 
-exports.create = async (req, res) => {
+exports.createRating = async (req, res) => {
   try {
     const reviewerId = req.user._id;
+    const orderId = req.params.orderId;
     const { rating, review } = req.body;
-    const rating = await new Rating({
+    const createRating = await new Rating({
       reviewerId,
+      orderId,
       rating,
       review,
-    }).create();
-    return success(res, { rating });
+    }).createRating();
+    return success(res, { createRating });
   } catch (err) {
     logger.error("Error creating rating", err);
     return error(res, { code: err.code, message: err.message });
@@ -21,8 +23,9 @@ exports.create = async (req, res) => {
 // get all provider ratings
 exports.getAllProviderRating = async (req, res) => {
   try {
-    const { providerId } = req.params.providerId;
-    const ratings = await new Rating({ providerId }).getAllProviderRating();
+    const ratings = await new Rating(
+      req.params.providerId
+    ).getAllProviderRating();
     return success(res, { ratings });
   } catch (err) {
     logger.error("Error getting ratings", err);
@@ -33,8 +36,9 @@ exports.getAllProviderRating = async (req, res) => {
 // get all service ratings
 exports.getAllServiceRating = async (req, res) => {
   try {
-    const { serviceId } = req.params.serviceId;
-    const ratings = await new Rating({ serviceId }).getAllServiceRating();
+    const ratings = await new Rating(
+      req.params.serviceId
+    ).getAllServiceRating();
     return success(res, { ratings });
   } catch (err) {
     logger.error("Error getting ratings", err);

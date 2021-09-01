@@ -24,9 +24,9 @@ exports.create = async (req, res) => {
   }
 };
 
-exports.getAllClientOrder = async (req, res) => {
+exports.getOrdersForClient = async (req, res) => {
   try {
-    const clientOrders = await Order.getAllClientOrder();
+    const clientOrders = await new Order(req.user._id).getOrdersForClient();
     return success(res, { clientOrders });
   } catch (err) {
     logger.error("Error getting all client orders", err);
@@ -34,12 +34,32 @@ exports.getAllClientOrder = async (req, res) => {
   }
 };
 
+exports.rejectOrder = async (req, res) => {
+  try {
+    await new Order(req.params.id).rejectOrder();
+    return success(res, { message: "Reject Order Successfully" });
+  } catch (err) {
+    logger.error("Error rejecting order", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
 exports.cancelOrder = async (req, res) => {
   try {
     await new Order(req.params.id).cancelOrder();
-    return success(res, { message: "Cancelled Order Successfully" });
+    return success(res, { message: "Cancel Order Successfully" });
   } catch (err) {
     logger.error("Error cancelling order", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.acceptOrder = async (req, res) => {
+  try {
+    await new Order(req.params.id).acceptOrder();
+    return success(res, { message: "Accepted Order Successfully" });
+  } catch (err) {
+    logger.error("Error accepting order", err);
     return error(res, { code: err.code, message: err.message });
   }
 };
@@ -61,6 +81,16 @@ exports.getAllOrders = async (req, res) => {
     return success(res, { orders });
   } catch (err) {
     logger.error("Error getting all orders", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.getOrdersForProvider = async (req, res) => {
+  try {
+    const providerOrders = await new Order(req.user._id).getOrdersForProvider();
+    return success(res, { providerOrders });
+  } catch (err) {
+    logger.error("Error getting all provider orders", err);
     return error(res, { code: err.code, message: err.message });
   }
 };
