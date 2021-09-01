@@ -1,5 +1,6 @@
 const serviceSchema = require("../models/servicesModel");
 const { throwError } = require("../utils/handleErrors");
+const { validateParameters } = require("../utils/util");
 
 class Services {
   constructor(data) {
@@ -8,18 +9,11 @@ class Services {
   }
 
   async create() {
-    let parameters = this.data;
-    const service = new serviceSchema(parameters);
-    let validationError = service.validateSync();
-    if (validationError) {
-      Object.values(validationError.errors).forEach((e) => {
-        if (e.reason) this.errors.push(e.reason.message);
-        else this.errors.push(e.message.replace("Path ", ""));
-      });
-      throwError(this.errors);
+    const {isValid, messages} = validateParameters(["type", "name", "categoryId", "description"], this.data);
+    if (!isValid) {
+        throwError(messages);
     }
-
-    return await service.save();
+    return new serviceSchema(this.data).save();
   }
 
   async getService() {

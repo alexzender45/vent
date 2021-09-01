@@ -1,5 +1,6 @@
 const categorySchema = require("../models/categoryModel");
 const { throwError } = require("../utils/handleErrors");
+const {validateParameters} = require("../utils/util");
 
 class Category {
   constructor(data) {
@@ -9,17 +10,11 @@ class Category {
 
   async create() {
     let parameters = this.data;
-    const category = new categorySchema(parameters);
-    let validationError = category.validateSync();
-    if (validationError) {
-      Object.values(validationError.errors).forEach((e) => {
-        if (e.reason) this.errors.push(e.reason.message);
-        else this.errors.push(e.message.replace("Path ", ""));
-      });
-      throwError(this.errors);
+    const {isValid, messages} = validateParameters(["name", "type"], parameters);
+    if (!isValid) {
+        throwError(messages);
     }
-
-    return await category.save();
+    return await new categorySchema(parameters).save();
   }
 
   async getCategory() {
@@ -41,11 +36,8 @@ class Category {
   }
 
   async deleteCategory() {
-    return await categorySchema.findByIdAndRemove(this.data);
-  }
-
-  async updateCategory() {
-    throwError("NOT SUPPORTED");
+      return await categorySchema.findByIdAndRemove(this.data)
+          .orFail(() => throwError("No Category Found", 404));
   }
 }
 

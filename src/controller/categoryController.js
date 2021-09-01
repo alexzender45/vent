@@ -22,16 +22,6 @@ exports.getAllCategory = async (req, res) => {
     }
 }
 
-exports.updateCategory = async (req, res) => {
-    try {
-        const category = await new Category({newDetails: req.body}).updateCategory();
-        return success(res, { category });
-    } catch (err) {
-        logger.error("Error updating category", err);
-        return error(res, { code: err.code, message: err.message });
-    }
-};
-
 exports.deleteCategory = async (req, res) => {
     try {
         await new Category(req.params.id).deleteCategory();
