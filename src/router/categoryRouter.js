@@ -22,7 +22,7 @@ categoryRoute
   );
 
 categoryRoute
-  .route("/categories/:type")
+  .route("/categories/type/:type")
   .get(categoryController.getCategoryByType);
 
 module.exports = categoryRoute;

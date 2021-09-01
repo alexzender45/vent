@@ -47,31 +47,23 @@ class ServiceProvider {
   }
 
   async signup() {
-    const otp = this.data.otp;
-    if (!otp) {
-      throwError("OTP Required To Complete Signup");
+    const {isValid, messages} = validateParameters(["fullName", "email", "otp"], parameters);
+    if (!isValid) {
+        throwError(messages);
     }
-    const cachedOTP = await getCachedData(this.data.email);
 
+    const cachedOTP = await getCachedData(this.data.email);
     if (!cachedOTP) {
       throwError("OTP Code Expired");
-    } else if (cachedOTP !== otp) {
+    } else if (cachedOTP !== this.data.otp) {
       throwError("Invalid OTP");
     }
 
-    const serviceProvider = new serviceProviderSchema(this.data);
-    let validationError = serviceProvider.validateSync();
-    if (validationError) {
-      Object.values(validationError.errors).forEach((e) => {
-        if (e.reason) this.errors.push(e.reason.message);
-        else this.errors.push(e.message.replace("Path ", ""));
-      });
-      throwError(this.errors);
-    }
     await this.emailExist();
     if (this.errors.length) {
-      throwError(this.errors);
+        throwError(this.errors);
     }
+    const serviceProvider = new serviceProviderSchema(this.data);
     const newServiceProvider = await serviceProvider.save();
     await new Wallet({ userId: newServiceProvider._id }).save();
     return newServiceProvider;

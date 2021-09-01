@@ -4,8 +4,20 @@ const Services = require("../service/Services");
 
 exports.create = async (req, res) => {
   try {
-    req.body["userId"] = req.user._id;
-    const service = await new Services(req.body).create();
+    const parameters = req.body;
+    if(!parameters.useProfileLocation) {
+        const {country, state, address} = parameters;
+        parameters["location"] = {
+            useProfileLocation: true,
+            country,
+            state,
+            address
+        };
+    }else {
+        parameters["location"] = req.user.location;
+    }
+    parameters["userId"] = req.user._id;
+    const service = await new Services(parameters).create();
     return success(res, { service });
   } catch (err) {
     logger.error("Error creating service", err);

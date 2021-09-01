@@ -18,7 +18,7 @@ const serviceSchema = new Schema(
       type: String,
       required: true,
     },
-    category: {
+    categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
       required: true,
@@ -50,8 +50,7 @@ const serviceSchema = new Schema(
     deliveryPeriod: String,
     availabilityPeriod: [],
     portfolioFiles: {
-      type: [String],
-      required: true,
+      type: [String]
     },
     portfolioLink: String,
     currency: {
