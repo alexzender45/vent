@@ -4,13 +4,11 @@ const Order = require("../service/Order");
 
 exports.create = async (req, res) => {
   try {
-    const clientId = req.user._id;
-    const serviceId = req.params.serviceId;
+    req.body["clientId"] = req.user._id;
+    req.body["serviceId"] = req.params.serviceId;
     const { numberOfItems, notes, dateRequested, location, specifiedTime } =
       req.body;
     const oder = await new Order({
-      clientId,
-      serviceId,
       numberOfItems,
       notes,
       dateRequested,

@@ -17,7 +17,7 @@ exports.getAllClientCartItems = async (req, res) => {
 exports.deleteItemFromCart = async (req, res) => {
   try {
     await new Cart(req.params.id).deleteItemFromCart();
-    return success(res, { message: "Item Deleted Successfully" });
+    return success(res, { message: "Item Removed Successfully" });
   } catch (err) {
     logger.error("Error deleting item", err);
     return error(res, { code: err.code, message: err.message });

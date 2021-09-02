@@ -12,9 +12,10 @@ class Cart {
   async deleteItemFromCart() {
     const cartItem = await cartSchema.findById(this.data);
     // cancel order
-    const order = await orderSchema.findById(cartItem.orderId);
-    order.status = ORDER_STATUS.CANCELLED;
-    await order.save();
+    const order = await orderSchema.findOneAndUpdate(
+      { _id: cartItem.orderId },
+      { status: ORDER_STATUS.CANCELLED }
+    );
     return await cartItem.remove();
   }
 
@@ -22,7 +23,7 @@ class Cart {
     return await cartSchema
       .find({ clientId: this.data })
       .populate("orderId clientId serviceId", "status fullName price type name")
-      .orFail(() => throwError(`No Order Found For ${type} Type`, 404));
+      .orFail(() => throwError(`No Order Found`, 404));
   }
 }
 

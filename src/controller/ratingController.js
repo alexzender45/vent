@@ -4,12 +4,10 @@ const Rating = require("../service/Rating");
 
 exports.createRating = async (req, res) => {
   try {
-    const reviewerId = req.user._id;
-    const orderId = req.params.orderId;
+    req.body["reviewerId"] = req.user._id;
+    req.body["orderId"] = req.params.orderId;
     const { rating, review } = req.body;
     const createRating = await new Rating({
-      reviewerId,
-      orderId,
       rating,
       review,
     }).createRating();
