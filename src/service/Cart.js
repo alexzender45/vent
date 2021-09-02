@@ -12,7 +12,7 @@ class Cart {
   async deleteItemFromCart() {
     const cartItem = await cartSchema.findById(this.data);
     // cancel order
-    const order = await orderSchema.findOneAndUpdate(
+    await orderSchema.findOneAndUpdate(
       { _id: cartItem.orderId },
       { status: ORDER_STATUS.CANCELLED }
     );

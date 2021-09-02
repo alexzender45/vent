@@ -6,7 +6,7 @@ const { USER_TYPE } = require("../utils/constants");
 orderRoute.route("/orders").get(orderController.getAllOrders);
 
 orderRoute
-  .route("/orders/:serviceId")
+  .route("/orders")
   .post(
     authenticate,
     permit([USER_TYPE.SERVICE_CLIENT]),

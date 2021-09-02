@@ -1,7 +1,6 @@
 const ratingSchema = require("../models/ratingReviewModel");
 const { throwError } = require("../utils/handleErrors");
-const orderSchema = require("../models/orderModel");
-//const { validateParameters } = require("../utils/util");
+const { validateParameters } = require("../utils/util");
 
 class Rating {
   constructor(data) {
@@ -10,25 +9,15 @@ class Rating {
   }
 
   async createRating() {
-    const { reviewerId, orderId, rating, review } = this.data;
-    const order = await orderSchema.findById({ _id: orderId });
-    const createRating = new ratingSchema({
-      providerId: order.providerId,
-      serviceId: order.serviceId,
-      reviewerId,
-      rating,
-      review,
-    });
-    let validationError = createRating.validateSync();
-    if (validationError) {
-      Object.values(validationError.errors).forEach((e) => {
-        if (e.reason) this.errors.push(e.reason.message);
-        else this.errors.push(e.message.replace("Path ", ""));
-      });
-      throwError(this.errors);
+    let parameters = this.data;
+    const { isValid, messages } = validateParameters(
+      ["providerId", "reviewerId", "serviceId", "rating", "review"],
+      parameters
+    );
+    if (!isValid) {
+      throwError(messages);
     }
-
-    return await createRating.save();
+    return await new ratingSchema(parameters).save();
   }
 
   async getAllProviderRating() {

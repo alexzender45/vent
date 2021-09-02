@@ -4,7 +4,7 @@ const { authenticate, permit } = require("../core/userAuth");
 const { USER_TYPE } = require("../utils/constants");
 
 ratingRoute
-  .route("/ratings/:orderId")
+  .route("/ratings")
   .post(
     authenticate,
     permit([USER_TYPE.SERVICE_CLIENT]),
