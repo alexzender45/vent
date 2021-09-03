@@ -5,16 +5,17 @@ const Services = require("../service/Services");
 exports.create = async (req, res) => {
   try {
     const parameters = req.body;
-    if(!parameters.useProfileLocation) {
+    const {useProfileLocation} = parameters;
+    if(useProfileLocation) {
+        parameters["location"] = req.user.location;
+    }else {
         const {country, state, address} = parameters;
         parameters["location"] = {
-            useProfileLocation: true,
+            useProfileLocation,
             country,
             state,
             address
         };
-    }else {
-        parameters["location"] = req.user.location;
     }
     parameters["userId"] = req.user._id;
     const service = await new Services(parameters).create();
@@ -25,23 +26,19 @@ exports.create = async (req, res) => {
   }
 };
 
-exports.getAllUserService = async (req, res) => {
+exports.getAllProviderService = async (req, res) => {
   try {
-    const categories = await new Services(
-      req.params.userId
-    ).getAllUserServices();
-    return success(res, { categories });
+    const services = await new Services(req.params.userId).getAllUserServices();
+    return success(res, { services });
   } catch (err) {
-    logger.error("Error getting all categories", err);
+    logger.error("Error getting all provider's services", err);
     return error(res, { code: err.code, message: err.message });
   }
 };
 
 exports.updateService = async (req, res) => {
   try {
-    const service = await new Services({
-      newDetails: req.body,
-    }).updateService();
+    const service = await new Services({newDetails: req.body}).updateService();
     return success(res, { service });
   } catch (err) {
     logger.error("Error updating service", err);
@@ -51,8 +48,8 @@ exports.updateService = async (req, res) => {
 
 exports.deleteService = async (req, res) => {
   try {
-    await new Services(req.params.id).deleteService();
-    return success(res, { message: "Service Deleted Successfully" });
+    const  message = await new Services({id:req.params.id, userId: req.user._id}).deleteService();
+    return success(res, { message });
   } catch (err) {
     logger.error("Error deleting service", err);
     return error(res, { code: err.code, message: err.message });
@@ -61,8 +58,8 @@ exports.deleteService = async (req, res) => {
 
 exports.getServiceById = async (req, res) => {
   try {
-    const serviceProvider = await new Services(req.params.id).getService();
-    return success(res, { serviceProvider });
+    const service = await new Services(req.params.id).getService();
+    return success(res, { service });
   } catch (err) {
     logger.error("Error getting service", err);
     return error(res, { code: err.code, message: err.message });
@@ -71,12 +68,10 @@ exports.getServiceById = async (req, res) => {
 
 exports.getServiceByType = async (req, res) => {
   try {
-    const serviceProvider = await new Services(
-      req.params.type
-    ).getServiceByType();
-    return success(res, { serviceProvider });
+    const services = await new Services(req.params.type).getServiceByType();
+    return success(res, { services });
   } catch (err) {
-    logger.error("Error getting service by type", err);
+    logger.error("Error getting services by type", err);
     return error(res, { code: err.code, message: err.message });
   }
 };

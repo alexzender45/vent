@@ -55,6 +55,14 @@ serviceClientRoute
   .route("/service/clients/access")
   .get(serviceClientController.googleAccessToken);
 
+serviceClientRoute
+    .route("/service/clients/facebook-sign-in")
+    .get(serviceClientController.initiateFacebookSignIn);
+
+serviceClientRoute
+    .route("/service/clients/facebook-authenticate")
+    .get(serviceClientController.facebookAuthentication);
+
 // upload profile picture
 serviceClientRoute
   .route("/service/clients/upload-profile-picture")
@@ -91,13 +99,5 @@ serviceClientRoute
     permit([USER_TYPE.SERVICE_CLIENT]),
     serviceClientController.deleteServiceClientById
   );
-
-serviceClientRoute
-    .route("/service/clients/facebook-sign-in")
-    .get(serviceClientController.initiateFacebookSignIn);
-
-serviceClientRoute
-    .route("/service/clients/facebook-authenticate")
-    .get(serviceClientController.facebookAuthentication);
 
 module.exports = serviceClientRoute;
