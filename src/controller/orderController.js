@@ -4,25 +4,17 @@ const Order = require("../service/Order");
 
 exports.create = async (req, res) => {
   try {
-    const {
-      numberOfItems,
-      notes,
-      dateRequested,
-      location,
-      specifiedTime,
-      providerId,
-      serviceId,
-    } = req.body;
-    const oder = await new Order({
-      clientId: req.user._id,
-      providerId,
-      serviceId,
-      numberOfItems,
-      notes,
-      dateRequested,
-      location,
-      specifiedTime,
-    }).create();
+    // const {
+    //   numberOfItems,
+    //   notes,
+    //   dateRequested,
+    //   location,
+    //   specifiedTime,
+    //   providerId,
+    //   serviceId,
+    // } = req.body;
+    req.body["clientId"] = req.user._id;
+    const oder = await new Order(req.body).create();
     return success(res, { oder });
   } catch (err) {
     logger.error("Error creating order", err);

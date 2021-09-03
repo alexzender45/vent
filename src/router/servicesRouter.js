@@ -12,11 +12,19 @@ servicesRoute
     );
 
 servicesRoute
-    .route("/services/:userId")
+    .route("/services/provider/:userId")
     .get(
         authenticate,
         permit(Object.keys(USER_TYPE)),
-        servicesController.getAllUserService
+        servicesController.getAllProviderService
+    );
+
+servicesRoute
+    .route("/services/type/:type")
+    .get(
+        authenticate,
+        permit(Object.keys(USER_TYPE)),
+        servicesController.getServiceByType
     );
 
 servicesRoute
@@ -30,14 +38,6 @@ servicesRoute
         authenticate,
         permit(USER_TYPE.SERVICE_PROVIDER),
         servicesController.deleteService
-    );
-
-servicesRoute
-    .route("/services/:type")
-    .get(
-        authenticate,
-        permit(Object.keys(USER_TYPE)),
-        servicesController.getServiceByType
     );
 
 module.exports = servicesRoute;

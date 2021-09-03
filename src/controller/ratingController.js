@@ -4,15 +4,9 @@ const Rating = require("../service/Rating");
 
 exports.createRating = async (req, res) => {
   try {
-    const { rating, review, orderId, serviceId, providerId } = req.body;
-    const createRating = await new Rating({
-      reviewerId: req.user._id,
-      providerId,
-      serviceId,
-      orderId,
-      rating,
-      review,
-    }).createRating();
+      req.body["reviewerId"] = req.user._id;
+    // const { rating, review, orderId, serviceId, providerId } = req.body;
+    const createRating = await new Rating(req.body).createRating();
     return success(res, { createRating });
   } catch (err) {
     logger.error("Error creating rating", err);

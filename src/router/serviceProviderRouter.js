@@ -55,6 +55,14 @@ serviceProviderRoute
   .route("/service/providers/access")
   .get(serviceProviderController.googleAccessToken);
 
+serviceProviderRoute
+    .route("/service/providers/facebook-sign-in")
+    .get(serviceProviderController.initiateFacebookSignIn);
+
+serviceProviderRoute
+    .route("/service/providers/facebook-authenticate")
+    .get(serviceProviderController.facebookAuthentication);
+
 // upload profile picture
 serviceProviderRoute
   .route("/service/providers/upload-profile-picture")
@@ -91,13 +99,5 @@ serviceProviderRoute
     permit([USER_TYPE.SERVICE_PROVIDER]),
     serviceProviderController.deleteServiceProviderById
   );
-
-serviceProviderRoute
-    .route("/service/providers/facebook-sign-in")
-    .get(serviceProviderController.initiateFacebookSignIn);
-
-serviceProviderRoute
-    .route("/service/providers/facebook-authenticate")
-    .get(serviceProviderController.facebookAuthentication);
 
 module.exports = serviceProviderRoute;

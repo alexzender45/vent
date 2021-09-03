@@ -231,9 +231,7 @@ exports.initiateFacebookSignIn = (req, res) => {
 exports.facebookAuthentication = async (req, res) => {
   try {
     const code = req.query.code;
-    const newServiceClient = await new ServiceClient(
-      code
-    ).processFacebookSignIn();
+    const newServiceClient = await new ServiceClient(code).processFacebookSignIn();
     const token = await generateAuthToken({
       userId: newServiceClient._id,
       userType: newServiceClient.userType,
