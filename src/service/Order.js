@@ -1,6 +1,8 @@
 const orderSchema = require("../models/orderModel");
+const cartSchema = require("../models/cartModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
+const { ORDER_STATUS } = require("../utils/constants");
 
 class Order {
   constructor(data) {
@@ -10,17 +12,20 @@ class Order {
 
   async create() {
     let parameters = this.data;
-    const order = new orderSchema(parameters);
-    let validationError = order.validateSync();
-    if (validationError) {
-      Object.values(validationError.errors).forEach((e) => {
-        if (e.reason) this.errors.push(e.reason.message);
-        else this.errors.push(e.message.replace("Path ", ""));
-      });
-      throwError(this.errors);
+    const { isValid, messages } = validateParameters(
+      ["providerId", "clientId", "serviceId", "numberOfItems", "notes"],
+      parameters
+    );
+    if (!isValid) {
+      throwError(messages);
     }
-
-    return await order.save();
+    const order = await new orderSchema(parameters).save();
+    new cartSchema({
+      clientId: order.clientId,
+      orderId: order._id,
+      serviceId: order.serviceId,
+    }).save();
+    return order;
   }
 
   async getOder() {
@@ -29,24 +34,50 @@ class Order {
       .orFail(() => throwError("Order Not Found", 404));
   }
 
-  async getOrderByClient() {
-    return await orderSchema
-      .find({ clientId: this.data })
-      .orFail(() => throwError(`No Order Found For ${type} Type`, 404));
-  }
-
-  static async getAllOders() {
+  static async getAllOrders() {
     return await orderSchema
       .find()
       .orFail(() => throwError("No Order Found", 404));
   }
 
-  async deleteOrder() {
-    return await orderSchema.findByIdAndRemove(this.data);
+  // reject order
+  async rejectOrder() {
+    return await orderSchema.findByIdAndUpdate(
+      this.data,
+      { status: ORDER_STATUS.REJECTED },
+      { new: true }
+    );
   }
 
-  async updateOrder() {
-    throwError("NOT SUPPORTED");
+  // accept order
+  async acceptOrder() {
+    return await orderSchema.findByIdAndUpdate(
+      this.data,
+      { status: ORDER_STATUS.ACCEPTED },
+      { new: true }
+    );
+  }
+
+  //cancel order
+  async cancelOrder() {
+    return await orderSchema.findByIdAndUpdate(
+      this.data,
+      { status: ORDER_STATUS.CANCELLED },
+      { new: true }
+    );
+  }
+
+  // get all orders for a client
+  async getOrdersForClient() {
+    return await orderSchema
+      .find({ clientId: this.data })
+      .orFail(() => throwError("No Order Found", 404));
+  }
+
+  async getOrdersForProvider() {
+    return await orderSchema
+      .find({ providerId: this.data })
+      .orFail(() => throwError("No Order Found", 404));
   }
 }
 

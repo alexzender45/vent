@@ -4,64 +4,99 @@ const Order = require("../service/Order");
 
 exports.create = async (req, res) => {
   try {
-    const oder = await new Order(req.body).create();
-    return success(res, { category });
+    const {
+      numberOfItems,
+      notes,
+      dateRequested,
+      location,
+      specifiedTime,
+      providerId,
+      serviceId,
+    } = req.body;
+    const oder = await new Order({
+      clientId: req.user._id,
+      providerId,
+      serviceId,
+      numberOfItems,
+      notes,
+      dateRequested,
+      location,
+      specifiedTime,
+    }).create();
+    return success(res, { oder });
   } catch (err) {
-    logger.error("Error creating category", err);
+    logger.error("Error creating order", err);
     return error(res, { code: err.code, message: err });
   }
 };
 
-exports.getAllCategory = async (req, res) => {
+exports.getOrdersForClient = async (req, res) => {
   try {
-    const categories = await Category.getAllCategories();
-    return success(res, { categories });
+    const clientOrders = await new Order(req.user._id).getOrdersForClient();
+    return success(res, { clientOrders });
   } catch (err) {
-    logger.error("Error getting all categories", err);
+    logger.error("Error getting all client orders", err);
     return error(res, { code: err.code, message: err.message });
   }
 };
 
-exports.updateCategory = async (req, res) => {
+exports.rejectOrder = async (req, res) => {
   try {
-    const category = await new Category({
-      newDetails: req.body,
-    }).updateCategory();
-    return success(res, { category });
+    await new Order(req.params.id).rejectOrder();
+    return success(res, { message: "Reject Order Successfully" });
   } catch (err) {
-    logger.error("Error updating category", err);
+    logger.error("Error rejecting order", err);
     return error(res, { code: err.code, message: err.message });
   }
 };
 
-exports.deleteCategory = async (req, res) => {
+exports.cancelOrder = async (req, res) => {
   try {
-    await new Category(req.params.id).deleteCategory();
-    return success(res, { message: "Category Deleted Successfully" });
+    await new Order(req.params.id).cancelOrder();
+    return success(res, { message: "Cancel Order Successfully" });
   } catch (err) {
-    logger.error("Error deleting category", err);
+    logger.error("Error cancelling order", err);
     return error(res, { code: err.code, message: err.message });
   }
 };
 
-exports.getCategoryById = async (req, res) => {
+exports.acceptOrder = async (req, res) => {
   try {
-    const serviceProvider = await new Category(req.params.id).getCategory();
-    return success(res, { serviceProvider });
+    await new Order(req.params.id).acceptOrder();
+    return success(res, { message: "Accepted Order Successfully" });
   } catch (err) {
-    logger.error("Error getting category", err);
+    logger.error("Error accepting order", err);
     return error(res, { code: err.code, message: err.message });
   }
 };
 
-exports.getCategoryByType = async (req, res) => {
+exports.getOrderById = async (req, res) => {
   try {
-    const serviceProvider = await new Category(
-      req.params.type
-    ).getCategoryByType();
-    return success(res, { serviceProvider });
+    const order = await new Order(req.params.id).getOder();
+    return success(res, { order });
   } catch (err) {
-    logger.error("Error getting category by type", err);
+    logger.error("Error getting order", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+// get all orders
+exports.getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.getAllOrders();
+    return success(res, { orders });
+  } catch (err) {
+    logger.error("Error getting all orders", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.getOrdersForProvider = async (req, res) => {
+  try {
+    const providerOrders = await new Order(req.user._id).getOrdersForProvider();
+    return success(res, { providerOrders });
+  } catch (err) {
+    logger.error("Error getting all provider orders", err);
     return error(res, { code: err.code, message: err.message });
   }
 };

@@ -13,6 +13,11 @@ const cartSchema = new Schema(
       ref: "Order",
       required: true,
     },
+    serviceId: {
+      type: Schema.Types.ObjectId,
+      ref: "Service",
+      required: true,
+    },
   },
   {
     strictQuery: "throw",
