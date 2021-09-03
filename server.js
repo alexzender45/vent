@@ -39,6 +39,4 @@ app.use("/api", orderRouter);
 app.use("/api", cartRouter);
 app.use("/api", ratingRouter);
 
-app.listen(PORT, () =>
-  logger.info(`Ventmode Backend Service Started on port ${PORT}`)
-);
+app.listen(PORT, () => logger.info(`Ventmode Backend Service Started on port ${PORT}`));

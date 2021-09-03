@@ -309,13 +309,9 @@ class ServiceProvider {
     return socialAuthService.getFacebookSignInUrl(PROVIDERS);
   }
 
-  async getFacebookAccessToken() {
-    const accessToken = await socialAuthService.getFacebookAccessToken(
-      this.data,
-      PROVIDERS
-    );
-    const { email, first_name, last_name, gender } =
-      await socialAuthService.getFacebookUserData(accessToken);
+  async processFacebookSignIn() {
+    const accessToken = await socialAuthService.getFacebookAccessToken(this.data, PROVIDERS);
+    const { email, first_name, last_name, gender } = await socialAuthService.getFacebookUserData(accessToken);
     if (email) {
       let user = await serviceProviderSchema.findOne({ email });
       if (!user) {

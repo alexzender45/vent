@@ -18,7 +18,7 @@ const serviceSchema = new Schema(
       type: String,
       required: true,
     },
-    category: {
+    categoryId: {
       type: Schema.Types.ObjectId,
       ref: "Category",
       required: true,
@@ -31,7 +31,7 @@ const serviceSchema = new Schema(
       useProfileLocation: {
         type: Boolean,
         required: true,
-        default: false,
+        default: true,
       },
       country: {
         type: String,
@@ -48,7 +48,10 @@ const serviceSchema = new Schema(
     },
     features: [],
     deliveryPeriod: String,
-    availabilityPeriod: [],
+    availabilityPeriod: {
+        type: [],
+        required: true
+    },
     portfolioFiles: {
       type: [String],
       required: true,

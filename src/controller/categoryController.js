@@ -44,9 +44,7 @@ exports.getCategoryById = async (req, res) => {
 
 exports.getCategoryByType = async (req, res) => {
   try {
-    const serviceProvider = await new Category(
-      req.params.type
-    ).getCategoryByType();
+    const serviceProvider = await new Category(req.params.type).getCategoryByType();
     return success(res, { serviceProvider });
   } catch (err) {
     logger.error("Error getting category by type", err);

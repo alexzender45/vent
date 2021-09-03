@@ -9,7 +9,7 @@ class Services {
   }
 
   async create() {
-    const {isValid, messages} = validateParameters(["type", "name", "categoryId", "description"], this.data);
+    const {isValid, messages} = validateParameters(["type", "name", "categoryId", "description", "currency", "availabilityPeriod", "priceDescription", "location"], this.data);
     if (!isValid) {
         throwError(messages);
     }
@@ -23,8 +23,9 @@ class Services {
   }
 
   async getServiceByType() {
-    return await serviceSchema
-      .find({ type: this.data })
+      const type = this.data;
+      return await serviceSchema
+      .find({ type })
       .orFail(() => throwError(`No Service Found For ${type} Type`, 404));
   }
 
@@ -35,7 +36,13 @@ class Services {
   }
 
   async deleteService() {
-    return await serviceSchema.findByIdAndRemove(this.data);
+      const {id, userId} = this.data;
+      this.data = userId;
+    if(!this.getAllUserServices()) {
+        await serviceSchema.findByIdAndRemove(id);
+        return "Service Deleted Successfully";
+    }
+    return "Service Not Listed By Provider"
   }
 
   async updateService() {
