@@ -47,9 +47,12 @@ class ServiceProvider {
   }
 
   async signup() {
-    const {isValid, messages} = validateParameters(["fullName", "email", "otp"], parameters);
+    const { isValid, messages } = validateParameters(
+      ["fullName", "email", "otp"],
+      parameters
+    );
     if (!isValid) {
-        throwError(messages);
+      throwError(messages);
     }
 
     const cachedOTP = await getCachedData(this.data.email);
@@ -61,7 +64,7 @@ class ServiceProvider {
 
     await this.emailExist();
     if (this.errors.length) {
-        throwError(this.errors);
+      throwError(this.errors);
     }
     const serviceProvider = new serviceProviderSchema(this.data);
     const newServiceProvider = await serviceProvider.save();
@@ -99,7 +102,16 @@ class ServiceProvider {
   async updateServiceProviderDetails() {
     const { newDetails, oldDetails } = this.data;
     const updates = Object.keys(newDetails);
-    const allowedUpdates = ["email", "phoneNumber", "location", "fullName"];
+    const allowedUpdates = [
+      "dateOfBirth",
+      "bio",
+      "location",
+      "gender",
+      "fullName",
+      "email",
+      "occupation",
+      "presence",
+    ];
     return await util.performUpdate(
       updates,
       newDetails,

@@ -4,7 +4,6 @@ const validator = require("validator");
 const uniqueValidator = require("mongoose-unique-validator");
 const { throwError } = require("../utils/handleErrors");
 const { GENDER, USER_TYPE, ROLE, ACCOUNT_TYPE } = require("../utils/constants");
-const { SUPPORTED_PHONE_FORMAT } = require("../core/config");
 
 const serviceClientSchema = new Schema(
   {
@@ -13,7 +12,7 @@ const serviceClientSchema = new Schema(
       required: true,
     },
     dateOfBirth: {
-      type: Date,
+      type: String,
     },
     email: {
       type: String,
@@ -37,7 +36,7 @@ const serviceClientSchema = new Schema(
     profilePictureUrl: {
       type: String,
     },
-    location: {
+    homeAddress: {
       type: String,
     },
     token: {
@@ -69,6 +68,12 @@ const serviceClientSchema = new Schema(
     occupation: {
       type: String,
     },
+    city: {
+      type: String,
+    },
+    country: {
+      type: String,
+    },
     role: {
       type: String,
       default: ROLE.USER,
@@ -84,6 +89,10 @@ const serviceClientSchema = new Schema(
     },
     referals: {
       type: Array,
+    },
+    presence: {
+      type: String,
+      enum: ["ACTIVE", "OFFLINE"],
     },
   },
   {

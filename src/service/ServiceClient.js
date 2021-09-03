@@ -72,7 +72,6 @@ class ServiceClient {
       throwError(this.errors);
     }
     const newServiceClient = await serviceClient.save();
-    await new Wallet({ userId: newServiceClient._id }).save();
     return newServiceClient;
   }
 
@@ -106,7 +105,18 @@ class ServiceClient {
   async updateServiceClientDetails() {
     const { newDetails, oldDetails } = this.data;
     const updates = Object.keys(newDetails);
-    const allowedUpdates = ["email", "phoneNumber", "location", "fullName"];
+    const allowedUpdates = [
+      "dateOfBirth",
+      "bio",
+      "country",
+      "state",
+      "homeAddress",
+      "gender",
+      "fullName",
+      "email",
+      "presence",
+      "occupation",
+    ];
     return await util.performUpdate(
       updates,
       newDetails,
