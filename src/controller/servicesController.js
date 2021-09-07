@@ -6,7 +6,7 @@ exports.create = async (req, res) => {
   try {
     const parameters = req.body;
     const {useProfileLocation} = parameters;
-    if(useProfileLocation) {
+    if(useProfileLocation && useProfileLocation.toLowerCase() == true) {
         parameters["location"] = req.user.location;
     }else {
         const {country, state, address} = parameters;
@@ -17,8 +17,12 @@ exports.create = async (req, res) => {
             address
         };
     }
-    parameters["userId"] = req.user._id;
-    const service = await new Services(parameters).create();
+      const portfolioFiles = req.files.map(file => {
+          return {path: file.path};
+      });
+      parameters["userId"] = req.user._id;
+      parameters["portfolioFiles"] = portfolioFiles;
+      const service = await new Services(parameters).create();
     return success(res, { service });
   } catch (err) {
     logger.error("Error creating service", err);
