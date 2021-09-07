@@ -9,9 +9,21 @@ class Services {
   }
 
   async create() {
-    const {isValid, messages} = validateParameters(["type", "name", "categoryId", "description", "currency", "availabilityPeriod", "priceDescription", "location"], this.data);
+    const { isValid, messages } = validateParameters(
+      [
+        "type",
+        "name",
+        "categoryId",
+        "description",
+        "currency",
+        "availabilityPeriod",
+        "priceDescription",
+        "location",
+      ],
+      this.data
+    );
     if (!isValid) {
-        throwError(messages);
+      throwError(messages);
     }
     return new serviceSchema(this.data).save();
   }
@@ -23,8 +35,8 @@ class Services {
   }
 
   async getServiceByType() {
-      const type = this.data;
-      return await serviceSchema
+    const type = this.data;
+    return await serviceSchema
       .find({ type })
       .orFail(() => throwError(`No Service Found For ${type} Type`, 404));
   }
@@ -36,13 +48,13 @@ class Services {
   }
 
   async deleteService() {
-      const {id, userId} = this.data;
-      this.data = userId;
-    if(!this.getAllUserServices()) {
-        await serviceSchema.findByIdAndRemove(id);
-        return "Service Deleted Successfully";
+    const { id, userId } = this.data;
+    this.data = userId;
+    if (!this.getAllUserServices()) {
+      await serviceSchema.findByIdAndRemove(id);
+      return "Service Deleted Successfully";
     }
-    return "Service Not Listed By Provider"
+    return "Service Not Listed By Provider";
   }
 
   async updateService() {
