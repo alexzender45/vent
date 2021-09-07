@@ -1,6 +1,7 @@
 const serviceSchema = require("../models/servicesModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
+const cloud = require("../utils/cloudinaryConfig");
 
 class Services {
   constructor(data) {
@@ -9,10 +10,20 @@ class Services {
   }
 
   async create() {
-    const {isValid, messages} = validateParameters(["type", "name", "categoryId", "description", "currency", "availabilityPeriod", "priceDescription", "location"], this.data);
+    const {isValid, messages} = validateParameters(["type", "name", "categoryId", "description", "currency", "availabilityPeriod", "priceDescription", "location", "portfolioFiles"], this.data);
     if (!isValid) {
         throwError(messages);
     }
+    let newFilePromise = [];
+    const {portfolioFiles} = this.data;
+    for (const file of portfolioFiles) {
+      const newFile = cloud.uploads(file.path);
+      newFilePromise.push(newFile);
+    }
+    let files = await Promise.all(newFilePromise);
+
+    this.data["portfolioFiles"] = files.map(fileDetails => fileDetails.url);
+
     return new serviceSchema(this.data).save();
   }
 
