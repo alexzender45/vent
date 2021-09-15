@@ -49,7 +49,7 @@ class ServiceProvider {
   async signup() {
     const { isValid, messages } = validateParameters(
       ["fullName", "email", "otp"],
-      parameters
+      this.data
     );
     if (!isValid) {
       throwError(messages);
