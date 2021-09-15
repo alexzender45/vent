@@ -46,6 +46,13 @@ class ServiceClient {
   }
 
   async signup() {
+    const { isValid, messages } = validateParameters(
+      ["fullName", "email", "otp"],
+      this.data
+    );
+    if (!isValid) {
+      throwError(messages);
+    }
     const otp = this.data.otp;
     if (!otp) {
       throwError("OTP Required To Complete Signup");
@@ -57,22 +64,12 @@ class ServiceClient {
     } else if (cachedOTP !== otp) {
       throwError("Invalid OTP");
     }
-
-    const serviceClient = new serviceClientSchema(this.data);
-    let validationError = serviceClient.validateSync();
-    if (validationError) {
-      Object.values(validationError.errors).forEach((e) => {
-        if (e.reason) this.errors.push(e.reason.message);
-        else this.errors.push(e.message.replace("Path ", ""));
-      });
-      throwError(this.errors);
-    }
     await this.emailExist();
     if (this.errors.length) {
       throwError(this.errors);
     }
+    const serviceClient = new serviceClientSchema(this.data);
     const newServiceClient = await serviceClient.save();
-    await new Wallet({ userId: newServiceClient._id }).save();
     return newServiceClient;
   }
 
@@ -106,7 +103,18 @@ class ServiceClient {
   async updateServiceClientDetails() {
     const { newDetails, oldDetails } = this.data;
     const updates = Object.keys(newDetails);
-    const allowedUpdates = ["email", "phoneNumber", "location", "fullName"];
+    const allowedUpdates = [
+      "dateOfBirth",
+      "bio",
+      "country",
+      "state",
+      "homeAddress",
+      "gender",
+      "fullName",
+      "email",
+      "presence",
+      "occupation",
+    ];
     return await util.performUpdate(
       updates,
       newDetails,
@@ -305,8 +313,12 @@ class ServiceClient {
   }
 
   async processFacebookSignIn() {
-    const accessToken = await socialAuthService.getFacebookAccessToken(this.data, CLIENTS);
-    const { email, first_name, last_name, gender } = await socialAuthService.getFacebookUserData(accessToken);
+    const accessToken = await socialAuthService.getFacebookAccessToken(
+      this.data,
+      CLIENTS
+    );
+    const { email, first_name, last_name, gender } =
+      await socialAuthService.getFacebookUserData(accessToken);
     if (email) {
       let user = await serviceClientSchema.findOne({ email });
       if (!user) {

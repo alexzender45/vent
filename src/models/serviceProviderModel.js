@@ -30,6 +30,12 @@ const serviceProviderSchema = new Schema(
     },
     password: String,
     profilePictureUrl: String,
+    occupation: {
+      type: String,
+    },
+    bio: {
+      type: String,
+    },
     location: {
       country: String,
       state: String,
@@ -57,6 +63,19 @@ const serviceProviderSchema = new Schema(
     rating: {
       type: Number,
       default: 0,
+    },
+    followers: {
+      type: Array,
+    },
+    following: {
+      type: Array,
+    },
+    referals: {
+      type: Array,
+    },
+    presence: {
+      type: String,
+      enum: ["ACTIVE", "OFFLINE"],
     },
   },
   {

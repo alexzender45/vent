@@ -49,8 +49,8 @@ const serviceSchema = new Schema(
     features: [],
     deliveryPeriod: String,
     availabilityPeriod: {
-        type: [],
-        required: true
+      type: [],
+      required: true,
     },
     portfolioFiles: {
       type: [String],
@@ -62,6 +62,7 @@ const serviceSchema = new Schema(
       enum: Object.keys(CURRENCY),
     },
     priceDescription: [],
+    others: String,
   },
   {
     timestamps: true,

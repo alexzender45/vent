@@ -10,19 +10,32 @@ class Services {
   }
 
   async create() {
-    const {isValid, messages} = validateParameters(["type", "name", "categoryId", "description", "currency", "availabilityPeriod", "priceDescription", "location", "portfolioFiles"], this.data);
+    const { isValid, messages } = validateParameters(
+      [
+        "type",
+        "name",
+        "categoryId",
+        "description",
+        "currency",
+        "availabilityPeriod",
+        "priceDescription",
+        "location",
+        "portfolioFiles",
+      ],
+      this.data
+    );
     if (!isValid) {
-        throwError(messages);
+      throwError(messages);
     }
     let newFilePromise = [];
-    const {portfolioFiles} = this.data;
+    const { portfolioFiles } = this.data;
     for (const file of portfolioFiles) {
       const newFile = cloud.uploads(file.path);
       newFilePromise.push(newFile);
     }
     let files = await Promise.all(newFilePromise);
 
-    this.data["portfolioFiles"] = files.map(fileDetails => fileDetails.url);
+    this.data["portfolioFiles"] = files.map((fileDetails) => fileDetails.url);
 
     return new serviceSchema(this.data).save();
   }
@@ -34,8 +47,8 @@ class Services {
   }
 
   async getServiceByType() {
-      const type = this.data;
-      return await serviceSchema
+    const type = this.data;
+    return await serviceSchema
       .find({ type })
       .orFail(() => throwError(`No Service Found For ${type} Type`, 404));
   }
@@ -47,13 +60,13 @@ class Services {
   }
 
   async deleteService() {
-      const {id, userId} = this.data;
-      this.data = userId;
-    if(!this.getAllUserServices()) {
-        await serviceSchema.findByIdAndRemove(id);
-        return "Service Deleted Successfully";
+    const { id, userId } = this.data;
+    this.data = userId;
+    if (!this.getAllUserServices()) {
+      await serviceSchema.findByIdAndRemove(id);
+      return "Service Deleted Successfully";
     }
-    return "Service Not Listed By Provider"
+    return "Service Not Listed By Provider";
   }
 
   async updateService() {

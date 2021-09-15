@@ -15,7 +15,7 @@ ratingRoute
   .route("/ratings/:providerId/provider-ratings")
   .get(
     authenticate,
-    permit([USER_TYPE.SERVICE_CLIENT], [USER_TYPE.SERVICE_PROVIDER]),
+    permit(Object.keys(USER_TYPE)),
     ratingController.getAllProviderRating
   );
 
@@ -23,7 +23,7 @@ ratingRoute
   .route("/ratings/:serviceId/service-ratings")
   .get(
     authenticate,
-    permit([USER_TYPE.SERVICE_CLIENT], [USER_TYPE.SERVICE_PROVIDER]),
+    permit(Object.keys(USER_TYPE)),
     ratingController.getAllServiceRating
   );
 
