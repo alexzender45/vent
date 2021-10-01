@@ -23,3 +23,13 @@ exports.deleteItemFromCart = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+
+exports.checkOut = async (req, res) => {
+  try {
+    await new Cart(req.body).checkOut();
+    return success(res, { message: "Checkout Successful" });
+  } catch (err) {
+    logger.error("Error checking out", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};

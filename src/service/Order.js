@@ -2,7 +2,8 @@ const orderSchema = require("../models/orderModel");
 const cartSchema = require("../models/cartModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
-const { ORDER_STATUS } = require("../utils/constants");
+const { ORDER_STATUS, SERVICE_TYPE } = require("../utils/constants");
+const Notification = require("./Notification");
 
 class Order {
   constructor(data) {
@@ -13,19 +14,66 @@ class Order {
   async create() {
     let parameters = this.data;
     const { isValid, messages } = validateParameters(
-      ["providerId", "clientId", "serviceId", "numberOfItems", "notes"],
+      [
+        "providerId",
+        "clientId",
+        "serviceId",
+        "numberOfItems",
+        "notes",
+        "price",
+        "serviceType",
+        "fullName",
+      ],
       parameters
     );
     if (!isValid) {
       throwError(messages);
     }
-    const order = await new orderSchema(parameters).save();
-    new cartSchema({
-      clientId: order.clientId,
-      orderId: order._id,
-      serviceId: order.serviceId,
-    }).save();
-    return order;
+    const cart = await cartSchema.findOne({
+      clientId: parameters.clientId,
+      serviceId: parameters.serviceId,
+    });
+    if (cart) {
+      const order = await orderSchema.findOne({
+        clientId: parameters.clientId,
+        serviceId: parameters.serviceId,
+      });
+      const updateNumberOfItems =
+        order.numberOfItems + parameters.numberOfItems;
+      order.numberOfItems = updateNumberOfItems;
+      order.price = parameters.price * updateNumberOfItems;
+      cart.amount = parameters.price * updateNumberOfItems;
+      order.save();
+      cart.save();
+      return order;
+    } else {
+      if (parameters.serviceType === SERVICE_TYPE.REQUESTING_SERVICE) {
+        const order = await new orderSchema(parameters).save();
+        const notificationDetails = {
+          userId: parameters.providerId,
+          orderId: order._id,
+          message: `${parameters.fullName} requested a service`,
+          serviceId: parameters.serviceId,
+        };
+        Notification.createNotification(notificationDetails);
+        new cartSchema({
+          clientId: order.clientId,
+          orderId: order._id,
+          serviceId: order.serviceId,
+          amount: order.price,
+        }).save();
+      } else {
+        this.data["status"] = ORDER_STATUS.ACCEPTED;
+        const order = await new orderSchema(parameters).save();
+        new cartSchema({
+          clientId: order.clientId,
+          orderId: order._id,
+          serviceId: order.serviceId,
+          amount: order.price,
+        }).save();
+        return order;
+      }
+    }
   }
 
   async getOder() {

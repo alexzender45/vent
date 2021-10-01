@@ -19,4 +19,13 @@ cartRoute
     cartController.deleteItemFromCart
   );
 
+// checkout
+cartRoute
+  .route("/carts/checkout")
+  .post(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    cartController.checkOut
+  );
+
 module.exports = cartRoute;

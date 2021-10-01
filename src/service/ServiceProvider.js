@@ -1,6 +1,7 @@
 const axios = require("axios");
 const { google } = require("googleapis");
 const serviceProviderSchema = require("../models/serviceProviderModel");
+const serviceClientSchema = require("../models/serviceClientModel");
 const Wallet = require("../models/wallet");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
@@ -28,6 +29,7 @@ const oauth2Client = new google.auth.OAuth2(
 const { ACCOUNT_TYPE } = require("../utils/constants");
 const socialAuthService = require("../integration/socialAuthClient");
 const PROVIDERS = "providers";
+const Notification = require("./Notification");
 
 class ServiceProvider {
   constructor(data) {
@@ -310,8 +312,12 @@ class ServiceProvider {
   }
 
   async processFacebookSignIn() {
-    const accessToken = await socialAuthService.getFacebookAccessToken(this.data, PROVIDERS);
-    const { email, first_name, last_name, gender } = await socialAuthService.getFacebookUserData(accessToken);
+    const accessToken = await socialAuthService.getFacebookAccessToken(
+      this.data,
+      PROVIDERS
+    );
+    const { email, first_name, last_name, gender } =
+      await socialAuthService.getFacebookUserData(accessToken);
     if (email) {
       let user = await serviceProviderSchema.findOne({ email });
       if (!user) {
@@ -325,6 +331,90 @@ class ServiceProvider {
       return user;
     }
     throwError("Error signing in");
+  }
+
+  async followUser() {
+    const { userId, followedUserId } = this.data;
+    const user = await serviceClientSchema
+      .findById({
+        _id: followedUserId,
+      })
+      .orFail(() => throwError("User To Be Followed Not Found", 404));
+    const follower = await serviceProviderSchema
+      .findById({
+        _id: userId,
+      })
+      .orFail(() => throwError("Follower Not Found", 404));
+    follower.following.map((followingId) => {
+      if (followingId.toString() === user._id.toString()) {
+        throwError("Already Following User");
+      }
+    });
+    user.followers.push(follower._id);
+    await user.save();
+    follower.following.push(user._id);
+    const followerNotificationDetails = {
+      userId: follower._id,
+      message: `You Started Following ${user.fullName}`,
+      notificationId: user._id,
+    };
+    Notification.createNotification(followerNotificationDetails);
+    const followingNotificationDetails = {
+      userId: user._id,
+      message: `${user.fullName} Started Following You`,
+      notificationId: follower._id,
+    };
+    Notification.createNotification(followingNotificationDetails);
+    return await follower.save();
+  }
+
+  async unfollowUser() {
+    const { followedUserId, userId } = this.data;
+    const user = await serviceClientSchema
+      .findOne({
+        _id: followedUserId,
+      })
+      .orFail(() => throwError("User To Be Unfollowed Not Found", 404));
+    const follower = await serviceProviderSchema
+      .findOne({
+        _id: userId,
+      })
+      .orFail(() => throwError("Follower Not Found", 404));
+    if (follower.following.length === 0) {
+      throwError("You're not following anyone");
+    }
+    let followingUserIndex = null;
+    let followerIndex = null;
+    follower.following.map((followingId, index) => {
+      if (followingId.toString() === user._id.toString()) {
+        followingUserIndex = index;
+      }
+    });
+    if (followingUserIndex === null) {
+      throwError("User Is Not Being Followed");
+    }
+    follower.following.splice(followingUserIndex, 1);
+    const updatedUser = await follower.save();
+    user.followers.map((followerId, index) => {
+      if (followerId.toString() === follower._id.toString()) {
+        followerIndex = index;
+      }
+    });
+    user.followers.splice(followerIndex, 1);
+    const followerNotificationDetails = {
+      userId: follower._id,
+      message: `You unfollowed ${user.fullName}`,
+      notificationId: user._id,
+    };
+    Notification.createNotification(followerNotificationDetails);
+    const followingNotificationDetails = {
+      userId: user._id,
+      message: `${user.fullName} Unfollowed You`,
+      notificationId: follower._id,
+    };
+    Notification.createNotification(followingNotificationDetails);
+    await user.save();
+    return updatedUser;
   }
 }
 

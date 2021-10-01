@@ -18,6 +18,10 @@ const cartSchema = new Schema(
       ref: "Service",
       required: true,
     },
+    amount: {
+      type: Number,
+      required: true,
+    },
   },
   {
     strictQuery: "throw",
