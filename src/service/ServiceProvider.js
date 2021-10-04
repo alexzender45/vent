@@ -30,6 +30,34 @@ const { ACCOUNT_TYPE } = require("../utils/constants");
 const socialAuthService = require("../integration/socialAuthClient");
 const PROVIDERS = "providers";
 const Notification = require("./Notification");
+const Order = require('./Order');
+const {ORDER_STATUS} = require('../utils/constants');
+
+const getProviderServicesStatistics = async (serviceProvider) => {
+    const providerOrders = await new Order(serviceProvider._id).getOrdersForProvider();
+    let activeOrders = 0;
+    let failedOrders = 0;
+    let completedOrders = 0;
+
+    providerOrders.forEach(providerOrder => {
+        switch (providerOrder.status) {
+            case ORDER_STATUS.CANCELLED:
+                failedOrders++;
+                break;
+            case ORDER_STATUS.ACCEPTED:
+                activeOrders++;
+                break;
+            case ORDER_STATUS.COMPLETED:
+                completedOrders++;
+                break;
+        }
+    });
+
+    serviceProvider['allOrders'] = providerOrders.length;
+    serviceProvider['failedOrders'] = failedOrders;
+    serviceProvider['activeOrders'] = activeOrders;
+    serviceProvider['completedOrders'] = completedOrders;
+}
 
 class ServiceProvider {
   constructor(data) {
@@ -88,22 +116,22 @@ class ServiceProvider {
   }
 
   static async getAllServiceProvider() {
-    const serviceProviders = await serviceProviderSchema.find();
-    return serviceProviders
-      ? serviceProviders
-      : throwError("No Service Provider Found", 404);
+    return await serviceProviderSchema.find()
+        .orFail(() => throwError("No Service Provider Found", 404));
   }
 
   async serviceProviderProfile() {
-    const serviceProvider = await serviceProviderSchema.findById(this.data);
-    return serviceProvider
-      ? serviceProvider
-      : throwError("Service Provider Not Found", 404);
+    const serviceProvider = await serviceProviderSchema.findOneAndUpdate(
+        {_id: this.data},
+        {$inc: {visitorCount: 1}},
+        { new: true }
+    );
+    await getProviderServicesStatistics(serviceProvider);
+    return serviceProvider;
   }
 
   async updateServiceProviderDetails() {
     const { newDetails, oldDetails } = this.data;
-    const updates = Object.keys(newDetails);
     const allowedUpdates = [
       "dateOfBirth",
       "bio",
@@ -115,7 +143,6 @@ class ServiceProvider {
       "presence",
     ];
     return await util.performUpdate(
-      updates,
       newDetails,
       allowedUpdates,
       oldDetails

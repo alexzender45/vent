@@ -68,9 +68,6 @@ async function getServiceProviderPayload(userId) {
 // Permission for users
 function permit(roles) {
   return (req, res, next) => {
-      if(["test", "dev"].includes(process.env.NODE_ENV) && JSON.stringify(roles) === JSON.stringify(Object.keys(ADMIN_ROLES))) {
-          next();
-      }
     const isAuthorized = roles.includes(req.user.userType);
 
     if (!isAuthorized) {

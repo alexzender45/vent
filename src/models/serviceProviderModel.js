@@ -70,12 +70,16 @@ const serviceProviderSchema = new Schema(
     following: {
       type: Array,
     },
-    referals: {
+    referrals: {
       type: Array,
     },
     presence: {
       type: String,
       enum: ["ACTIVE", "OFFLINE"],
+    },
+    visitCount: {
+      type: Number,
+      default: 0,
     },
   },
   {

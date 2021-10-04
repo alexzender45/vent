@@ -87,7 +87,7 @@ const serviceClientSchema = new Schema(
     following: {
       type: Array,
     },
-    referals: {
+    referrals: {
       type: Array,
     },
     presence: {
