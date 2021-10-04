@@ -291,13 +291,7 @@ class ServiceProvider {
   }
 
   async uploadProfileImage() {
-    const { originalname, userId, path } = this.data;
-    let attempt = {
-      imageName: originalname,
-      imageUrl: path,
-    };
-    cloud.uploads(attempt.imageUrl).then(async (result) => {
-      const imageUrl = result.url;
+    const { userId, imageUrl } = this.data;
       const serviceProvider = await serviceProviderSchema.findByIdAndUpdate(
         { _id: userId },
         { $set: { profilePictureUrl: imageUrl } },
@@ -306,7 +300,6 @@ class ServiceProvider {
         }
       );
       return serviceProvider;
-    });
   }
 
   // service provider can delete their account

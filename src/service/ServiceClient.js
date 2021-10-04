@@ -276,12 +276,6 @@ class ServiceClient {
 
   async uploadProfileImage() {
     const { originalname, userId, path } = this.data;
-    let attempt = {
-      imageName: originalname,
-      imageUrl: path,
-    };
-    cloud.uploads(attempt.imageUrl).then(async (result) => {
-      const imageUrl = result.url;
       const serviceClient = await serviceClientSchema.findByIdAndUpdate(
         { _id: userId },
         { $set: { profilePictureUrl: imageUrl } },
@@ -290,7 +284,6 @@ class ServiceClient {
         }
       );
       return serviceClient;
-    });
   }
 
   // service client can delete their account

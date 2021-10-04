@@ -155,12 +155,10 @@ exports.googleAccessToken = async (req, res) => {
 
 exports.uploadProfileImage = async (req, res) => {
   try {
-    const originalname = req.files[0].originalname;
-    const path = req.files[0].path;
     const userId = req.user._id;
+    const imageUrl = req.body.imageUrl;
     await new ServiceClient({
-      originalname,
-      path,
+      imageUrl,
       userId,
     }).uploadProfileImage();
     return success(res, { message: "Profile Image Uploaded Successfully" });
