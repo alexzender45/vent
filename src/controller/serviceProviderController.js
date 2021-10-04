@@ -52,7 +52,9 @@ exports.getAllServiceProvider = async (req, res) => {
 
 exports.getServiceProviderProfile = async (req, res) => {
   try {
-    const serviceProvider = await new ServiceProvider(req.user._id).serviceProviderProfile();
+    const serviceProvider = await new ServiceProvider(
+      req.user._id
+    ).serviceProviderProfile();
     return success(res, { serviceProvider });
   } catch (err) {
     logger.error("Unable to fetch service provider profile", err);
@@ -152,12 +154,10 @@ exports.googleAccessToken = async (req, res) => {
 
 exports.uploadProfileImage = async (req, res) => {
   try {
-    const originalname = req.files[0].originalname;
-    const path = req.files[0].path;
+    const imageUrl = req.body.imageUrl;
     const userId = req.user._id;
     await new ServiceProvider({
-      originalname,
-      path,
+      imageUrl,
       userId,
     }).uploadProfileImage();
     return success(res, { message: "Profile Image Uploaded Successfully" });
