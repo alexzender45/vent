@@ -60,10 +60,6 @@ const serviceProviderSchema = new Schema(
       type: String,
       default: ROLE.USER,
     },
-    rating: {
-      type: Number,
-      default: 0,
-    },
     followers: {
       type: Array,
     },
