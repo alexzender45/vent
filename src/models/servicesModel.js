@@ -49,7 +49,7 @@ const serviceSchema = new Schema(
     features: [],
     deliveryPeriod: String,
     availabilityPeriod: {
-      type: [],
+      type: String,
       required: true,
     },
     portfolioFiles: {

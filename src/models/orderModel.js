@@ -27,6 +27,7 @@ const orderSchema = new Schema(
     },
     numberOfItems: {
       type: Number,
+      default: 1,
     },
     notes: String,
     dateRequested: {
@@ -38,6 +39,10 @@ const orderSchema = new Schema(
       required: true
     },
     specifiedTime: String,
+    price: {
+      type: Number,
+      required: true,
+    },
   },
   {
     strictQuery: "throw",

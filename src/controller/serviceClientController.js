@@ -231,7 +231,9 @@ exports.initiateFacebookSignIn = (req, res) => {
 exports.facebookAuthentication = async (req, res) => {
   try {
     const code = req.query.code;
-    const newServiceClient = await new ServiceClient(code).processFacebookSignIn();
+    const newServiceClient = await new ServiceClient(
+      code
+    ).processFacebookSignIn();
     const token = await generateAuthToken({
       userId: newServiceClient._id,
       userType: newServiceClient.userType,
@@ -244,6 +246,62 @@ exports.facebookAuthentication = async (req, res) => {
     return success(res, { token, message: newServiceClient });
   } catch (err) {
     logger.error("Unable to complete service provider update request", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.followUser = async (req, res) => {
+  try {
+    const followDetails = {
+      followedUserId: req.params.id,
+      userId: req.user._id,
+    };
+    const userDetails = await new ServiceClient(followDetails).followUser();
+    return success(res, userDetails);
+  } catch (err) {
+    logger.error(`Unable to follow user ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.unfollowUser = async (req, res) => {
+  try {
+    const unfollowDetails = {
+      followedUserId: req.params.id,
+      userId: req.user._id,
+    };
+    const userDetails = await new ServiceClient(unfollowDetails).unfollowUser();
+    return success(res, userDetails);
+  } catch (err) {
+    logger.error(`Unable to unfollow user ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+// save service
+exports.saveService = async (req, res) => {
+  try {
+    const serviceDetails = {
+      serviceId: req.params.id,
+      userId: req.user._id,
+    };
+    const service = await new ServiceClient(serviceDetails).saveService();
+    return success(res, service);
+  } catch (err) {
+    logger.error(`Unable to save service ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+// get all saved services
+exports.getSavedServices = async (req, res) => {
+  try {
+    const savedServices = await new ServiceClient(
+      req.user._id
+    ).getSavedServices();
+    return success(res, savedServices);
+  } catch (err) {
+    logger.error(`Unable to get saved services ${err}`);
     return error(res, { code: err.code, message: err.message });
   }
 };

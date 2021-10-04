@@ -56,12 +56,12 @@ serviceProviderRoute
   .get(serviceProviderController.googleAccessToken);
 
 serviceProviderRoute
-    .route("/service/providers/facebook-sign-in")
-    .get(serviceProviderController.initiateFacebookSignIn);
+  .route("/service/providers/facebook-sign-in")
+  .get(serviceProviderController.initiateFacebookSignIn);
 
 serviceProviderRoute
-    .route("/service/providers/facebook-authenticate")
-    .get(serviceProviderController.facebookAuthentication);
+  .route("/service/providers/facebook-authenticate")
+  .get(serviceProviderController.facebookAuthentication);
 
 // upload profile picture
 serviceProviderRoute
@@ -98,6 +98,24 @@ serviceProviderRoute
     authenticate,
     permit([USER_TYPE.SERVICE_PROVIDER]),
     serviceProviderController.deleteServiceProviderById
+  );
+
+// follow service provider
+serviceProviderRoute
+  .route("/service/clients/:id/follow")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_PROVIDER]),
+    serviceProviderController.followUser
+  );
+
+// unfollow service provider
+serviceProviderRoute
+  .route("/service/clients/:id/unfollow")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_PROVIDER]),
+    serviceProviderController.unfollowUser
   );
 
 module.exports = serviceProviderRoute;
