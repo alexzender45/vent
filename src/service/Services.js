@@ -4,17 +4,17 @@ const { validateParameters, performUpdate } = require("../utils/util");
 const cloud = require("../utils/cloudinaryConfig");
 
 function addServiceLocation(parameters, userLocation) {
-    const {useProfileLocation, country, state, address} = parameters;
-    if (useProfileLocation && useProfileLocation.toLowerCase() == true) {
-        parameters["location"] = userLocation;
-    } else {
-        parameters["location"] = {
-            useProfileLocation,
-            country,
-            state,
-            address
-        };
-    }
+  const { useProfileLocation, country, state, address } = parameters;
+  if (useProfileLocation && useProfileLocation.toLowerCase() == true) {
+    parameters["location"] = userLocation;
+  } else {
+    parameters["location"] = {
+      useProfileLocation,
+      country,
+      state,
+      address,
+    };
+  }
 }
 
 class Services {
@@ -37,7 +37,7 @@ class Services {
         "portfolioFiles",
         "country",
         "state",
-        "address"
+        "address",
       ],
       parameters
     );
@@ -69,42 +69,42 @@ class Services {
 
   async deleteService() {
     const service = await serviceSchema.deleteOne(this.data);
-    if(service.deletedCount){
+    if (service.deletedCount) {
       return "Service Deleted Successfully";
     }
     return "Service Not Listed By Provider";
   }
 
   async updateService() {
-    const {id, newDetails, userLocation} = this.data;
+    const { id, newDetails, userLocation } = this.data;
     this.data = id;
     const serviceDetails = await this.getService();
     const allowedUpdates = [
-        "type",
-        "name",
-        "categoryId",
-        "description",
-        "useProfileLocation",
-        "country",
-        "state",
-        "address",
-        "features",
-        "deliveryPeriod",
-        "availabilityPeriod",
-        "portfolioLink",
-        "portfolioFiles",
-        "currency",
-        "priceDescription",
-        "others"
+      "type",
+      "name",
+      "categoryId",
+      "description",
+      "useProfileLocation",
+      "country",
+      "state",
+      "address",
+      "features",
+      "deliveryPeriod",
+      "availabilityPeriod",
+      "portfolioLink",
+      "portfolioFiles",
+      "currency",
+      "priceDescription",
+      "others",
     ];
     addServiceLocation(newDetails, userLocation);
     return await performUpdate(newDetails, allowedUpdates, serviceDetails);
   }
 
-  static rateService(serviceId, rating) {
-    serviceSchema.findOneAndUpdate(
-      {_id: serviceId},
-      {rating},
+  async rateService() {
+    return await serviceSchema.findOneAndUpdate(
+      { _id: this.data.serviceId },
+      { rating: this.data.rating },
       { new: true }
     );
   }
