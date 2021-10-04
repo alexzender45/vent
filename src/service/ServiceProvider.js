@@ -34,26 +34,31 @@ const Order = require('./Order');
 const {ORDER_STATUS} = require('../utils/constants');
 
 const getProviderServicesStatistics = async (serviceProvider) => {
-    const providerOrders = await new Order(serviceProvider._id).getOrdersForProvider();
     let activeOrders = 0;
     let failedOrders = 0;
     let completedOrders = 0;
+    let allOrders = 0;
 
-    providerOrders.forEach(providerOrder => {
-        switch (providerOrder.status) {
+    await new Order(serviceProvider._id).getOrdersForProvider()
+      .then(providerOrders => {
+        providerOrders.forEach(providerOrder => {
+          allOrders++;
+          switch (providerOrder.status) {
             case ORDER_STATUS.CANCELLED:
-                failedOrders++;
-                break;
+              failedOrders++;
+              break;
             case ORDER_STATUS.ACCEPTED:
-                activeOrders++;
-                break;
+              activeOrders++;
+              break;
             case ORDER_STATUS.COMPLETED:
-                completedOrders++;
-                break;
-        }
-    });
+              completedOrders++;
+              break;
+          }
+        });
+      })
+      .catch(error => console.debug(error));
 
-    serviceProvider['allOrders'] = providerOrders.length;
+    serviceProvider['allOrders'] = allOrders;
     serviceProvider['failedOrders'] = failedOrders;
     serviceProvider['activeOrders'] = activeOrders;
     serviceProvider['completedOrders'] = completedOrders;
@@ -121,13 +126,13 @@ class ServiceProvider {
   }
 
   async serviceProviderProfile() {
-    const serviceProvider = await serviceProviderSchema.findOneAndUpdate(
+    const {_doc} = await serviceProviderSchema.findOneAndUpdate(
         {_id: this.data},
         {$inc: {visitorCount: 1}},
         { new: true }
     );
-    await getProviderServicesStatistics(serviceProvider);
-    return serviceProvider;
+    await getProviderServicesStatistics(_doc);
+    return _doc;
   }
 
   async updateServiceProviderDetails() {

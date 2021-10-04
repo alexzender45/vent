@@ -27,12 +27,14 @@ const computeFiveStarRating = async (serviceId) => {
     3 * three_star_count +
     2 * two_star_count +
     one_star_count;
+
   const responseTotal =
     five_star_count +
     four_star_count +
     three_star_count +
     two_star_count +
     one_star_count;
+
   const five_star_rating = scoreRating / responseTotal;
 
   return five_star_rating.toFixed(1);
@@ -55,8 +57,8 @@ class Rating {
     }
     const newRating = await new ratingSchema(parameters).save();
     const { serviceId } = newRating;
-    const rating = await computeFiveStarRating(serviceId);
-    await new Services({ serviceId, rating }).rateService();
+    computeFiveStarRating(serviceId)
+      .then(rating => Services.rateService(serviceId, rating));
     return newRating;
   }
 

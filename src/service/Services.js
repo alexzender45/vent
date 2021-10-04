@@ -101,10 +101,10 @@ class Services {
     return await performUpdate(newDetails, allowedUpdates, serviceDetails);
   }
 
-  async rateService() {
-    return await serviceSchema.findOneAndUpdate(
-      { _id: this.data.serviceId },
-      { rating: this.data.rating },
+  static rateService(serviceId, rating) {
+    return serviceSchema.findOneAndUpdate(
+      { _id: serviceId },
+      { rating: rating },
       { new: true }
     );
   }
