@@ -39,5 +39,11 @@ module.exports = {
     REJECTED: "REJECTED",
     PAID: "PAID",
     CANCELLED: "CANCELLED",
+    COMPLETED: "COMPLETED",
+  },
+  TRANSACTION_TYPE: {
+    CREDIT: "CREDIT",
+    DEBIT: "DEBIT",
+    WITHDRAWAL: "WITHDRAWAL",
   },
 };

@@ -56,12 +56,12 @@ serviceClientRoute
   .get(serviceClientController.googleAccessToken);
 
 serviceClientRoute
-    .route("/service/clients/facebook-sign-in")
-    .get(serviceClientController.initiateFacebookSignIn);
+  .route("/service/clients/facebook-sign-in")
+  .get(serviceClientController.initiateFacebookSignIn);
 
 serviceClientRoute
-    .route("/service/clients/facebook-authenticate")
-    .get(serviceClientController.facebookAuthentication);
+  .route("/service/clients/facebook-authenticate")
+  .get(serviceClientController.facebookAuthentication);
 
 // upload profile picture
 serviceClientRoute
@@ -73,7 +73,7 @@ serviceClientRoute
     serviceClientController.uploadProfileImage
   );
 
-  // service client can delete their account
+// service client can delete their account
 serviceClientRoute
   .route("/service/clients/delete")
   .delete(
@@ -98,6 +98,42 @@ serviceClientRoute
     authenticate,
     permit([USER_TYPE.SERVICE_CLIENT]),
     serviceClientController.deleteServiceClientById
+  );
+
+// follow service provider
+serviceClientRoute
+  .route("/service/providers/:id/follow")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    serviceClientController.followUser
+  );
+
+// unfollow service provider
+serviceClientRoute
+  .route("/service/providers/:id/unfollow")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    serviceClientController.unfollowUser
+  );
+
+// save service
+serviceClientRoute
+  .route("/service/clients/:id/save-service")
+  .post(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    serviceClientController.saveService
+  );
+
+// get all saved service
+serviceClientRoute
+  .route("/service/clients/saved/services")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    serviceClientController.getSavedServices
   );
 
 module.exports = serviceClientRoute;

@@ -1,6 +1,8 @@
 const axios = require("axios");
 const { google } = require("googleapis");
 const serviceClientSchema = require("../models/serviceClientModel");
+const serviceProviderSchema = require("../models/serviceProviderModel");
+const serviceSchema = require("../models/servicesModel");
 const Wallet = require("../models/wallet");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
@@ -27,6 +29,8 @@ const oauth2Client = new google.auth.OAuth2(
 );
 const socialAuthService = require("../integration/socialAuthClient");
 const CLIENTS = "clients";
+const Notification = require("./Notification");
+const Rating = require("./Rating");
 
 class ServiceClient {
   constructor(data) {
@@ -332,6 +336,124 @@ class ServiceClient {
       return user;
     }
     throwError("Error signing in");
+  }
+
+  async followUser() {
+    const { userId, followedUserId } = this.data;
+    const user = await serviceProviderSchema
+      .findById({
+        _id: followedUserId,
+      })
+      .orFail(() => throwError("User To Be Followed Not Found", 404));
+    const follower = await serviceClientSchema
+      .findById({
+        _id: userId,
+      })
+      .orFail(() => throwError("Follower Not Found", 404));
+    follower.following.map((followingId) => {
+      if (followingId.toString() === user._id.toString()) {
+        throwError("Already Following User");
+      }
+    });
+    user.followers.push(follower._id);
+    await user.save();
+    follower.following.push(user._id);
+
+    const followerNotificationDetails = {
+      userId: follower._id,
+      message: `You Started Following ${user.fullName}`,
+      notificationId: user._id,
+    };
+    Notification.createNotification(followerNotificationDetails);
+
+    const followingNotificationDetails = {
+      userId: user._id,
+      message: `${user.fullName} Started Following You`,
+      notificationId: follower._id,
+    };
+    Notification.createNotification(followingNotificationDetails);
+    return await follower.save();
+  }
+  async unfollowUser() {
+    const { followedUserId, userId } = this.data;
+    const user = await serviceProviderSchema
+      .findOne({
+        _id: followedUserId,
+      })
+      .orFail(() => throwError("User To Be Unfollowed Not Found", 404));
+    const follower = await serviceClientSchema
+      .findOne({
+        _id: userId,
+      })
+      .orFail(() => throwError("Follower Not Found", 404));
+    if (follower.following.length === 0) {
+      throwError("You're not following anyone");
+    }
+    let followingUserIndex = null;
+    let followerIndex = null;
+    follower.following.map((followingId, index) => {
+      if (followingId.toString() === user._id.toString()) {
+        followingUserIndex = index;
+      }
+    });
+    if (followingUserIndex === null) {
+      throwError("User Is Not Being Followed");
+    }
+    follower.following.splice(followingUserIndex, 1);
+    const updatedUser = await follower.save();
+    user.followers.map((followerId, index) => {
+      if (followerId.toString() === follower._id.toString()) {
+        followerIndex = index;
+      }
+    });
+    user.followers.splice(followerIndex, 1);
+    const followerNotificationDetails = {
+      userId: follower._id,
+      message: `You unfollowed ${user.fullName}`,
+      notificationId: user._id,
+    };
+    Notification.createNotification(followerNotificationDetails);
+    const followingNotificationDetails = {
+      userId: user._id,
+      message: `${user.fullName} Unfollowed You`,
+      notificationId: follower._id,
+    };
+    Notification.createNotification(followingNotificationDetails);
+    await user.save();
+    return updatedUser;
+  }
+  // saved service
+  async saveService() {
+    const { userId, serviceId } = this.data;
+    const user = await serviceClientSchema
+      .findById({
+        _id: userId,
+      })
+      .orFail(() => throwError("User Not Found", 404));
+    const service = await serviceSchema
+      .findById({
+        _id: serviceId,
+      })
+      .orFail(() => throwError("Service Not Found", 404));
+    if (user.savedServices.includes(service._id)) {
+      throwError("Service Already Saved");
+    }
+    user.savedServices.push(service._id);
+    await user.save();
+    return user;
+  }
+  async getSavedServices() {
+    const user = await serviceClientSchema
+      .findById({
+        _id: this.data,
+      })
+      .orFail(() => throwError("User Not Found", 404));
+    const savedServices = await serviceSchema.find({
+      _id: {
+        $in: user.savedServices,
+      },
+    });
+    return savedServices;
   }
 }
 
