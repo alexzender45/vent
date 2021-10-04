@@ -4,25 +4,10 @@ const Services = require("../service/Services");
 
 exports.create = async (req, res) => {
   try {
+    const {_id, location} = req.user;
     const parameters = req.body;
-    const {useProfileLocation} = parameters;
-    if(useProfileLocation && useProfileLocation.toLowerCase() == true) {
-        parameters["location"] = req.user.location;
-    }else {
-        const {country, state, address} = parameters;
-        parameters["location"] = {
-            useProfileLocation,
-            country,
-            state,
-            address
-        };
-    }
-      const portfolioFiles = req.files.map(file => {
-          return {path: file.path};
-      });
-      parameters["userId"] = req.user._id;
-      parameters["portfolioFiles"] = portfolioFiles;
-      const service = await new Services(parameters).create();
+    parameters["userId"] = _id;
+    const service = await new Services({parameters, location}).create();
     return success(res, { service });
   } catch (err) {
     logger.error("Error creating service", err);
@@ -42,7 +27,7 @@ exports.getAllProviderService = async (req, res) => {
 
 exports.updateService = async (req, res) => {
   try {
-    const service = await new Services({newDetails: req.body}).updateService();
+    const service = await new Services({id: req.params.id, newDetails: req.body, userLocation: req.user.location}).updateService();
     return success(res, { service });
   } catch (err) {
     logger.error("Error updating service", err);
@@ -52,7 +37,7 @@ exports.updateService = async (req, res) => {
 
 exports.deleteService = async (req, res) => {
   try {
-    const  message = await new Services({id:req.params.id, userId: req.user._id}).deleteService();
+    const message = await new Services({_id: req.params.id, userId: req.user._id}).deleteService();
     return success(res, { message });
   } catch (err) {
     logger.error("Error deleting service", err);

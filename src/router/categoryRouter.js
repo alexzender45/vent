@@ -10,11 +10,17 @@ categoryRoute
     permit(Object.keys(ADMIN_ROLES)),
     categoryController.create
   )
-  .get(categoryController.getAllCategory);
+  .get(
+      authenticate,
+      categoryController.getAllCategory
+  );
 
 categoryRoute
   .route("/categories/:id")
-  .get(categoryController.getCategoryById)
+  .get(
+      authenticate,
+      categoryController.getCategoryById
+  )
   .delete(
     authenticate,
     permit(Object.keys(ADMIN_ROLES)),
@@ -23,6 +29,9 @@ categoryRoute
 
 categoryRoute
   .route("/categories/type/:type")
-  .get(categoryController.getCategoryByType);
+  .get(
+      authenticate,
+      categoryController.getCategoryByType
+  );
 
 module.exports = categoryRoute;

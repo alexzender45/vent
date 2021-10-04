@@ -8,7 +8,7 @@ servicesRoute
     .route("/services")
     .post(
         authenticate,
-        permit(USER_TYPE.SERVICE_PROVIDER),
+        permit([USER_TYPE.SERVICE_PROVIDER]),
         upload.imageUpload.any(),
         servicesController.create
     );
@@ -38,8 +38,13 @@ servicesRoute
     )
     .delete(
         authenticate,
-        permit(USER_TYPE.SERVICE_PROVIDER),
+        permit([USER_TYPE.SERVICE_PROVIDER]),
         servicesController.deleteService
+    )
+    .put(
+        authenticate,
+        permit([USER_TYPE.SERVICE_PROVIDER]),
+        servicesController.updateService
     );
 
 module.exports = servicesRoute;

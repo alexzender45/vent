@@ -27,6 +27,8 @@ const oauth2Client = new google.auth.OAuth2(
 );
 const socialAuthService = require("../integration/socialAuthClient");
 const CLIENTS = "clients";
+const Order = require('./Order');
+const {ORDER_STATUS} = require('../utils/constants');
 
 class ServiceClient {
   constructor(data) {
@@ -70,6 +72,7 @@ class ServiceClient {
     }
     const serviceClient = new serviceClientSchema(this.data);
     const newServiceClient = await serviceClient.save();
+    await new Wallet({ userId: newServiceClient._id }).save();
     return newServiceClient;
   }
 
@@ -94,15 +97,19 @@ class ServiceClient {
   }
 
   async serviceClientProfile() {
-    const serviceClient = await serviceClientSchema.findById(this.data);
+    const serviceClient = await serviceClientSchema.findById(this.data).orFail(() => throwError("Service Client Not Found", 404));
+    const clientOrders = await new Order(this.data).getOrdersForClient();
+    let totalAmountSpent = clientOrders.map(clientOrder => {
+      if(clientOrder.status === ORDER_STATUS.PAID){
+        totalAmountSpent += clientOrder.price;
+      }
+    });
+    serviceClient['totalAmountSpent'] = totalAmountSpent;
     return serviceClient
-      ? serviceClient
-      : throwError("Service Client Not Found", 404);
   }
 
   async updateServiceClientDetails() {
     const { newDetails, oldDetails } = this.data;
-    const updates = Object.keys(newDetails);
     const allowedUpdates = [
       "dateOfBirth",
       "bio",
@@ -116,7 +123,6 @@ class ServiceClient {
       "occupation",
     ];
     return await util.performUpdate(
-      updates,
       newDetails,
       allowedUpdates,
       oldDetails

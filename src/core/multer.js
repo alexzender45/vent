@@ -3,13 +3,7 @@ const multer = require("multer"),
 //multer.diskStorage() creates a storage space for storing files.
 const imageStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    if (
-      file.mimetype === "image/jpeg" ||
-      file.mimetype === "image/png" ||
-      file.mimetype === "image/jpg" ||
-      file.mimetype === "image/gif" ||
-      file.mimetype === "video/mp4"
-    ) {
+    if (["image/jpeg", "image/png", "image/jpg", "image/gif", "video/mp4"].includes(file.mimetype)) {
       cb(null, path.join(__dirname, ".././files"));
     } else {
       cb({ message: "This file is not an image file" }, false);

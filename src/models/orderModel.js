@@ -35,8 +35,7 @@ const orderSchema = new Schema(
     },
     location: {
       type: String,
-      required: true,
-      default: false,
+      required: true
     },
     specifiedTime: String,
   },

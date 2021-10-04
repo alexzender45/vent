@@ -1,7 +1,21 @@
 const serviceSchema = require("../models/servicesModel");
 const { throwError } = require("../utils/handleErrors");
-const { validateParameters } = require("../utils/util");
+const { validateParameters, performUpdate } = require("../utils/util");
 const cloud = require("../utils/cloudinaryConfig");
+
+function addServiceLocation(parameters, userLocation) {
+    const {useProfileLocation, country, state, address} = parameters;
+    if (useProfileLocation && useProfileLocation.toLowerCase() == true) {
+        parameters["location"] = userLocation;
+    } else {
+        parameters["location"] = {
+            useProfileLocation,
+            country,
+            state,
+            address
+        };
+    }
+}
 
 class Services {
   constructor(data) {
@@ -10,6 +24,7 @@ class Services {
   }
 
   async create() {
+    const { parameters, location } = this.data;
     const { isValid, messages } = validateParameters(
       [
         "type",
@@ -19,25 +34,18 @@ class Services {
         "currency",
         "availabilityPeriod",
         "priceDescription",
-        "location",
         "portfolioFiles",
+        "country",
+        "state",
+        "address"
       ],
-      this.data
+      parameters
     );
     if (!isValid) {
       throwError(messages);
     }
-    let newFilePromise = [];
-    const { portfolioFiles } = this.data;
-    for (const file of portfolioFiles) {
-      const newFile = cloud.uploads(file.path);
-      newFilePromise.push(newFile);
-    }
-    let files = await Promise.all(newFilePromise);
-
-    this.data["portfolioFiles"] = files.map((fileDetails) => fileDetails.url);
-
-    return new serviceSchema(this.data).save();
+    addServiceLocation(parameters, location);
+    return await new serviceSchema(parameters).save();
   }
 
   async getService() {
@@ -60,17 +68,45 @@ class Services {
   }
 
   async deleteService() {
-    const { id, userId } = this.data;
-    this.data = userId;
-    if (!this.getAllUserServices()) {
-      await serviceSchema.findByIdAndRemove(id);
+    const service = await serviceSchema.deleteOne(this.data);
+    if(service.deletedCount){
       return "Service Deleted Successfully";
     }
     return "Service Not Listed By Provider";
   }
 
   async updateService() {
-    throwError("NOT SUPPORTED");
+    const {id, newDetails, userLocation} = this.data;
+    this.data = id;
+    const serviceDetails = await this.getService();
+    const allowedUpdates = [
+        "type",
+        "name",
+        "categoryId",
+        "description",
+        "useProfileLocation",
+        "country",
+        "state",
+        "address",
+        "features",
+        "deliveryPeriod",
+        "availabilityPeriod",
+        "portfolioLink",
+        "portfolioFiles",
+        "currency",
+        "priceDescription",
+        "others"
+    ];
+    addServiceLocation(newDetails, userLocation);
+    return await performUpdate(newDetails, allowedUpdates, serviceDetails);
+  }
+
+  static rateService(serviceId, rating) {
+    serviceSchema.findOneAndUpdate(
+      {_id: serviceId},
+      {rating},
+      { new: true }
+    );
   }
 }
 

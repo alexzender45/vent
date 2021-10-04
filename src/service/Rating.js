@@ -1,6 +1,32 @@
 const ratingSchema = require("../models/ratingReviewModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
+const Services = require("./Services");
+
+const computeFiveStarRating = async (serviceId) => {
+    const serviceRatings = await ratingSchema.find({serviceId});
+    const ratings = new Map();
+
+    serviceRatings.forEach(serviceRating => {
+        const rating = serviceRating.rating;
+        const existingRating = ratings.get(rating);
+        existingRating
+            ? ratings.set(rating, existingRating+1)
+            : ratings.set(rating, 1);
+    });
+
+    let five_star_count = ratings.get(5);
+    let four_star_count = ratings.get(4);
+    let three_star_count = ratings.get(3);
+    let two_star_count = ratings.get(2);
+    let one_star_count = ratings.get(1);
+
+    const scoreRating = (5*five_star_count) + (4*four_star_count) + (3*three_star_count) + (2*two_star_count) + one_star_count;
+    const responseTotal = five_star_count + four_star_count + three_star_count + two_star_count + one_star_count;
+    const five_star_rating = scoreRating/responseTotal;
+
+    return five_star_rating.toFixed(1);
+}
 
 class Rating {
   constructor(data) {
@@ -17,7 +43,11 @@ class Rating {
     if (!isValid) {
       throwError(messages);
     }
-    return await new ratingSchema(parameters).save();
+    const newRating = await new ratingSchema(parameters).save();
+    const {serviceId} = newRating;
+    const rating = computeFiveStarRating(serviceId);
+    Services.rateService({serviceId, rating });
+    return newRating;
   }
 
   async getAllProviderRating() {

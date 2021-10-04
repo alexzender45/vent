@@ -24,8 +24,9 @@ exports.sendEmail = (to, subject, html) => {
   return { from: EMAIL_SENDER, to, subject, html}
 }
 
-exports.performUpdate = async (updates, newDetails, allowedUpdates, oldDetails) => {
+exports.performUpdate = async (newDetails, allowedUpdates, oldDetails) => {
     let invalidField;
+    const updates = Object.keys(newDetails);
     const isValidUpdate = updates.every(update => {
         if (newDetails[update] === '') throwError(`Invalid value supplied for ${update}`)
         invalidField = update;
