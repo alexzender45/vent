@@ -69,7 +69,6 @@ serviceClientRoute
   .post(
     authenticate,
     permit([USER_TYPE.SERVICE_CLIENT]),
-    upload.imageUpload.any(),
     serviceClientController.uploadProfileImage
   );
 

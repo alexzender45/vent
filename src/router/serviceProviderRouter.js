@@ -69,7 +69,6 @@ serviceProviderRoute
   .post(
     authenticate,
     permit([USER_TYPE.SERVICE_PROVIDER]),
-    upload.imageUpload.any(),
     serviceProviderController.uploadProfileImage
   );
 
