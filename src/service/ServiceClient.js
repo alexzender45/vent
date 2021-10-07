@@ -101,15 +101,16 @@ class ServiceClient {
   }
 
   async serviceClientProfile() {
-    const serviceClient = await serviceClientSchema.findById(this.data).orFail(() => throwError("Service Client Not Found", 404));
+    const {_doc} = await serviceClientSchema.findById(this.data).orFail(() => throwError("Service Client Not Found", 404));
     const clientOrders = await new Order(this.data).getOrdersForClient();
-    let totalAmountSpent = clientOrders.map(clientOrder => {
+    let totalAmountSpent = 0;
+    clientOrders.map(clientOrder => {
       if(clientOrder.status === ORDER_STATUS.PAID){
         totalAmountSpent += clientOrder.price;
       }
     });
-    serviceClient['totalAmountSpent'] = totalAmountSpent;
-    return serviceClient
+    _doc['totalAmountSpent'] = totalAmountSpent;
+    return _doc
   }
 
   async updateServiceClientDetails() {
