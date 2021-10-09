@@ -2,12 +2,23 @@ const { error, success } = require("../utils/baseController");
 const { logger } = require("../utils/logger");
 const Services = require("../service/Services");
 
+function addUserLocationToService(parameters, userLocation) {
+    const { useProfileLocation } = parameters;
+    const { country, state, address } = userLocation;
+    if (useProfileLocation) {
+        parameters["country"] = country;
+        parameters["state"] = state;
+        parameters["address"] = address;
+    }
+}
+
 exports.create = async (req, res) => {
   try {
     const {_id, location} = req.user;
     const parameters = req.body;
     parameters["userId"] = _id;
-    const service = await new Services({parameters, location}).create();
+    addUserLocationToService(parameters, location);
+    const service = await new Services(parameters).create();
     return success(res, { service });
   } catch (err) {
     logger.error("Error creating service", err);
@@ -27,7 +38,8 @@ exports.getAllProviderService = async (req, res) => {
 
 exports.updateService = async (req, res) => {
   try {
-    const service = await new Services({id: req.params.id, newDetails: req.body, userLocation: req.user.location}).updateService();
+    addUserLocationToService(req.body, req.user.location);
+    const service = await new Services({id: req.params.id, newDetails: req.body}).updateService();
     return success(res, { service });
   } catch (err) {
     logger.error("Error updating service", err);

@@ -12,7 +12,7 @@ exports.validateParameters = (expectedParameters, actualParameters) => {
   expectedParameters.forEach((parameter) => {
     const actualParameter = actualParameters[parameter];
 
-    if (!actualParameter || actualParameter === '') {
+    if (actualParameter === null || actualParameter === undefined || actualParameter === '') {
       messages.push(`${parameter} is required`);
       isValid = false;
     }

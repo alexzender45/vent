@@ -1,20 +1,15 @@
 const serviceSchema = require("../models/servicesModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters, performUpdate } = require("../utils/util");
-const cloud = require("../utils/cloudinaryConfig");
 
-function addServiceLocation(parameters, userLocation) {
+function addServiceLocation(parameters) {
   const { useProfileLocation, country, state, address } = parameters;
-  if (useProfileLocation && useProfileLocation.toLowerCase() == true) {
-    parameters["location"] = userLocation;
-  } else {
-    parameters["location"] = {
-      useProfileLocation,
-      country,
-      state,
-      address,
-    };
-  }
+  parameters["location"] = {
+    useProfileLocation,
+    country,
+    state,
+    address,
+  };
 }
 
 class Services {
@@ -24,7 +19,7 @@ class Services {
   }
 
   async create() {
-    const { parameters, location } = this.data;
+    const parameters = this.data;
     const { isValid, messages } = validateParameters(
       [
         "type",
@@ -35,6 +30,7 @@ class Services {
         "availabilityPeriod",
         "priceDescription",
         "portfolioFiles",
+        "useProfileLocation",
         "country",
         "state",
         "address",
@@ -44,7 +40,7 @@ class Services {
     if (!isValid) {
       throwError(messages);
     }
-    addServiceLocation(parameters, location);
+    addServiceLocation(parameters);
     return await new serviceSchema(parameters).save();
   }
 
@@ -61,7 +57,7 @@ class Services {
       .orFail(() => throwError(`No Service Found For ${type} Type`, 404));
   }
 
-  async getAllUserServices() {
+  async getAllUserServices() { //Accept query param of service type
     return await serviceSchema
       .find({ userId: this.data })
       .orFail(() => throwError("No Service Offered By User", 404));
@@ -76,7 +72,7 @@ class Services {
   }
 
   async updateService() {
-    const { id, newDetails, userLocation } = this.data;
+    const { id, newDetails } = this.data;
     this.data = id;
     const serviceDetails = await this.getService();
     const allowedUpdates = [
@@ -96,8 +92,9 @@ class Services {
       "currency",
       "priceDescription",
       "others",
+      "location"
     ];
-    addServiceLocation(newDetails, userLocation);
+    addServiceLocation(newDetails);
     return await performUpdate(newDetails, allowedUpdates, serviceDetails);
   }
 
