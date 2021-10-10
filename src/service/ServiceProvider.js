@@ -128,7 +128,7 @@ class ServiceProvider {
   async serviceProviderProfile() {
     const {_doc} = await serviceProviderSchema.findOneAndUpdate(
         {_id: this.data},
-        {$inc: {visitorCount: 1}},
+        {$inc: {visitCount: 1}},
         { new: true }
     );
     await getProviderServicesStatistics(_doc);

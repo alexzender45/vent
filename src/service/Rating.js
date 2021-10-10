@@ -49,7 +49,7 @@ class Rating {
   async createRating() {
     let parameters = this.data;
     const { isValid, messages } = validateParameters(
-      ["providerId", "reviewerId", "serviceId", "rating", "review"],
+      ["providerId", "reviewerId", "serviceId", "rating"],
       parameters
     );
     if (!isValid) {
