@@ -31,7 +31,7 @@ const socialAuthService = require("../integration/socialAuthClient");
 const PROVIDERS = "providers";
 const Notification = require("./Notification");
 const Order = require('./Order');
-const {ORDER_STATUS} = require('../utils/constants');
+const {ORDER_STATUS, NOTIFICATION_TYPE} = require('../utils/constants');
 
 const getProviderServicesStatistics = async (serviceProvider) => {
     let activeOrders = 0;
@@ -382,12 +382,14 @@ class ServiceProvider {
       userId: follower._id,
       message: `You Started Following ${user.fullName}`,
       notificationId: user._id,
+      notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followerNotificationDetails);
     const followingNotificationDetails = {
       userId: user._id,
       message: `${user.fullName} Started Following You`,
       notificationId: follower._id,
+      notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
     return await follower.save();
@@ -430,12 +432,14 @@ class ServiceProvider {
       userId: follower._id,
       message: `You unfollowed ${user.fullName}`,
       notificationId: user._id,
+      notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followerNotificationDetails);
     const followingNotificationDetails = {
       userId: user._id,
       message: `${user.fullName} Unfollowed You`,
       notificationId: follower._id,
+      notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
     await user.save();

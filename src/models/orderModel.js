@@ -36,12 +36,16 @@ const orderSchema = new Schema(
     },
     location: {
       type: String,
-      required: true
+      required: true,
     },
     specifiedTime: String,
     price: {
       type: Number,
       required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now(),
     },
   },
   {

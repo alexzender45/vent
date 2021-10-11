@@ -24,16 +24,16 @@ orderRoute
   );
 
 orderRoute
-  .route("/orders/:id/cancel")
-  .get(
+  .route("/orders/cancel")
+  .put(
     authenticate,
     permit([USER_TYPE.SERVICE_CLIENT]),
     orderController.cancelOrder
   );
 
 orderRoute
-  .route("/orders/:id/accept")
-  .get(
+  .route("/orders/accept")
+  .put(
     authenticate,
     permit([USER_TYPE.SERVICE_PROVIDER]),
     orderController.acceptOrder

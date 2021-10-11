@@ -21,7 +21,7 @@ const {
   GOOGLE_CONFIG_REDIRECT_URI,
 } = require("../core/config");
 const cloud = require("../utils/cloudinaryConfig");
-const { ACCOUNT_TYPE } = require("../utils/constants");
+const { ACCOUNT_TYPE, NOTIFICATION_TYPE } = require("../utils/constants");
 const oauth2Client = new google.auth.OAuth2(
   GOOGLE_CONFIG_CLIENT_ID,
   GOOGLE_CONFIG_CLIENT_SECRET,
@@ -29,8 +29,8 @@ const oauth2Client = new google.auth.OAuth2(
 );
 const socialAuthService = require("../integration/socialAuthClient");
 const CLIENTS = "clients";
-const Order = require('./Order');
-const {ORDER_STATUS} = require('../utils/constants');
+const Order = require("./Order");
+const { ORDER_STATUS } = require("../utils/constants");
 const Notification = require("./Notification");
 const Rating = require("./Rating");
 
@@ -101,16 +101,18 @@ class ServiceClient {
   }
 
   async serviceClientProfile() {
-    const {_doc} = await serviceClientSchema.findById(this.data).orFail(() => throwError("Service Client Not Found", 404));
+    const { _doc } = await serviceClientSchema
+      .findById(this.data)
+      .orFail(() => throwError("Service Client Not Found", 404));
     const clientOrders = await new Order(this.data).getOrdersForClient();
     let totalAmountSpent = 0;
-    clientOrders.map(clientOrder => {
-      if(clientOrder.status === ORDER_STATUS.PAID){
+    clientOrders.map((clientOrder) => {
+      if (clientOrder.status === ORDER_STATUS.PAID) {
         totalAmountSpent += clientOrder.price;
       }
     });
-    _doc['totalAmountSpent'] = totalAmountSpent;
-    return _doc
+    _doc["totalAmountSpent"] = totalAmountSpent;
+    return _doc;
   }
 
   async updateServiceClientDetails() {
@@ -127,11 +129,7 @@ class ServiceClient {
       "presence",
       "occupation",
     ];
-    return await util.performUpdate(
-      newDetails,
-      allowedUpdates,
-      oldDetails
-    );
+    return await util.performUpdate(newDetails, allowedUpdates, oldDetails);
   }
 
   async forgotPassword() {
@@ -276,15 +274,15 @@ class ServiceClient {
   }
 
   async uploadProfileImage() {
-    const { originalname, userId, path } = this.data;
-      const serviceClient = await serviceClientSchema.findByIdAndUpdate(
-        { _id: userId },
-        { $set: { profilePictureUrl: imageUrl } },
-        {
-          new: true,
-        }
-      );
-      return serviceClient;
+    const { userId, imageUrl } = this.data;
+    const serviceClient = await serviceClientSchema.findByIdAndUpdate(
+      { _id: userId },
+      { $set: { profilePictureUrl: imageUrl } },
+      {
+        new: true,
+      }
+    );
+    return serviceClient;
   }
 
   // service client can delete their account
@@ -363,6 +361,7 @@ class ServiceClient {
       userId: follower._id,
       message: `You Started Following ${user.fullName}`,
       notificationId: user._id,
+      notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followerNotificationDetails);
 
@@ -370,6 +369,7 @@ class ServiceClient {
       userId: user._id,
       message: `${user.fullName} Started Following You`,
       notificationId: follower._id,
+      notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
     return await follower.save();
@@ -411,12 +411,14 @@ class ServiceClient {
       userId: follower._id,
       message: `You unfollowed ${user.fullName}`,
       notificationId: user._id,
+      notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followerNotificationDetails);
     const followingNotificationDetails = {
       userId: user._id,
       message: `${user.fullName} Unfollowed You`,
       notificationId: follower._id,
+      notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
     await user.save();
