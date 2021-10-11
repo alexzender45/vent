@@ -35,7 +35,7 @@ exports.rejectOrder = async (req, res) => {
 
 exports.cancelOrder = async (req, res) => {
   try {
-    await new Order(req.params.id).cancelOrder();
+    await new Order(req.body).cancelOrder();
     return success(res, { message: "Cancel Order Successfully" });
   } catch (err) {
     logger.error("Error cancelling order", err);
@@ -45,7 +45,7 @@ exports.cancelOrder = async (req, res) => {
 
 exports.acceptOrder = async (req, res) => {
   try {
-    await new Order(req.params.id).acceptOrder();
+    await new Order(req.body).acceptOrder();
     return success(res, { message: "Accepted Order Successfully" });
   } catch (err) {
     logger.error("Error accepting order", err);
