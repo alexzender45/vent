@@ -64,8 +64,8 @@ const serviceSchema = new Schema(
     priceDescription: [],
     others: String,
     rating: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: "0",
     },
   },
   {

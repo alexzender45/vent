@@ -12,6 +12,14 @@ servicesRoute
   );
 
 servicesRoute
+  .route("/services/all")
+  .get(
+    authenticate,
+    permit(Object.keys(USER_TYPE)),
+    servicesController.getAllService
+  );
+
+servicesRoute
   .route("/services/provider/:userId")
   .get(
     authenticate,

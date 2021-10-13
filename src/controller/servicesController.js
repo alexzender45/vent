@@ -28,7 +28,7 @@ exports.create = async (req, res) => {
 
 exports.getAllProviderService = async (req, res) => {
   try {
-    const services = await new Services(req.params.userId).getAllUserServices();
+    const services = await new Services({userId: req.params.userId, type: req.query.type}).getAllUserServices();
     return success(res, { services });
   } catch (err) {
     logger.error("Error getting all provider's services", err);
@@ -73,6 +73,16 @@ exports.getServiceByType = async (req, res) => {
     return success(res, { services });
   } catch (err) {
     logger.error("Error getting services by type", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.getAllService = async (req, res) => {
+  try {
+    const services = await new Services(req.query).getAllService();
+    return success(res, services);
+  } catch (err) {
+    logger.error("Error getting all services", err);
     return error(res, { code: err.code, message: err.message });
   }
 };

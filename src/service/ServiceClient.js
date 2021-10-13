@@ -32,7 +32,43 @@ const CLIENTS = "clients";
 const Order = require('./Order');
 const {ORDER_STATUS} = require('../utils/constants');
 const Notification = require("./Notification");
-const Rating = require("./Rating");
+
+const getClientOrdersStatistics = async (serviceClient) => {
+    let activeOrders = 0;
+    let failedOrders = 0;
+    let completedOrders = 0;
+    let allOrders = 0;
+    let totalAmountSpent = 0;
+
+    await new Order(serviceClient._id).getOrdersForClient()
+      .then(clientOrders => {
+          clientOrders.forEach(clientOrder => {
+          allOrders++;
+          switch (clientOrder.status) {
+            case ORDER_STATUS.CANCELLED:
+              failedOrders++;
+              break;
+            case ORDER_STATUS.ACCEPTED:
+              activeOrders++;
+              break;
+            case ORDER_STATUS.COMPLETED:
+              completedOrders++;
+              totalAmountSpent += clientOrder.price;
+              break;
+            case ORDER_STATUS.PAID:
+              totalAmountSpent += clientOrder.price;
+              break;
+          }
+        });
+      })
+      .catch(error => console.debug(error));
+
+    serviceClient['allOrders'] = allOrders;
+    serviceClient['failedOrders'] = failedOrders;
+    serviceClient['activeOrders'] = activeOrders;
+    serviceClient['completedOrders'] = completedOrders;
+    serviceClient['totalAmountSpent'] = totalAmountSpent;
+}
 
 class ServiceClient {
   constructor(data) {
@@ -102,14 +138,7 @@ class ServiceClient {
 
   async serviceClientProfile() {
     const {_doc} = await serviceClientSchema.findById(this.data).orFail(() => throwError("Service Client Not Found", 404));
-    const clientOrders = await new Order(this.data).getOrdersForClient();
-    let totalAmountSpent = 0;
-    clientOrders.map(clientOrder => {
-      if(clientOrder.status === ORDER_STATUS.PAID){
-        totalAmountSpent += clientOrder.price;
-      }
-    });
-    _doc['totalAmountSpent'] = totalAmountSpent;
+    await getClientOrdersStatistics(_doc);
     return _doc
   }
 
