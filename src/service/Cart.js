@@ -7,6 +7,7 @@ const {
   SERVICE_TYPE,
   TRANSACTION_TYPE,
   NOTIFICATION_TYPE,
+  PAYMENT_STATUS,
 } = require("../utils/constants");
 const Transaction = require("../service/Transaction");
 const Notification = require("./Notification");
@@ -35,7 +36,6 @@ class Cart {
       .orFail(() => throwError(`No Order Found`, 404));
   }
 
-  // check out
   async checkOut() {
     const clientId = this.data.clientId;
     const referenceCode = Math.floor(100000 + Math.random() * 100000);
@@ -49,37 +49,41 @@ class Cart {
     const totalPrice = acceptedOrders.reduce((acc, order) => {
       return acc + order.orderId.price;
     }, 0);
-    const debitTransactionDetails = {
-      userId: clientId,
-      amount: totalPrice,
-      reason: "Pay for accepted services",
-      type: TRANSACTION_TYPE.DEBIT,
-      reference: "ORD" + referenceCode,
-      paymentDate: Date.now(),
-    };
-    Transaction.createTransaction(debitTransactionDetails);
-    const pendingOrders = acceptedOrders.filter(
-      (order) =>
-        order.serviceId.type === SERVICE_TYPE.BOOKING_SERVICE ||
-        SERVICE_TYPE.ONLINE_SERVICE
-    );
-    pendingOrders.map((order) => {
-      const notificationDetails = {
-        userId: order.providerId,
-        notificationId: order._id,
-        message: `${this.data.fullName} requested a service`,
-        serviceId: order.serviceId,
-        notificationType: NOTIFICATION_TYPE.SERVICE_REQUEST,
+    if (this.data.paymentStatus === PAYMENT_STATUS.SUCCESS) {
+      const debitTransactionDetails = {
+        userId: clientId,
+        amount: totalPrice,
+        reason: "Pay for accepted services",
+        type: TRANSACTION_TYPE.DEBIT,
+        reference: "ORD" + referenceCode,
+        paymentDate: Date.now(),
       };
-      Notification.createNotification(notificationDetails);
-    });
-    acceptedOrders.forEach((order) => {
-      order.orderId.status = ORDER_STATUS.PAID;
-      order.orderId.save();
-    });
-    acceptedOrders.forEach((order) => {
-      order.remove();
-    });
+      Transaction.createTransaction(debitTransactionDetails);
+      const pendingOrders = acceptedOrders.filter(
+        (order) =>
+          order.serviceId.type === SERVICE_TYPE.BOOKING_SERVICE ||
+          SERVICE_TYPE.ONLINE_SERVICE
+      );
+      pendingOrders.map((order) => {
+        const notificationDetails = {
+          userId: order.providerId,
+          notificationId: order._id,
+          message: `${this.data.fullName} requested a service`,
+          serviceId: order.serviceId,
+          notificationType: NOTIFICATION_TYPE.SERVICE_REQUEST,
+        };
+        Notification.createNotification(notificationDetails);
+      });
+      acceptedOrders.forEach((order) => {
+        order.orderId.status = ORDER_STATUS.PAID;
+        order.orderId.save();
+      });
+      acceptedOrders.forEach((order) => {
+        order.remove();
+      });
+    } else {
+      throwError("Payment Failed", 400);
+    }
   }
 }
 
