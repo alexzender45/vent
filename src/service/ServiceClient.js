@@ -405,6 +405,7 @@ class ServiceClient {
     Notification.createNotification(followingNotificationDetails);
     return await follower.save();
   }
+
   async unfollowUser() {
     const { followedUserId, userId } = this.data;
     const user = await serviceProviderSchema
@@ -455,6 +456,7 @@ class ServiceClient {
     await user.save();
     return updatedUser;
   }
+
   // saved service
   async saveService() {
     const { userId, serviceId } = this.data;
@@ -475,6 +477,7 @@ class ServiceClient {
     await user.save();
     return user;
   }
+
   async getSavedServices() {
     const user = await serviceClientSchema
       .findById({
