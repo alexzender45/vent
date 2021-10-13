@@ -2,9 +2,9 @@ const ratingSchema = require("../models/ratingReviewModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
 const Services = require("./Services");
+const ServiceProvider = require("./ServiceProvider");
 
-const computeFiveStarRating = async (serviceId) => {
-  const serviceRatings = await ratingSchema.find({ serviceId });
+const computeFiveStarRating = (serviceRatings) => {
   const ratings = new Map();
 
   serviceRatings.forEach((serviceRating) => {
@@ -56,9 +56,24 @@ class Rating {
       throwError(messages);
     }
     const newRating = await new ratingSchema(parameters).save();
-    const { serviceId } = newRating;
-    computeFiveStarRating(serviceId)
-      .then(rating => Services.rateService(serviceId, rating));
+    const { serviceId, providerId } = newRating;
+    // Get Service and Provider Ratings
+    // const serviceRatings = ratingSchema.find({ serviceId }).exec();
+    // const providerRatings = await ratingSchema.find({ providerId });
+    const allRatings = await Promise.all(
+      [
+        ratingSchema.find({ serviceId }).exec(),
+        ratingSchema.find({ providerId }).exec()
+      ]
+    );
+    const serviceRatings = allRatings[0];
+    const providerRatings = allRatings[1];
+      // Rate Service
+    const rating = computeFiveStarRating(serviceRatings);
+    Services.rateService(serviceId, rating);
+    // Rate Provider
+    const communityRating = computeFiveStarRating(providerRatings);
+    ServiceProvider.updateCommunityRating(providerId, communityRating);
     return newRating;
   }
 

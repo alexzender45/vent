@@ -11,6 +11,22 @@ const walletSchema = new Schema({
         type: Number,
         default: 0
     },
+    currentBalance: {
+        type: Number,
+        default: 0
+    },
+    pendingWithdrawal: {
+        type: Number,
+        default: 0
+    },
+    amountWithdrawn: {
+        type: Number,
+        default: 0
+    },
+    earnedCommission: {
+        type: Number,
+        default: 0
+    },
 });
 
 walletSchema.plugin(uniqueValidator, { message: '{TYPE} must be unique.' });

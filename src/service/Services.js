@@ -57,9 +57,11 @@ class Services {
       .orFail(() => throwError(`No Service Found For ${type} Type`, 404));
   }
 
-  async getAllUserServices() { //Accept query param of service type
+  async getAllUserServices() {
+    const {userId, type} = this.data;
+    const query = type ? {userId, type} : {userId};
     return await serviceSchema
-      .find({ userId: this.data })
+      .find(query)
       .orFail(() => throwError("No Service Offered By User", 404));
   }
 
@@ -98,12 +100,63 @@ class Services {
     return await performUpdate(newDetails, allowedUpdates, serviceDetails);
   }
 
-  static rateService(serviceId, rating) {
-    return serviceSchema.findOneAndUpdate(
-      { _id: serviceId },
-      { rating: rating },
-      { new: true }
-    );
+  static async rateService(serviceId, rating) {
+      return await serviceSchema.findOneAndUpdate(
+          {_id: serviceId},
+          {rating: rating},
+          {new: true}
+      );
+  }
+
+  async getAllService() {
+    const {type, bestRated, recentlyAdded} = this.data;
+    const page = Number(this.data.page);
+    const limit = Number(this.data.limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const data = {};
+    const query = {};
+    const sort = {};
+
+    if(type){
+        query.type = type;
+    }
+    const all_existing_services_count = await serviceSchema.countDocuments(query).exec();
+    if (endIndex < all_existing_services_count) {
+      data.next = {
+          page: page + 1,
+          limit: limit,
+      };
+    }
+    if (startIndex > 0) {
+        data.previous = {
+            page: page - 1,
+            limit: limit,
+        };
+    }
+
+    const parseBoolean = (val) => {
+      let booleanValue = false;
+      if(val && val === 'true') booleanValue = true;
+      return booleanValue
+    }
+
+    const isBestRated = parseBoolean(bestRated);
+    const isRecentlyAdded = parseBoolean(recentlyAdded);
+
+    if(isBestRated) {
+      sort.rating = 'asc';
+      if(isRecentlyAdded) {
+        sort.createdAt = -1
+      }
+    } else if(isRecentlyAdded) {
+      sort.createdAt = 'asc';
+      if(isBestRated) {
+        sort.rating = -1
+      }
+    }
+    data.services = await serviceSchema.find(query).sort(sort).limit(limit).skip(startIndex);
+    return data;
   }
 }
 

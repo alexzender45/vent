@@ -77,6 +77,10 @@ const serviceProviderSchema = new Schema(
       type: Number,
       default: 0,
     },
+    communityRating: {
+      type: String,
+      default: "0",
+    },
   },
   {
     timestamps: true,

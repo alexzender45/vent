@@ -2,7 +2,7 @@ const axios = require("axios");
 const { google } = require("googleapis");
 const serviceProviderSchema = require("../models/serviceProviderModel");
 const serviceClientSchema = require("../models/serviceClientModel");
-const Wallet = require("../models/wallet");
+const Wallet = require("./Wallet");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
 const util = require("../utils/util");
@@ -31,37 +31,56 @@ const socialAuthService = require("../integration/socialAuthClient");
 const PROVIDERS = "providers";
 const Notification = require("./Notification");
 const Order = require('./Order');
-const {ORDER_STATUS, NOTIFICATION_TYPE} = require('../utils/constants');
+const {ORDER_STATUS, NOTIFICATION_TYPE, SERVICE_TYPE} = require('../utils/constants');
+const Services = require("./Services");
 
 const getProviderServicesStatistics = async (serviceProvider) => {
-    let activeOrders = 0;
-    let failedOrders = 0;
-    let completedOrders = 0;
-    let allOrders = 0;
+    let activeServices = 0;
+    let completedServices = 0;
+    let totalAmountReceived = 0;
 
     await new Order(serviceProvider._id).getOrdersForProvider()
       .then(providerOrders => {
         providerOrders.forEach(providerOrder => {
-          allOrders++;
           switch (providerOrder.status) {
-            case ORDER_STATUS.CANCELLED:
-              failedOrders++;
-              break;
             case ORDER_STATUS.ACCEPTED:
-              activeOrders++;
+              activeServices++;
               break;
             case ORDER_STATUS.COMPLETED:
-              completedOrders++;
+              completedServices++;
+              totalAmountReceived += providerOrder.price;
+              break;
+            case ORDER_STATUS.PAID:
+              totalAmountReceived += providerOrder.price;
               break;
           }
         });
       })
       .catch(error => console.debug(error));
 
-    serviceProvider['allOrders'] = allOrders;
-    serviceProvider['failedOrders'] = failedOrders;
-    serviceProvider['activeOrders'] = activeOrders;
-    serviceProvider['completedOrders'] = completedOrders;
+    serviceProvider['activeServices'] = activeServices;
+    serviceProvider['completedServices'] = completedServices;
+    serviceProvider['totalAmountReceived'] = totalAmountReceived;
+
+    const providerServices = await new Services({userId: serviceProvider._id}).getAllUserServices();
+    const serviceTypes = new Map();
+
+    providerServices.forEach(providerService => {
+      const serviceType = providerService.type;
+      const existingServiceType = serviceTypes.get(serviceType);
+      existingServiceType
+        ? serviceTypes.set(serviceType, existingServiceType + 1)
+        : serviceTypes.set(serviceType, 1);
+    });
+
+    const onlineServices = serviceTypes.get(SERVICE_TYPE.ONLINE_SERVICE) || 0;
+    const bookedServices = serviceTypes.get(SERVICE_TYPE.BOOKING_SERVICE) || 0;
+    const requestedServices = serviceTypes.get(SERVICE_TYPE.REQUESTING_SERVICE) || 0;
+
+    serviceProvider['allServices'] = providerServices.length;
+    serviceProvider['onlineServices'] = onlineServices;
+    serviceProvider['bookedServices'] = bookedServices;
+    serviceProvider['requestedServices'] = requestedServices;
 }
 
 class ServiceProvider {
@@ -103,7 +122,7 @@ class ServiceProvider {
     }
     const serviceProvider = new serviceProviderSchema(this.data);
     const newServiceProvider = await serviceProvider.save();
-    await new Wallet({ userId: newServiceProvider._id }).save();
+    await new Wallet().createWallet({ userId: newServiceProvider._id }).save();
     return newServiceProvider;
   }
 
@@ -131,7 +150,13 @@ class ServiceProvider {
         {$inc: {visitCount: 1}},
         { new: true }
     );
-    await getProviderServicesStatistics(_doc);
+    const stats = getProviderServicesStatistics(_doc);
+    const userWallet = new Wallet(_doc._id).getUserWallet();
+    await Promise.all([stats, userWallet])
+      .then(results => {
+        const {currentBalance} = results[1];
+        _doc["walletBalance"] = currentBalance;
+      });
     return _doc;
   }
 
@@ -444,6 +469,14 @@ class ServiceProvider {
     Notification.createNotification(followingNotificationDetails);
     await user.save();
     return updatedUser;
+  }
+
+  static async updateCommunityRating(userId, rating) {
+      return await serviceProviderSchema.findOneAndUpdate(
+          {_id: userId},
+          {communityRating: rating},
+          {new: true}
+      );
   }
 }
 
