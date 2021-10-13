@@ -1,15 +1,12 @@
 const { Schema, model } = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
+const { NOTIFICATION_TYPE } = require("../utils/constants");
 
 const notificationSchema = new Schema(
   {
     userId: {
       type: Schema.Types.ObjectId,
       ref: "ServiceProvider" || "ServiceClient",
-    },
-    orderId: {
-      type: Schema.Types.ObjectId,
-      ref: "Order",
     },
     serviceId: {
       type: Schema.Types.ObjectId,
@@ -26,7 +23,15 @@ const notificationSchema = new Schema(
     },
     notificationId: {
       type: Schema.Types.ObjectId,
-      ref: "ServiceProvider" || "ServiceClient",
+      ref: "ServiceProvider" || "ServiceClient" || "Order",
+    },
+    notificationType: {
+      type: String,
+      enum: Object.keys(NOTIFICATION_TYPE),
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {

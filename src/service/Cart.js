@@ -6,6 +6,7 @@ const {
   ORDER_STATUS,
   SERVICE_TYPE,
   TRANSACTION_TYPE,
+  NOTIFICATION_TYPE,
 } = require("../utils/constants");
 const Transaction = require("../service/Transaction");
 const Notification = require("./Notification");
@@ -65,9 +66,10 @@ class Cart {
     pendingOrders.map((order) => {
       const notificationDetails = {
         userId: order.providerId,
-        orderId: order._id,
+        notificationId: order._id,
         message: `${this.data.fullName} requested a service`,
         serviceId: order.serviceId,
+        notificationType: NOTIFICATION_TYPE.SERVICE_REQUEST,
       };
       Notification.createNotification(notificationDetails);
     });

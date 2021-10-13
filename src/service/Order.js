@@ -2,7 +2,11 @@ const orderSchema = require("../models/orderModel");
 const cartSchema = require("../models/cartModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
-const { ORDER_STATUS, SERVICE_TYPE } = require("../utils/constants");
+const {
+  ORDER_STATUS,
+  SERVICE_TYPE,
+  NOTIFICATION_TYPE,
+} = require("../utils/constants");
 const Notification = require("./Notification");
 
 class Order {
@@ -51,9 +55,10 @@ class Order {
         const order = await new orderSchema(parameters).save();
         const notificationDetails = {
           userId: parameters.providerId,
-          orderId: order._id,
+          notificationId: order._id,
           message: `${parameters.fullName} requested a service`,
           serviceId: parameters.serviceId,
+          notificationType: NOTIFICATION_TYPE.SERVICE_REQUEST,
         };
         Notification.createNotification(notificationDetails);
         new cartSchema({
@@ -99,20 +104,37 @@ class Order {
 
   // accept order
   async acceptOrder() {
-    return await orderSchema.findByIdAndUpdate(
-      this.data,
+    const order = await orderSchema.findByIdAndUpdate(
+      this.data.id,
       { status: ORDER_STATUS.ACCEPTED },
       { new: true }
     );
+    // get provider name from providerId
+    const notificationDetails = {
+      userId: order.clientId,
+      notificationId: order._id,
+      message: `${this.data.providerFullName} accepted your request`,
+      serviceId: order.serviceId,
+      notificationType: NOTIFICATION_TYPE.ACCEPT_SERVICE_REQUEST,
+    };
+    Notification.createNotification(notificationDetails);
   }
 
   //cancel order
   async cancelOrder() {
-    return await orderSchema.findByIdAndUpdate(
-      this.data,
+    const order = await orderSchema.findByIdAndUpdate(
+      this.data.id,
       { status: ORDER_STATUS.CANCELLED },
       { new: true }
     );
+    const notificationDetails = {
+      userId: order.clientId,
+      notificationId: order._id,
+      message: `${this.data.clientFullName} rejected your request`,
+      serviceId: order.serviceId,
+      notificationType: NOTIFICATION_TYPE.SERVICE_REQUEST_REJECTED,
+    };
+    Notification.createNotification(notificationDetails);
   }
 
   // get all orders for a client
