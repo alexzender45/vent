@@ -108,11 +108,11 @@ class Services {
   }
 
   static async rateService(serviceId, rating) {
-      return await serviceSchema.findOneAndUpdate(
-          {_id: serviceId},
-          {rating: rating},
-          {new: true}
-      );
+    return await serviceSchema.findOneAndUpdate(
+      { _id: serviceId },
+      { rating: rating },
+      { new: true }
+    );
   }
 
   async getAllService() {
@@ -125,11 +125,11 @@ class Services {
     const query = {};
     const sort = {};
 
-    if(type){
+    if(type) {
       query.type = type;
     }
 
-    if(categoryId){
+    if(categoryId) {
       query.categoryId = categoryId;
     }
 
@@ -167,7 +167,11 @@ class Services {
         sort.rating = -1
       }
     }
-    data.services = await serviceSchema.find(query).sort(sort).limit(limit).skip(startIndex);
+    data.services = await serviceSchema
+      .find(query)
+      .sort(sort)
+      .limit(limit)
+      .skip(startIndex);
     return data;
   }
 }

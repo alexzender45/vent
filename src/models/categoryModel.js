@@ -13,6 +13,9 @@ const categorySchema = new Schema(
       enum: Object.keys(CATEGORY_TYPE),
       required: true,
     },
+    image: {
+      type: String,
+    }
   },
   {
     timestamps: true,

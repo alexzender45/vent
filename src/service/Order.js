@@ -51,7 +51,7 @@ class Order {
       cart.save();
       return order;
     } else {
-      if (parameters.serviceType === SERVICE_TYPE.REQUESTING_SERVICE) {
+      if (parameters.serviceType === SERVICE_TYPE.REQUESTING) {
         const order = await new orderSchema(parameters).save();
         const notificationDetails = {
           userId: parameters.providerId,
