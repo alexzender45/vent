@@ -73,9 +73,9 @@ const getProviderServicesStatistics = async (serviceProvider) => {
         : serviceTypes.set(serviceType, 1);
     });
 
-    const onlineServices = serviceTypes.get(SERVICE_TYPE.ONLINE_SERVICE) || 0;
-    const bookedServices = serviceTypes.get(SERVICE_TYPE.BOOKING_SERVICE) || 0;
-    const requestedServices = serviceTypes.get(SERVICE_TYPE.REQUESTING_SERVICE) || 0;
+    const onlineServices = serviceTypes.get(SERVICE_TYPE.ONLINE) || 0;
+    const bookedServices = serviceTypes.get(SERVICE_TYPE.BOOKING) || 0;
+    const requestedServices = serviceTypes.get(SERVICE_TYPE.REQUESTING) || 0;
 
     serviceProvider['allServices'] = providerServices.length;
     serviceProvider['onlineServices'] = onlineServices;
