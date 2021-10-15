@@ -57,16 +57,9 @@ class Services {
       .orFail(() => throwError(`No Service Found For ${type} Type`, 404));
   }
 
-  async getServiceByCategory() {
-    const categoryId = this.data;
-    return await serviceSchema
-      .find({ categoryId })
-      .orFail(() => throwError(`No Service Found For category`, 404));
-  }
-
   async getAllUserServices() {
-    const {userId, type} = this.data;
-    const query = type ? {userId, type} : {userId};
+    const { userId, type } = this.data;
+    const query = type ? { userId, type } : { userId };
     return await serviceSchema
       .find(query)
       .orFail(() => throwError("No Service Offered By User", 404));
@@ -101,22 +94,22 @@ class Services {
       "currency",
       "priceDescription",
       "others",
-      "location"
+      "location",
     ];
     addServiceLocation(newDetails);
     return await performUpdate(newDetails, allowedUpdates, serviceDetails);
   }
 
   static async rateService(serviceId, rating) {
-      return await serviceSchema.findOneAndUpdate(
-          {_id: serviceId},
-          {rating: rating},
-          {new: true}
-      );
+    return await serviceSchema.findOneAndUpdate(
+      { _id: serviceId },
+      { rating: rating },
+      { new: true }
+    );
   }
 
   async getAllService() {
-    const {categoryId, type, bestRated, recentlyAdded} = this.data;
+    const { categoryId, type, bestRated, recentlyAdded } = this.data;
     const page = Number(this.data.page);
     const limit = Number(this.data.limit);
     const startIndex = (page - 1) * limit;
@@ -125,44 +118,50 @@ class Services {
     const query = {};
     const sort = {};
 
-    if(type){
-        query.type = type;
+    if (type) {
+      query.type = type;
     }
-    const all_existing_services_count = await serviceSchema.countDocuments(query).exec();
+    const all_existing_services_count = await serviceSchema
+      .countDocuments(query)
+      .exec();
     if (endIndex < all_existing_services_count) {
       data.next = {
-          page: page + 1,
-          limit: limit,
+        page: page + 1,
+        limit: limit,
       };
     }
     if (startIndex > 0) {
-        data.previous = {
-            page: page - 1,
-            limit: limit,
-        };
+      data.previous = {
+        page: page - 1,
+        limit: limit,
+      };
     }
 
     const parseBoolean = (val) => {
       let booleanValue = false;
-      if(val && val === 'true') booleanValue = true;
-      return booleanValue
-    }
+      if (val && val === "true") booleanValue = true;
+      return booleanValue;
+    };
 
     const isBestRated = parseBoolean(bestRated);
     const isRecentlyAdded = parseBoolean(recentlyAdded);
 
-    if(isBestRated) {
-      sort.rating = 'asc';
-      if(isRecentlyAdded) {
-        sort.createdAt = -1
+    if (isBestRated) {
+      sort.rating = "asc";
+      if (isRecentlyAdded) {
+        sort.createdAt = -1;
       }
-    } else if(isRecentlyAdded) {
-      sort.createdAt = 'asc';
-      if(isBestRated) {
-        sort.rating = -1
+    } else if (isRecentlyAdded) {
+      sort.createdAt = "asc";
+      if (isBestRated) {
+        sort.rating = -1;
       }
     }
-    data.services = await serviceSchema.find(query).sort(sort).limit(limit).skip(startIndex);
+    data.services = await serviceSchema
+      .find(query)
+      .sort(sort)
+      .limit(limit)
+      .skip(startIndex);
     return data;
   }
 }

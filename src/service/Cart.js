@@ -61,8 +61,8 @@ class Cart {
       Transaction.createTransaction(debitTransactionDetails);
       const pendingOrders = acceptedOrders.filter(
         (order) =>
-          order.serviceId.type === SERVICE_TYPE.BOOKING_SERVICE ||
-          SERVICE_TYPE.ONLINE_SERVICE
+          order.serviceId.type === SERVICE_TYPE.BOOKING ||
+          SERVICE_TYPE.ONLINE
       );
       pendingOrders.map((order) => {
         const notificationDetails = {

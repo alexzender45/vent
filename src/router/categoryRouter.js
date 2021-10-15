@@ -6,21 +6,15 @@ const { ADMIN_ROLES } = require("../utils/constants");
 categoryRoute
   .route("/categories")
   .post(
-    authenticate,
-    permit(Object.keys(ADMIN_ROLES)),
+    //authenticate,
+    //permit(Object.keys(ADMIN_ROLES)),
     categoryController.create
   )
-  .get(
-      authenticate,
-      categoryController.getAllCategory
-  );
+  .get(authenticate, categoryController.getAllCategory);
 
 categoryRoute
   .route("/categories/:id")
-  .get(
-      authenticate,
-      categoryController.getCategoryById
-  )
+  .get(authenticate, categoryController.getCategoryById)
   .delete(
     authenticate,
     permit(Object.keys(ADMIN_ROLES)),
@@ -29,9 +23,6 @@ categoryRoute
 
 categoryRoute
   .route("/categories/type/:type")
-  .get(
-      authenticate,
-      categoryController.getCategoryByType
-  );
+  .get(authenticate, categoryController.getCategoryByType);
 
 module.exports = categoryRoute;
