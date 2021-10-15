@@ -36,6 +36,14 @@ servicesRoute
   );
 
 servicesRoute
+  .route("/services/category/:categoryId")
+  .get(
+    authenticate,
+    permit(Object.keys(USER_TYPE)),
+    servicesController.getServiceByCategory
+  );
+
+servicesRoute
   .route("/services/:id")
   .get(
     authenticate,
