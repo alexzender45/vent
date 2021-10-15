@@ -6,8 +6,8 @@ const { ADMIN_ROLES } = require("../utils/constants");
 categoryRoute
   .route("/categories")
   .post(
-    //authenticate,
-    //permit(Object.keys(ADMIN_ROLES)),
+    authenticate,
+    permit(Object.keys(ADMIN_ROLES)),
     categoryController.create
   )
   .get(authenticate, categoryController.getAllCategory);
