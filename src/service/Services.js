@@ -126,20 +126,25 @@ class Services {
     const sort = {};
 
     if(type){
-        query.type = type;
+      query.type = type;
     }
+
+    if(categoryId){
+      query.categoryId = categoryId;
+    }
+
     const all_existing_services_count = await serviceSchema.countDocuments(query).exec();
     if (endIndex < all_existing_services_count) {
       data.next = {
-          page: page + 1,
-          limit: limit,
+        page: page + 1,
+        limit: limit,
       };
     }
     if (startIndex > 0) {
-        data.previous = {
-            page: page - 1,
-            limit: limit,
-        };
+      data.previous = {
+        page: page - 1,
+        limit: limit,
+      };
     }
 
     const parseBoolean = (val) => {
