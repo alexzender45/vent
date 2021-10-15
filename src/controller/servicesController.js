@@ -77,6 +77,16 @@ exports.getServiceByType = async (req, res) => {
   }
 };
 
+exports.getServiceByCategory = async (req, res) => {
+  try {
+    const services = await new Services(req.params.categoryId).getServiceByCategory();
+    return success(res, { services });
+  } catch (err) {
+    logger.error("Error getting services by category", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
 exports.getAllService = async (req, res) => {
   try {
     const services = await new Services(req.query).getAllService();

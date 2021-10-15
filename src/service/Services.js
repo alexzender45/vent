@@ -57,6 +57,13 @@ class Services {
       .orFail(() => throwError(`No Service Found For ${type} Type`, 404));
   }
 
+  async getServiceByCategory() {
+    const categoryId = this.data;
+    return await serviceSchema
+      .find({ categoryId })
+      .orFail(() => throwError(`No Service Found For category`, 404));
+  }
+
   async getAllUserServices() {
     const {userId, type} = this.data;
     const query = type ? {userId, type} : {userId};
@@ -109,7 +116,7 @@ class Services {
   }
 
   async getAllService() {
-    const {type, bestRated, recentlyAdded} = this.data;
+    const {categoryId, type, bestRated, recentlyAdded} = this.data;
     const page = Number(this.data.page);
     const limit = Number(this.data.limit);
     const startIndex = (page - 1) * limit;
