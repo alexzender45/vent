@@ -47,6 +47,7 @@ class Services {
   async getService() {
     return await serviceSchema
       .findById(this.data)
+      .populate("userId", "fullName")
       .orFail(() => throwError("Service Not Found", 404));
   }
 
@@ -54,6 +55,7 @@ class Services {
     const type = this.data;
     return await serviceSchema
       .find({ type })
+      .populate("userId", "fullName")
       .orFail(() => throwError(`No Service Found For ${type} Type`, 404));
   }
 
@@ -61,14 +63,16 @@ class Services {
     const categoryId = this.data;
     return await serviceSchema
       .find({ categoryId })
+      .populate("userId", "fullName")
       .orFail(() => throwError(`No Service Found For category`, 404));
   }
 
   async getAllUserServices() {
-    const {userId, type} = this.data;
-    const query = type ? {userId, type} : {userId};
+    const { userId, type } = this.data;
+    const query = type ? { userId, type } : { userId };
     return await serviceSchema
       .find(query)
+      .populate("userId", "fullName")
       .orFail(() => throwError("No Service Offered By User", 404));
   }
 
@@ -101,7 +105,7 @@ class Services {
       "currency",
       "priceDescription",
       "others",
-      "location"
+      "location",
     ];
     addServiceLocation(newDetails);
     return await performUpdate(newDetails, allowedUpdates, serviceDetails);
@@ -116,7 +120,7 @@ class Services {
   }
 
   async getAllService() {
-    const {categoryId, type, bestRated, recentlyAdded} = this.data;
+    const { categoryId, type, bestRated, recentlyAdded } = this.data;
     const page = Number(this.data.page);
     const limit = Number(this.data.limit);
     const startIndex = (page - 1) * limit;
@@ -125,15 +129,17 @@ class Services {
     const query = {};
     const sort = {};
 
-    if(type) {
+    if (type) {
       query.type = type;
     }
 
-    if(categoryId) {
+    if (categoryId) {
       query.categoryId = categoryId;
     }
 
-    const all_existing_services_count = await serviceSchema.countDocuments(query).exec();
+    const all_existing_services_count = await serviceSchema
+      .countDocuments(query)
+      .exec();
     if (endIndex < all_existing_services_count) {
       data.next = {
         page: page + 1,
@@ -149,22 +155,22 @@ class Services {
 
     const parseBoolean = (val) => {
       let booleanValue = false;
-      if(val && val === 'true') booleanValue = true;
-      return booleanValue
-    }
+      if (val && val === "true") booleanValue = true;
+      return booleanValue;
+    };
 
     const isBestRated = parseBoolean(bestRated);
     const isRecentlyAdded = parseBoolean(recentlyAdded);
 
-    if(isBestRated) {
-      sort.rating = 'asc';
-      if(isRecentlyAdded) {
-        sort.createdAt = -1
+    if (isBestRated) {
+      sort.rating = "asc";
+      if (isRecentlyAdded) {
+        sort.createdAt = -1;
       }
-    } else if(isRecentlyAdded) {
-      sort.createdAt = 'asc';
-      if(isBestRated) {
-        sort.rating = -1
+    } else if (isRecentlyAdded) {
+      sort.createdAt = "asc";
+      if (isBestRated) {
+        sort.rating = -1;
       }
     }
     data.services = await serviceSchema
