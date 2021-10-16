@@ -84,11 +84,7 @@ serviceClientRoute
 // get service client by id
 serviceClientRoute
   .route("/service/clients/:id")
-  .get(
-    authenticate,
-    permit([USER_TYPE.SERVICE_CLIENT]),
-    serviceClientController.getServiceClientById
-  );
+  .get(authenticate, serviceClientController.getServiceClientById);
 
 // delete service client by id
 serviceClientRoute
@@ -102,20 +98,12 @@ serviceClientRoute
 // follow service provider
 serviceClientRoute
   .route("/service/providers/:id/follow")
-  .get(
-    authenticate,
-    permit([USER_TYPE.SERVICE_CLIENT]),
-    serviceClientController.followUser
-  );
+  .get(authenticate, serviceClientController.followUser);
 
 // unfollow service provider
 serviceClientRoute
   .route("/service/providers/:id/unfollow")
-  .get(
-    authenticate,
-    permit([USER_TYPE.SERVICE_CLIENT]),
-    serviceClientController.unfollowUser
-  );
+  .get(authenticate, serviceClientController.unfollowUser);
 
 // save service
 serviceClientRoute

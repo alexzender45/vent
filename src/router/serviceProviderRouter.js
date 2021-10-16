@@ -86,7 +86,6 @@ serviceProviderRoute
   .route("/service/providers/:id")
   .get(
     authenticate,
-    permit([USER_TYPE.SERVICE_PROVIDER]),
     serviceProviderController.getServiceProviderById
   );
 
@@ -104,7 +103,6 @@ serviceProviderRoute
   .route("/service/clients/:id/follow")
   .get(
     authenticate,
-    permit([USER_TYPE.SERVICE_PROVIDER]),
     serviceProviderController.followUser
   );
 
@@ -113,7 +111,6 @@ serviceProviderRoute
   .route("/service/clients/:id/unfollow")
   .get(
     authenticate,
-    permit([USER_TYPE.SERVICE_PROVIDER]),
     serviceProviderController.unfollowUser
   );
 
