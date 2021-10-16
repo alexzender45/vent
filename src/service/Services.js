@@ -159,6 +159,7 @@ class Services {
     }
     data.services = await serviceSchema
       .find(query)
+      .populate("userId", "fullName")
       .sort(sort)
       .limit(limit)
       .skip(startIndex);
