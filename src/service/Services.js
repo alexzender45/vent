@@ -51,9 +51,14 @@ class Services {
   }
 
   async getServiceByType() {
-    const type = this.data;
+    const {type, categoryId} = this.data;
+    const query = {};
+    if(categoryId) {
+      query.categoryId = categoryId;
+    }
+    query.type = type;
     return await serviceSchema
-      .find({ type })
+      .find(query)
       .orFail(() => throwError(`No Service Found For ${type} Type`, 404));
   }
 

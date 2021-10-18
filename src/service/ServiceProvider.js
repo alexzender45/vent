@@ -122,7 +122,7 @@ class ServiceProvider {
     }
     const serviceProvider = new serviceProviderSchema(this.data);
     const newServiceProvider = await serviceProvider.save();
-    await new Wallet().createWallet({ userId: newServiceProvider._id }).save();
+    await new Wallet({ userId: newServiceProvider._id }).createWallet();
     return newServiceProvider;
   }
 

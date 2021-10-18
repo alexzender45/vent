@@ -8,7 +8,7 @@ class Wallet {
   }
 
   async createWallet() {
-    return await new WalletSchema(this.data).save();v
+    return await new WalletSchema(this.data).save();
   }
 
   async getUserWallet() {
