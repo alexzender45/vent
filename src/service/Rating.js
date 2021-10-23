@@ -60,15 +60,13 @@ class Rating {
     // Get Service and Provider Ratings
     // const serviceRatings = ratingSchema.find({ serviceId }).exec();
     // const providerRatings = await ratingSchema.find({ providerId });
-    const allRatings = await Promise.all(
-      [
-        ratingSchema.find({ serviceId }).exec(),
-        ratingSchema.find({ providerId }).exec()
-      ]
-    );
+    const allRatings = await Promise.all([
+      ratingSchema.find({ serviceId }).exec(),
+      ratingSchema.find({ providerId }).exec(),
+    ]);
     const serviceRatings = allRatings[0];
     const providerRatings = allRatings[1];
-      // Rate Service
+    // Rate Service
     const rating = computeFiveStarRating(serviceRatings);
     Services.rateService(serviceId, rating);
     // Rate Provider
@@ -80,13 +78,14 @@ class Rating {
   async getAllProviderRating() {
     return await ratingSchema
       .find({ providerId: this.data })
-      .populate("reviewerId", "fullName profilePictureUrl userType")
+      .populate("reviewerId providerId", "fullName profilePictureUrl userType")
       .orFail(() => throwError(`No Rating Found`, 404));
   }
 
   async getAllServiceRating() {
     return await ratingSchema
       .find({ serviceId: this.data })
+      .populate("reviewerId providerId", "fullName profilePictureUrl userType")
       .orFail(() => throwError(`No Rating Found`, 404));
   }
 }
