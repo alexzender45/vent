@@ -84,10 +84,7 @@ serviceProviderRoute
 // get service provider by id
 serviceProviderRoute
   .route("/service/providers/:id")
-  .get(
-    authenticate,
-    serviceProviderController.getServiceProviderById
-  );
+  .get(authenticate, serviceProviderController.getServiceProviderById);
 
 // delete service provider by id
 serviceProviderRoute
@@ -101,17 +98,11 @@ serviceProviderRoute
 // follow service provider
 serviceProviderRoute
   .route("/service/clients/:id/follow")
-  .get(
-    authenticate,
-    serviceProviderController.followUser
-  );
+  .get(authenticate, serviceProviderController.followUser);
 
 // unfollow service provider
 serviceProviderRoute
   .route("/service/clients/:id/unfollow")
-  .get(
-    authenticate,
-    serviceProviderController.unfollowUser
-  );
+  .get(authenticate, serviceProviderController.unfollowUser);
 
 module.exports = serviceProviderRoute;
