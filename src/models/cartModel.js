@@ -18,9 +18,18 @@ const cartSchema = new Schema(
       ref: "Service",
       required: true,
     },
+    providerId: {
+      type: Schema.Types.ObjectId,
+      ref: "ServiceProvider",
+      required: true,
+    },
     amount: {
       type: Number,
       required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {

@@ -1,7 +1,7 @@
 const orderRoute = require("../core/routerConfig");
 const orderController = require("../controller/orderController");
 const { authenticate, permit } = require("../core/userAuth");
-const { USER_TYPE } = require("../utils/constants");
+const { USER_TYPE, ADMIN_ROLES } = require("../utils/constants");
 
 orderRoute.route("/orders").get(orderController.getAllOrders);
 
@@ -55,4 +55,16 @@ orderRoute
     orderController.getOrdersForProvider
   );
 
+// get order by reference
+orderRoute
+  .route("/order/reference/:reference")
+  .get(authenticate, orderController.getOrderByReference);
+
+orderRoute
+  .route("/order/search/:clientId")
+  .get(
+    authenticate,
+    permit(Object.keys(ADMIN_ROLES)),
+    orderController.searchOrdersByClientId
+  );
 module.exports = orderRoute;

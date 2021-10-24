@@ -2,10 +2,27 @@ const { error, success } = require("../utils/baseController");
 const { logger } = require("../utils/logger");
 const Order = require("../service/Order");
 
+function addUserLocationToOrder(parameters, userLocation) {
+  const { useProfileLocation } = parameters;
+  const { country, state, address } = userLocation;
+  if (useProfileLocation) {
+    parameters["country"] = country;
+    parameters["state"] = state;
+    parameters["address"] = address;
+  }
+}
+
 exports.create = async (req, res) => {
   try {
-    req.body["clientId"] = req.user._id;
-    await new Order(req.body).create();
+    const reference = Math.floor(1000002308 + Math.random() * 1000002308);
+    const { _id, location } = req.user;
+    const parameters = req.body;
+    parameters["userId"] = _id;
+    addUserLocationToOrder(parameters, location);
+    parameters["clientId"] = req.user._id;
+    parameters["fullName"] = req.user.fullName;
+    parameters["orderReference"] = `${reference}.VENT`;
+    await new Order(parameters).create();
     return success(res, { message: "Order Created Successfully" });
   } catch (err) {
     logger.error("Error creating order", err);
@@ -80,6 +97,27 @@ exports.getOrdersForProvider = async (req, res) => {
     return success(res, { providerOrders });
   } catch (err) {
     logger.error("Error getting all provider orders", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+// get order by reference
+exports.getOrderByReference = async (req, res) => {
+  try {
+    const order = await new Order(req.params.reference).getOrderByReference();
+    return success(res, { order });
+  } catch (err) {
+    logger.error("Error getting order", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.searchOrdersByClientId = async (req, res) => {
+  try {
+    const orders = await new Order(req.params.clientId).searchOrdersByClientId();
+    return success(res, { orders });
+  } catch (err) {
+    logger.error("Error getting client orders", err);
     return error(res, { code: err.code, message: err.message });
   }
 };

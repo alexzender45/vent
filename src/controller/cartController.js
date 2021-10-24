@@ -16,7 +16,7 @@ exports.getAllClientCartItems = async (req, res) => {
 
 exports.deleteItemFromCart = async (req, res) => {
   try {
-    await new Cart(req.params.id).deleteItemFromCart();
+    await new Cart(req.params.id).deleteCartItem();
     return success(res, { message: "Item Removed Successfully" });
   } catch (err) {
     logger.error("Error deleting item", err);
@@ -26,7 +26,9 @@ exports.deleteItemFromCart = async (req, res) => {
 
 exports.checkOut = async (req, res) => {
   try {
-    await new Cart(req.body).checkOut();
+    const clientId = req.user._id;
+    const paymentStatus = req.query.paymentStatus;
+    await new Cart({ clientId, paymentStatus }).checkOut();
     return success(res, { message: "Checkout Successful" });
   } catch (err) {
     logger.error("Error checking out", err);

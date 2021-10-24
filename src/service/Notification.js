@@ -13,9 +13,9 @@ class Notification {
 
   async getUserNotification() {
     const { userId, id } = this.data;
-    await NotificationSchema.findOne({ userId: userId, _id: id }).orFail(() =>
-      throwError("User Notification Not Found")
-    );
+    await NotificationSchema.findOne({ userId: userId, _id: id })
+      .populate("orderId serviceId", "name type notes dateRequested price")
+      .orFail(() => throwError("User Notification Not Found"));
   }
 
   async getAllUserNotifications() {
@@ -29,9 +29,9 @@ class Notification {
   }
 
   async getNotification() {
-    return await NotificationSchema.findOne({ _id: this.data }).orFail(() =>
-      throwError("Notification Not Found")
-    );
+    return await NotificationSchema.findOne({ _id: this.data })
+      .populate("orderId serviceId", "name type notes dateRequested price")
+      .orFail(() => throwError("Notification Not Found"));
   }
 }
 

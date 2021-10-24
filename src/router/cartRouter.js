@@ -22,7 +22,7 @@ cartRoute
 // checkout
 cartRoute
   .route("/carts/checkout")
-  .post(
+  .get(
     authenticate,
     permit([USER_TYPE.SERVICE_CLIENT]),
     cartController.checkOut

@@ -61,4 +61,10 @@ module.exports = {
     SUCCESS: "SUCCESS",
     FAILED: "FAILED",
   },
+  ACCEPTED_MESSAGE: "Please login and proceed to payment",
+  REJECTED_MESSAGE: "Please login and look for other providers on the platform",
+  ACCEPTED_STATUS: "has been accepted",
+  REJECTED_STATUS: "was rejected by the provider",
+  CANCELLED_STATUS: "has been cancelled by the client",
+  CANCELLED_MESSAGE: "Please be on the out look for other Order from client",
 };

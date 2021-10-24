@@ -33,12 +33,7 @@ const serviceClientSchema = new Schema(
     password: {
       type: String,
     },
-    profilePictureUrl: {
-      type: String,
-    },
-    homeAddress: {
-      type: String,
-    },
+    profilePictureUrl: String,
     token: {
       type: String,
     },
@@ -62,17 +57,13 @@ const serviceClientSchema = new Schema(
     bio: {
       type: String,
     },
-    state: {
-      type: String,
-    },
     occupation: {
       type: String,
     },
-    city: {
-      type: String,
-    },
-    country: {
-      type: String,
+    location: {
+      country: String,
+      state: String,
+      address: String,
     },
     role: {
       type: String,
