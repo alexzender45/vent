@@ -85,39 +85,6 @@ function sendSuccessfulRegistrationEmail(Email, firstName) {
     });
 }
 
-function passwordEmail(Name, Email, link) {
-  const msg = {
-    to: Email, // Change to your recipient
-    from: VERIFIED_EMAIL, // Change to your verified sender
-    subject: "Reset Your Password",
-    html: `<h1>Dear ${Name},</h1>
-        <p>You Have recently asked to reset your Felt-Teachers profile password.</p>
-         <p><b>Please follow this link <a href = "${link}">Click Here To Reset Your Password</a></b></p>
-        <p>Best Regards,</p>
-        <p>Felt-Teachers</p>`,
-  };
-
-  sgMail
-    .send(msg)
-    .then((result) => {
-      console.log(result);
-    })
-    .catch((error) => {
-      // Log friendly error
-      console.error(error);
-
-      if (error.response) {
-        // Extract error msg
-        const { message, code, response } = error;
-
-        // Extract response msg
-        const { headers, body } = response;
-
-        console.error(body);
-      }
-    });
-}
-
 function SuccessfulPasswordReset(Name, Email) {
   const msg = {
     to: Email, // Change to your recipient
@@ -151,37 +118,97 @@ function SuccessfulPasswordReset(Name, Email) {
     });
 }
 
-function deleteAccountEmail(Name, Email) {
+function orderNotification(
+  Email,
+  fullName,
+  serviceName,
+  orderReference,
+  status,
+  message
+) {
   const msg = {
     to: Email, // Change to your recipient
     from: VERIFIED_EMAIL, // Change to your verified sender
-    subject: "Account Deletion",
-    html: `<h1>Hello ${Name},</h1>
-        <p>Your account with Felt-Teacher has been Deleted. <b>We Hate To See You Go</b></p>
-        <p>Please do send us a review via our official mail feltteacher@gmail.com, bcause we would love to
-        know why you've decided to delete your account with us</p>
-        <p>Anytime you change your mind, please reach out us, we'll be glad to welcome you back</p>
-        <p> Best Regards,</p>
-        <p>Felt-Teachers</b>`,
+    subject: "Order Notice",
+    html: `<h4>Hello,${fullName}</h4>
+      <p>Your Order <b>${serviceName}</b>, with reference number <b>${orderReference}</b> ${status}.</p>
+      <p>${message}</p>
+      <p><b>Regards,</b></p>
+      <p><b>Ventmode</b></p>
+      `,
   };
-
   sgMail
     .send(msg)
-    .then((result) => {
-      return result;
-    })
+    .then((result) => {})
     .catch((error) => {
-      // Log friendly error
       console.error(error);
-
       if (error.response) {
-        // Extract error msg
-        const { message, code, response } = error;
+        const { response } = error;
+        const { body } = response;
+        return body;
+      }
+    });
+}
 
-        // Extract response msg
-        const { headers, body } = response;
+function orderPaidNotification(Email, fullName, totalAmount) {
+  const msg = {
+    to: Email, // Change to your recipient
+    from: VERIFIED_EMAIL, // Change to your verified sender
+    subject: "Payment for Orders",
+    html: `<h4>Hello,${fullName}</h4>
+      <p>You made a total payment of <b>${totalAmount}</b> for your orders</p>
+      <p><b>Regards,</b></p>
+      <p><b>Ventmode</b></p>
+      `,
+  };
+  sgMail
+    .send(msg)
+    .then((result) => {})
+    .catch((error) => {
+      console.error(error);
+      if (error.response) {
+        const { response } = error;
+        const { body } = response;
+        return body;
+      }
+    });
+}
 
-        console.error(body);
+function orderPaidNotificationForProvider(
+  Email,
+  fullName,
+  totalAmount,
+  numberOfItems,
+  orderReference,
+  clientName,
+  clientPhoneNumber,
+  clientEmail,
+  serviceName
+) {
+  const msg = {
+    to: Email, // Change to your recipient
+    from: VERIFIED_EMAIL, // Change to your verified sender
+    subject: "Payment for Orders",
+    html: `<h4>Hello,${fullName}</h4>
+      <p>Client <b>${clientName}</b> made a total payment of <b>${totalAmount}</b> for your service </p>
+      <p>Number of items: <b>${numberOfItems}</b></p>
+      <p>Order Reference: <b>${orderReference}</b></p>
+      <p>Client Phone Number: <b>${clientPhoneNumber}</b></p>
+      <p>Client Email: <b>${clientEmail}</b></p>
+      <p>Service Name: <b>${serviceName}</b></p>
+      <p><b>Regards,</b></p>
+      <p><b>Ventmode</b></p>
+      `,
+  };
+  sgMail
+    .send(msg)
+    .then((result) => {})
+    .catch((error) => {
+      console.error(error);
+      if (error.response) {
+        const { response } = error;
+        const { body } = response;
+        return body;
       }
     });
 }
@@ -233,12 +260,13 @@ async function sendResetPasswordTokenToSms(phoneNumber, token) {
 }
 
 module.exports = {
-  passwordEmail,
   SuccessfulPasswordReset,
-  deleteAccountEmail,
   sendSuccessfulRegistrationEmail,
   sendResetPasswordToken,
   sendResetPasswordTokenToSms,
   verificationCode,
   sendEmailVerificationToken,
+  orderNotification,
+  orderPaidNotification,
+  orderPaidNotificationForProvider,
 };

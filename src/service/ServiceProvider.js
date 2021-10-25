@@ -30,58 +30,65 @@ const { ACCOUNT_TYPE } = require("../utils/constants");
 const socialAuthService = require("../integration/socialAuthClient");
 const PROVIDERS = "providers";
 const Notification = require("./Notification");
-const Order = require('./Order');
-const {ORDER_STATUS, NOTIFICATION_TYPE, SERVICE_TYPE} = require('../utils/constants');
+const Order = require("./Order");
+const {
+  ORDER_STATUS,
+  NOTIFICATION_TYPE,
+  SERVICE_TYPE,
+} = require("../utils/constants");
 const Services = require("./Services");
 
 const getProviderServicesStatistics = async (serviceProvider) => {
-    let activeServices = 0;
-    let completedServices = 0;
-    let totalAmountReceived = 0;
+  let activeServices = 0;
+  let completedServices = 0;
+  let totalAmountReceived = 0;
 
-    await new Order(serviceProvider._id).getOrdersForProvider()
-      .then(providerOrders => {
-        providerOrders.forEach(providerOrder => {
-          switch (providerOrder.status) {
-            case ORDER_STATUS.ACCEPTED:
-              activeServices++;
-              break;
-            case ORDER_STATUS.COMPLETED:
-              completedServices++;
-              totalAmountReceived += providerOrder.price;
-              break;
-            case ORDER_STATUS.PAID:
-              totalAmountReceived += providerOrder.price;
-              break;
-          }
-        });
-      })
-      .catch(error => console.debug(error));
+  await new Order(serviceProvider._id)
+    .getOrdersForProvider()
+    .then((providerOrders) => {
+      providerOrders.forEach((providerOrder) => {
+        switch (providerOrder.status) {
+          case ORDER_STATUS.ACCEPTED:
+            activeServices++;
+            break;
+          case ORDER_STATUS.COMPLETED:
+            completedServices++;
+            totalAmountReceived += providerOrder.price;
+            break;
+          case ORDER_STATUS.PAID:
+            totalAmountReceived += providerOrder.price;
+            break;
+        }
+      });
+    })
+    .catch((error) => console.debug(error));
 
-    serviceProvider['activeServices'] = activeServices;
-    serviceProvider['completedServices'] = completedServices;
-    serviceProvider['totalAmountReceived'] = totalAmountReceived;
+  serviceProvider["activeServices"] = activeServices;
+  serviceProvider["completedServices"] = completedServices;
+  serviceProvider["totalAmountReceived"] = totalAmountReceived;
 
-    const providerServices = await new Services({userId: serviceProvider._id}).getAllUserServices();
-    const serviceTypes = new Map();
+  const providerServices = await new Services({
+    userId: serviceProvider._id,
+  }).getAllUserServices();
+  const serviceTypes = new Map();
 
-    providerServices.forEach(providerService => {
-      const serviceType = providerService.type;
-      const existingServiceType = serviceTypes.get(serviceType);
-      existingServiceType
-        ? serviceTypes.set(serviceType, existingServiceType + 1)
-        : serviceTypes.set(serviceType, 1);
-    });
+  providerServices.forEach((providerService) => {
+    const serviceType = providerService.type;
+    const existingServiceType = serviceTypes.get(serviceType);
+    existingServiceType
+      ? serviceTypes.set(serviceType, existingServiceType + 1)
+      : serviceTypes.set(serviceType, 1);
+  });
 
-    const onlineServices = serviceTypes.get(SERVICE_TYPE.ONLINE) || 0;
-    const bookedServices = serviceTypes.get(SERVICE_TYPE.BOOKING) || 0;
-    const requestedServices = serviceTypes.get(SERVICE_TYPE.REQUESTING) || 0;
+  const onlineServices = serviceTypes.get(SERVICE_TYPE.ONLINE) || 0;
+  const bookedServices = serviceTypes.get(SERVICE_TYPE.BOOKING) || 0;
+  const requestedServices = serviceTypes.get(SERVICE_TYPE.REQUESTING) || 0;
 
-    serviceProvider['allServices'] = providerServices.length;
-    serviceProvider['onlineServices'] = onlineServices;
-    serviceProvider['bookedServices'] = bookedServices;
-    serviceProvider['requestedServices'] = requestedServices;
-}
+  serviceProvider["allServices"] = providerServices.length;
+  serviceProvider["onlineServices"] = onlineServices;
+  serviceProvider["bookedServices"] = bookedServices;
+  serviceProvider["requestedServices"] = requestedServices;
+};
 
 class ServiceProvider {
   constructor(data) {
@@ -140,23 +147,23 @@ class ServiceProvider {
   }
 
   static async getAllServiceProvider() {
-    return await serviceProviderSchema.find()
-        .orFail(() => throwError("No Service Provider Found", 404));
+    return await serviceProviderSchema
+      .find()
+      .orFail(() => throwError("No Service Provider Found", 404));
   }
 
   async serviceProviderProfile() {
-    const {_doc} = await serviceProviderSchema.findOneAndUpdate(
-        {_id: this.data},
-        {$inc: {visitCount: 1}},
-        { new: true }
+    const { _doc } = await serviceProviderSchema.findOneAndUpdate(
+      { _id: this.data },
+      { $inc: { visitCount: 1 } },
+      { new: true }
     );
     const stats = getProviderServicesStatistics(_doc);
     const userWallet = new Wallet(_doc._id).getUserWallet();
-    await Promise.all([stats, userWallet])
-      .then(results => {
-        const {currentBalance} = results[1];
-        _doc["walletBalance"] = currentBalance;
-      });
+    await Promise.all([stats, userWallet]).then((results) => {
+      const { currentBalance } = results[1];
+      _doc["walletBalance"] = currentBalance;
+    });
     return _doc;
   }
 
@@ -171,12 +178,9 @@ class ServiceProvider {
       "email",
       "occupation",
       "presence",
+      "phoneNumber",
     ];
-    return await util.performUpdate(
-      newDetails,
-      allowedUpdates,
-      oldDetails
-    );
+    return await util.performUpdate(newDetails, allowedUpdates, oldDetails);
   }
 
   async forgotPassword() {
@@ -322,14 +326,14 @@ class ServiceProvider {
 
   async uploadProfileImage() {
     const { userId, imageUrl } = this.data;
-      const serviceProvider = await serviceProviderSchema.findByIdAndUpdate(
-        { _id: userId },
-        { $set: { profilePictureUrl: imageUrl } },
-        {
-          new: true,
-        }
-      );
-      return serviceProvider;
+    const serviceProvider = await serviceProviderSchema.findByIdAndUpdate(
+      { _id: userId },
+      { $set: { profilePictureUrl: imageUrl } },
+      {
+        new: true,
+      }
+    );
+    return serviceProvider;
   }
 
   // service provider can delete their account
@@ -406,14 +410,14 @@ class ServiceProvider {
     const followerNotificationDetails = {
       userId: follower._id,
       message: `You Started Following ${user.fullName}`,
-      notificationId: user._id,
+      image: user.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followerNotificationDetails);
     const followingNotificationDetails = {
       userId: user._id,
-      message: `${user.fullName} Started Following You`,
-      notificationId: follower._id,
+      message: `${follower.fullName} Started Following You`,
+      image: follower.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
@@ -456,14 +460,14 @@ class ServiceProvider {
     const followerNotificationDetails = {
       userId: follower._id,
       message: `You unfollowed ${user.fullName}`,
-      notificationId: user._id,
+      image: user.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followerNotificationDetails);
     const followingNotificationDetails = {
       userId: user._id,
-      message: `${user.fullName} Unfollowed You`,
-      notificationId: follower._id,
+      message: `${follower.fullName} Unfollowed You`,
+      image: follower.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
@@ -472,11 +476,11 @@ class ServiceProvider {
   }
 
   static async updateCommunityRating(userId, rating) {
-      return await serviceProviderSchema.findOneAndUpdate(
-          {_id: userId},
-          {communityRating: rating},
-          {new: true}
-      );
+    return await serviceProviderSchema.findOneAndUpdate(
+      { _id: userId },
+      { communityRating: rating },
+      { new: true }
+    );
   }
 }
 

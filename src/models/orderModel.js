@@ -35,8 +35,23 @@ const orderSchema = new Schema(
       default: Date.now(),
     },
     location: {
-      type: String,
-      required: true,
+      useProfileLocation: {
+        type: Boolean,
+        required: true,
+        default: true,
+      },
+      country: {
+        type: String,
+        required: true,
+      },
+      state: {
+        type: String,
+        required: true,
+      },
+      address: {
+        type: String,
+        required: true,
+      },
     },
     specifiedTime: String,
     price: {
@@ -46,6 +61,10 @@ const orderSchema = new Schema(
     createdAt: {
       type: Date,
       default: Date.now(),
+    },
+    orderReference: {
+      type: String,
+      required: true,
     },
   },
   {

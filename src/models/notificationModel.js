@@ -5,8 +5,8 @@ const { NOTIFICATION_TYPE } = require("../utils/constants");
 const notificationSchema = new Schema(
   {
     userId: {
-      type: Schema.Types.ObjectId,
-      ref: "ServiceProvider" || "ServiceClient",
+      type: String,
+      required: true,
     },
     serviceId: {
       type: Schema.Types.ObjectId,
@@ -21,13 +21,22 @@ const notificationSchema = new Schema(
       type: Boolean,
       default: false,
     },
-    notificationId: {
-      type: Schema.Types.ObjectId,
-      ref: "ServiceProvider" || "ServiceClient" || "Order",
+    serviceName: {
+      type: String,
+    },
+    image: {
+      type: String,
     },
     notificationType: {
       type: String,
       enum: Object.keys(NOTIFICATION_TYPE),
+    },
+    price: {
+      type: Number,
+    },
+    orderId: {
+      type: Schema.Types.ObjectId,
+      ref: "Order",
     },
     createdAt: {
       type: Date,

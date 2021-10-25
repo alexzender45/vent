@@ -34,41 +34,42 @@ const { ORDER_STATUS } = require("../utils/constants");
 const Notification = require("./Notification");
 
 const getClientOrdersStatistics = async (serviceClient) => {
-    let activeOrders = 0;
-    let failedOrders = 0;
-    let completedOrders = 0;
-    let allOrders = 0;
-    let totalAmountSpent = 0;
+  let activeOrders = 0;
+  let failedOrders = 0;
+  let completedOrders = 0;
+  let allOrders = 0;
+  let totalAmountSpent = 0;
 
-    await new Order(serviceClient._id).getOrdersForClient()
-      .then(clientOrders => {
-          clientOrders.forEach(clientOrder => {
-          allOrders++;
-          switch (clientOrder.status) {
-            case ORDER_STATUS.CANCELLED:
-              failedOrders++;
-              break;
-            case ORDER_STATUS.ACCEPTED:
-              activeOrders++;
-              break;
-            case ORDER_STATUS.COMPLETED:
-              completedOrders++;
-              totalAmountSpent += clientOrder.price;
-              break;
-            case ORDER_STATUS.PAID:
-              totalAmountSpent += clientOrder.price;
-              break;
-          }
-        });
-      })
-      .catch(error => console.debug(error));
+  await new Order(serviceClient._id)
+    .getOrdersForClient()
+    .then((clientOrders) => {
+      clientOrders.forEach((clientOrder) => {
+        allOrders++;
+        switch (clientOrder.status) {
+          case ORDER_STATUS.CANCELLED:
+            failedOrders++;
+            break;
+          case ORDER_STATUS.ACCEPTED:
+            activeOrders++;
+            break;
+          case ORDER_STATUS.COMPLETED:
+            completedOrders++;
+            totalAmountSpent += clientOrder.price;
+            break;
+          case ORDER_STATUS.PAID:
+            totalAmountSpent += clientOrder.price;
+            break;
+        }
+      });
+    })
+    .catch((error) => console.debug(error));
 
-    serviceClient['allOrders'] = allOrders;
-    serviceClient['failedOrders'] = failedOrders;
-    serviceClient['activeOrders'] = activeOrders;
-    serviceClient['completedOrders'] = completedOrders;
-    serviceClient['totalAmountSpent'] = totalAmountSpent;
-}
+  serviceClient["allOrders"] = allOrders;
+  serviceClient["failedOrders"] = failedOrders;
+  serviceClient["activeOrders"] = activeOrders;
+  serviceClient["completedOrders"] = completedOrders;
+  serviceClient["totalAmountSpent"] = totalAmountSpent;
+};
 
 class ServiceClient {
   constructor(data) {
@@ -137,9 +138,11 @@ class ServiceClient {
   }
 
   async serviceClientProfile() {
-    const {_doc} = await serviceClientSchema.findById(this.data).orFail(() => throwError("Service Client Not Found", 404));
+    const { _doc } = await serviceClientSchema
+      .findById(this.data)
+      .orFail(() => throwError("Service Client Not Found", 404));
     await getClientOrdersStatistics(_doc);
-    return _doc
+    return _doc;
   }
 
   async updateServiceClientDetails() {
@@ -147,20 +150,15 @@ class ServiceClient {
     const allowedUpdates = [
       "dateOfBirth",
       "bio",
-      "country",
-      "state",
-      "homeAddress",
+      "location",
       "gender",
       "fullName",
       "email",
       "presence",
       "occupation",
+      "phoneNumber",
     ];
-    return await util.performUpdate(
-      newDetails,
-      allowedUpdates,
-      oldDetails
-    );
+    return await util.performUpdate(newDetails, allowedUpdates, oldDetails);
   }
 
   async forgotPassword() {
@@ -387,19 +385,17 @@ class ServiceClient {
     user.followers.push(follower._id);
     await user.save();
     follower.following.push(user._id);
-
     const followerNotificationDetails = {
       userId: follower._id,
       message: `You Started Following ${user.fullName}`,
-      notificationId: user._id,
+      image: user.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followerNotificationDetails);
-
     const followingNotificationDetails = {
       userId: user._id,
-      message: `${user.fullName} Started Following You`,
-      notificationId: follower._id,
+      message: `${follower.fullName} Started Following You`,
+      image: follower.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
@@ -442,14 +438,14 @@ class ServiceClient {
     const followerNotificationDetails = {
       userId: follower._id,
       message: `You unfollowed ${user.fullName}`,
-      notificationId: user._id,
+      image: user.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followerNotificationDetails);
     const followingNotificationDetails = {
       userId: user._id,
-      message: `${user.fullName} Unfollowed You`,
-      notificationId: follower._id,
+      message: `${follower.fullName} Unfollowed You`,
+      image: follower.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
