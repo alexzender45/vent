@@ -85,6 +85,9 @@ const serviceClientSchema = new Schema(
       type: String,
       enum: ["ACTIVE", "OFFLINE"],
     },
+    referralIdentity: {
+      type: String,
+  },
   },
   {
     timestamps: true,

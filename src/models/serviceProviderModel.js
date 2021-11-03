@@ -81,6 +81,9 @@ const serviceProviderSchema = new Schema(
       type: String,
       default: "0",
     },
+    referralIdentity: {
+      type: String,
+    },
   },
   {
     timestamps: true,

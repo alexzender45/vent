@@ -113,7 +113,38 @@ class ServiceClient {
     }
     const serviceClient = new serviceClientSchema(this.data);
     const newServiceClient = await serviceClient.save();
-    await new Wallet({ userId: newServiceClient._id }).save();
+    if (
+      this.data.referralIdentity !== undefined ||
+      this.data.referralIdentity !== null
+    ) {
+      const clientReferral = await serviceClientSchema.findOne({
+        email: this.data.referralIdentity,
+      });
+      if (clientReferral) {
+        const referralDetails = {
+          userId: newServiceClient._id,
+          userType: newServiceClient.userType,
+          name: newServiceClient.fullName,
+          paid: false,
+        };
+        clientReferral.referrals.push(referralDetails);
+        clientReferral.save();
+      } else if (clientReferral === null || clientReferral === undefined) {
+        const providerReferral = await serviceProviderSchema.findOne({
+          email: this.data.referralIdentity,
+        });
+        if (providerReferral) {
+          const referralDetails = {
+            userId: newServiceClient._id,
+            userType: newServiceClient.userType,
+            name: newServiceClient.fullName,
+            paid: false,
+          };
+          providerReferral.referrals.push(referralDetails);
+          providerReferral.save();
+        }
+      }
+    }
     return newServiceClient;
   }
 
@@ -480,11 +511,13 @@ class ServiceClient {
         _id: this.data,
       })
       .orFail(() => throwError("User Not Found", 404));
-    const savedServices = await serviceSchema.find({
-      _id: {
-        $in: user.savedServices,
-      },
-    });
+    const savedServices = await serviceSchema
+      .find({
+        _id: {
+          $in: user.savedServices,
+        },
+      })
+      .populate("userId", "fullName profilePictureUrl");
     return savedServices;
   }
 }
