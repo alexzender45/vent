@@ -115,12 +115,15 @@ class ServiceProvider {
     if (!isValid) {
       throwError(messages);
     }
-
+    const otp = this.data.otp;
+    if (!otp) {
+    throwError("OTP Required To Complete Signup");
+    }
     const cachedOTP = await getCachedData(this.data.email);
     if (!cachedOTP) {
-      throwError("OTP Code Expired");
+    throwError("OTP Code Expired");
     } else if (cachedOTP !== this.data.otp) {
-      throwError("Invalid OTP");
+    throwError("Invalid OTP");
     }
 
     await this.emailExist();
@@ -130,6 +133,38 @@ class ServiceProvider {
     const serviceProvider = new serviceProviderSchema(this.data);
     const newServiceProvider = await serviceProvider.save();
     await new Wallet({ userId: newServiceProvider._id }).createWallet();
+    if (
+      this.data.referralIdentity !== undefined ||
+      this.data.referralIdentity !== null
+    ) {
+      const clientReferral = await serviceClientSchema.findOne({
+        email: this.data.referralIdentity,
+      });
+      if (clientReferral) {
+        const referralDetails = {
+          userId: newServiceProvider._id,
+          userType: newServiceProvider.userType,
+          name: newServiceProvider.fullName,
+          paid: false,
+        };
+        clientReferral.referrals.push(referralDetails);
+        clientReferral.save();
+      } else if (clientReferral === null || clientReferral === undefined) {
+        const providerReferral = await serviceProviderSchema.findOne({
+          email: this.data.referralIdentity,
+        });
+        if (providerReferral) {
+          const referralDetails = {
+            userId: newServiceProvider._id,
+            userType: newServiceProvider.userType,
+            name: newServiceProvider.fullName,
+            paid: false,
+          };
+          providerReferral.referrals.push(referralDetails);
+          providerReferral.save();
+        }
+      }
+    }
     return newServiceProvider;
   }
 
