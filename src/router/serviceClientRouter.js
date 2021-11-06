@@ -123,4 +123,18 @@ serviceClientRoute
     serviceClientController.getSavedServices
   );
 
+// get referral statistics
+serviceClientRoute
+  .route("/service/clients/referral/statistics")
+  .get(authenticate, serviceClientController.getReferralStatistic);
+
+// get client followers
+serviceClientRoute
+  .route("/service/clients/all/followers")
+  .get(authenticate, serviceClientController.getClientFollowers);
+
+serviceClientRoute
+  .route("/service/clients/all/following")
+  .get(authenticate, serviceClientController.getClientFollowing);
+
 module.exports = serviceClientRoute;

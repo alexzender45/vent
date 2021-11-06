@@ -3,6 +3,7 @@ const { google } = require("googleapis");
 const serviceClientSchema = require("../models/serviceClientModel");
 const serviceProviderSchema = require("../models/serviceProviderModel");
 const serviceSchema = require("../models/servicesModel");
+const orderSchema = require("../models/orderModel");
 const Wallet = require("../models/wallet");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
@@ -21,7 +22,11 @@ const {
   GOOGLE_CONFIG_REDIRECT_URI,
 } = require("../core/config");
 const cloud = require("../utils/cloudinaryConfig");
-const { ACCOUNT_TYPE, NOTIFICATION_TYPE } = require("../utils/constants");
+const {
+  ACCOUNT_TYPE,
+  NOTIFICATION_TYPE,
+  USER_TYPE,
+} = require("../utils/constants");
 const oauth2Client = new google.auth.OAuth2(
   GOOGLE_CONFIG_CLIENT_ID,
   GOOGLE_CONFIG_CLIENT_SECRET,
@@ -519,6 +524,66 @@ class ServiceClient {
       })
       .populate("userId", "fullName profilePictureUrl");
     return savedServices;
+  }
+
+  async getReferralStatistics() {
+    const user = await serviceClientSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const referralDetails = {
+      totalReferral: user.referrals.length,
+      totalProvidersReferred: 0,
+      totalClientsReferred: 0,
+      totalReferralEarned: user.totalReferralEarnings,
+      currentReferralEarned: user.currentReferralBalance,
+    };
+    user.referrals.map((referral) => {
+      if (referral.userType === USER_TYPE.SERVICE_PROVIDER) {
+        referralDetails.totalProvidersReferred++;
+      } else {
+        referralDetails.totalClientsReferred++;
+      }
+    });
+    //Get users that referrals is not empty
+    const users = await serviceClientSchema.find({ referrals: { $ne: [] } });
+    // loop through users and return the referral object that is not paid is false
+    const referral = users.map((user) => {
+      return user.referrals.find((referral) => {
+        return referral.paid === false;
+      });
+    });
+    // get total orders of the referral by userType
+    console.log(totalOrders);
+    return referralDetails;
+  }
+
+  async getClientFollowers() {
+    const user = await serviceClientSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const followers = await serviceProviderSchema
+      .find({
+        _id: {
+          $in: user.followers,
+        },
+      })
+      .populate("userId", "fullName profilePictureUrl")
+      .orFail(() => throwError("No followers", 404));
+    return followers;
+  }
+  async getClientFollowing() {
+    const user = await serviceClientSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const following = await serviceProviderSchema
+      .find({
+        _id: {
+          $in: user.following,
+        },
+      })
+      .populate("userId", "fullName profilePictureUrl")
+      .orFail(() => throwError("No followers", 404));
+    return following;
   }
 }
 

@@ -301,3 +301,38 @@ exports.getSavedServices = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+
+exports.getReferralStatistic = async (req, res) => {
+  try {
+    const statistic = await new ServiceClient(
+      req.user._id
+    ).getReferralStatistics();
+    return success(res, { statistic });
+  } catch (err) {
+    logger.error(`Unable to get statistic ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+// get client followers
+exports.getClientFollowers = async (req, res) => {
+  try {
+    const followers = await new ServiceClient(req.user._id).getClientFollowers();
+    return success(res, { followers });
+  } catch (err) {
+    logger.error(`Unable to get followers ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.getClientFollowing = async (req, res) => {
+  try {
+    const following = await new ServiceClient(
+      req.user._id
+    ).getClientFollowing();
+    return success(res, { following });
+  } catch (err) {
+    logger.error(`Unable to get followers ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};

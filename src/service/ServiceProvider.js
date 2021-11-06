@@ -35,6 +35,7 @@ const {
   ORDER_STATUS,
   NOTIFICATION_TYPE,
   SERVICE_TYPE,
+  USER_TYPE,
 } = require("../utils/constants");
 const Services = require("./Services");
 
@@ -117,13 +118,13 @@ class ServiceProvider {
     }
     const otp = this.data.otp;
     if (!otp) {
-    throwError("OTP Required To Complete Signup");
+      throwError("OTP Required To Complete Signup");
     }
     const cachedOTP = await getCachedData(this.data.email);
     if (!cachedOTP) {
-    throwError("OTP Code Expired");
+      throwError("OTP Code Expired");
     } else if (cachedOTP !== this.data.otp) {
-    throwError("Invalid OTP");
+      throwError("Invalid OTP");
     }
 
     await this.emailExist();
@@ -516,6 +517,52 @@ class ServiceProvider {
       { communityRating: rating },
       { new: true }
     );
+  }
+  async getReferralStatistics() {
+    const user = await serviceProviderSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const referralDetails = {
+      totalReferral: user.referrals.length,
+      totalProvidersReferred: 0,
+      totalClientsReferred: 0,
+      totalReferralEarned: user.totalReferralEarnings,
+      currentReferralEarned: user.currentReferralBalance,
+    };
+    user.referrals.map((referral) => {
+      if (referral.userType === USER_TYPE.SERVICE_PROVIDER) {
+        referralDetails.totalProvidersReferred++;
+      } else {
+        referralDetails.totalClientsReferred++;
+      }
+    });
+    return referralDetails;
+  }
+
+  async getProviderFollowers() {
+    const serviceProvider = await serviceProviderSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const followers = await serviceClientSchema
+      .find({
+        _id: { $in: serviceProvider.followers },
+      })
+      .populate("userId", "fullName profilePictureUrl")
+      .orFail(() => throwError("No followers", 404));
+    return followers;
+  }
+
+  async getProviderFollowing() {
+    const serviceProvider = await serviceProviderSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const following = await serviceClientSchema
+      .find({
+        _id: { $in: serviceProvider.following },
+      })
+      .populate("userId", "fullName profilePictureUrl")
+      .orFail(() => throwError("No followers", 404));
+    return following;
   }
 }
 
