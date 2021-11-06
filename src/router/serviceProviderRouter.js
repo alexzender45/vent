@@ -105,4 +105,18 @@ serviceProviderRoute
   .route("/service/clients/:id/unfollow")
   .get(authenticate, serviceProviderController.unfollowUser);
 
+// get referral statistics
+serviceProviderRoute
+  .route("/service/providers/referral/statistics")
+  .get(authenticate, serviceProviderController.getReferralStatistic);
+
+// get provider followers
+serviceProviderRoute
+  .route("/service/providers/all/followers")
+  .get(authenticate, serviceProviderController.getProviderFollowers);
+
+serviceProviderRoute
+  .route("/service/providers/all/following")
+  .get(authenticate, serviceProviderController.getProviderFollowing);
+
 module.exports = serviceProviderRoute;

@@ -25,7 +25,7 @@ class Notification {
         "userId serviceId",
         "name fullName profilePictureUrl price createdAt"
       )
-      .orFail(() => throwError("User Notifications Not Found"));
+      .orFail(() => throwError("No Notification Found"));
   }
 
   async getNotification() {

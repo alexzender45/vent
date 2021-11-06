@@ -87,7 +87,15 @@ const serviceClientSchema = new Schema(
     },
     referralIdentity: {
       type: String,
-  },
+    },
+    totalReferralEarnings: {
+      type: Number,
+      default: 0,
+    },
+    currentReferralBalance: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,
