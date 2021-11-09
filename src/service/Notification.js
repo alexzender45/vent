@@ -21,10 +21,7 @@ class Notification {
   async getAllUserNotifications() {
     return await NotificationSchema.find({ userId: this.data })
       .sort({ createdAt: -1 })
-      .populate(
-        "userId serviceId",
-        "name fullName profilePictureUrl price createdAt"
-      )
+      .populate("serviceId", "name price createdAt")
       .orFail(() => throwError("No Notification Found"));
   }
 

@@ -3,8 +3,6 @@ const { google } = require("googleapis");
 const serviceClientSchema = require("../models/serviceClientModel");
 const serviceProviderSchema = require("../models/serviceProviderModel");
 const serviceSchema = require("../models/servicesModel");
-const orderSchema = require("../models/orderModel");
-const Wallet = require("../models/wallet");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
 const util = require("../utils/util");
@@ -20,6 +18,7 @@ const {
   GOOGLE_CONFIG_CLIENT_ID,
   GOOGLE_CONFIG_CLIENT_SECRET,
   GOOGLE_CONFIG_REDIRECT_URI,
+  REFERRAL_PERCENTAGE,
 } = require("../core/config");
 const cloud = require("../utils/cloudinaryConfig");
 const {
@@ -544,16 +543,6 @@ class ServiceClient {
         referralDetails.totalClientsReferred++;
       }
     });
-    //Get users that referrals is not empty
-    const users = await serviceClientSchema.find({ referrals: { $ne: [] } });
-    // loop through users and return the referral object that is not paid is false
-    const referral = users.map((user) => {
-      return user.referrals.find((referral) => {
-        return referral.paid === false;
-      });
-    });
-    // get total orders of the referral by userType
-    console.log(totalOrders);
     return referralDetails;
   }
 
