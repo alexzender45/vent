@@ -269,6 +269,22 @@ class Order {
       .populate("providerId serviceId", "fullName profilePictureUrl name")
       .orFail(() => throwError("No Orders for this Service Client", 404));
   }
+
+  async getOrdersForClientOrProvider() {
+    const { id, status } = this.data;
+    return await orderSchema
+      .find({
+        $or: [{ clientId: id }, { providerId: id }],
+        status,
+      })
+      .sort({ createdAt: -1 })
+      .populate(
+        "providerId clientId serviceId",
+        "fullName profilePictureUrl name type price categoryId"
+      )
+      .populate("categoryId", "name")
+      .orFail(() => throwError("No Order Found", 404));
+  }
 }
 
 module.exports = Order;
