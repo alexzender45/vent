@@ -121,3 +121,16 @@ exports.searchOrdersByClientId = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+
+// get all client orders or orders for provider by status
+exports.getOrdersByStatus = async (req, res) => {
+  try {
+    const id = req.user._id;
+    const status = req.params.status;
+    const orders = await new Order({ id, status }).getOrdersForClientOrProvider();
+    return success(res, { orders });
+  } catch (err) {
+    logger.error("Error getting orders by status", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+}

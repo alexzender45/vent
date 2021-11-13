@@ -67,4 +67,9 @@ orderRoute
     permit(Object.keys(ADMIN_ROLES)),
     orderController.searchOrdersByClientId
   );
+
+// get order by status
+orderRoute
+  .route("/order/status/:status")
+  .get(authenticate, orderController.getOrdersByStatus);
 module.exports = orderRoute;
