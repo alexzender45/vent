@@ -27,4 +27,13 @@ notificationRoute
     notificationController.getNotification
   );
 
+// delete notification
+notificationRoute
+  .route("/notifications/:id")
+  .delete(
+    authenticate,
+    permit(Object.keys(USER_TYPE)),
+    notificationController.deleteNotification
+  );
+
 module.exports = notificationRoute;

@@ -14,21 +14,42 @@ class Notification {
   async getUserNotification() {
     const { userId, id } = this.data;
     await NotificationSchema.findOne({ userId: userId, _id: id })
-      .populate("orderId serviceId", "name type notes dateRequested price")
+      .populate(
+        "orderId serviceId",
+        "name type notes dateRequested price specifiedTime notes createdAt status"
+      )
       .orFail(() => throwError("User Notification Not Found"));
   }
 
   async getAllUserNotifications() {
     return await NotificationSchema.find({ userId: this.data })
       .sort({ createdAt: -1 })
-      .populate("serviceId", "name price createdAt")
+      .populate(
+        "orderId serviceId",
+        "name type notes dateRequested price specifiedTime notes createdAt status"
+      )
       .orFail(() => throwError("No Notification Found"));
   }
 
   async getNotification() {
-    return await NotificationSchema.findOne({ _id: this.data })
-      .populate("orderId serviceId", "name type notes dateRequested price")
+    const notification = await NotificationSchema.findOne({ _id: this.data })
+      .populate(
+        "orderId serviceId",
+        "name type notes dateRequested price specifiedTime notes createdAt status"
+      )
       .orFail(() => throwError("Notification Not Found"));
+    if (notification.isRead === false) {
+      notification.isRead = true;
+      await notification.save();
+    }
+    return notification;
+  }
+
+  // delete notification
+  async deleteNotification() {
+    return await NotificationSchema.findOneAndDelete({
+      _id: this.data,
+    }).orFail(() => throwError("Notification Not Found"));
   }
 }
 
