@@ -38,3 +38,16 @@ exports.getNotification = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+
+// delete notification
+exports.deleteNotification = async (req, res) => {
+  try {
+    const notification = await new Notification(
+      req.params.id
+    ).deleteNotification();
+    return success(res, { notification });
+  } catch (err) {
+    logger.error("Unable to delete notification", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
