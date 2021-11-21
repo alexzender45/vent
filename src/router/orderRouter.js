@@ -67,4 +67,20 @@ orderRoute
     permit(Object.keys(ADMIN_ROLES)),
     orderController.searchOrdersByClientId
   );
+
+orderRoute
+  .route("/order/start-service")
+  .post(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    orderController.startOrderedService
+  );
+
+orderRoute
+  .route("/order/end-service")
+  .post(
+    authenticate,
+    permit(Object.keys(USER_TYPE)),
+    orderController.endOrderedService
+  );
 module.exports = orderRoute;

@@ -39,6 +39,7 @@ module.exports = {
     REJECTED: "REJECTED",
     PAID: "PAID",
     CANCELLED: "CANCELLED",
+    STARTED: "STARTED",
     COMPLETED: "COMPLETED",
   },
   TRANSACTION_TYPE: {

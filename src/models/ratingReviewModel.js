@@ -26,6 +26,9 @@ const ratingReviewSchema = new Schema(
     review: {
       type: String,
     },
+    providerResponse: {
+      type: String,
+    },
   },
   {
     strictQuery: "throw",

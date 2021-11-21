@@ -11,4 +11,12 @@ walletRoute
     walletController.getUserWallet
   );
 
+walletRoute
+  .route("/wallets/withdraw")
+  .post(
+    authenticate,
+    permit([USER_TYPE.SERVICE_PROVIDER]),
+    walletController.withdrawFunds
+  );
+
 module.exports = walletRoute;

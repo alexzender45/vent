@@ -66,6 +66,9 @@ const orderSchema = new Schema(
       type: String,
       required: true,
     },
+    completedDate: {
+      type: Date
+    },
   },
   {
     strictQuery: "throw",

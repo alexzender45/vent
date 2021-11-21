@@ -15,8 +15,12 @@ const {
   REJECTED_STATUS,
   CANCELLED_MESSAGE,
   CANCELLED_STATUS,
+  USER_TYPE
 } = require("../utils/constants");
 const Notification = require("./Notification");
+const Wallet = require("./Wallet");
+const Rating = require("./Rating");
+const UNAUTHORIZED_END_SERVICE_MESSAGE = "You are not authorized to end the service";
 
 function addOrderLocation(parameters) {
   const { useProfileLocation, country, state, address } = parameters;
@@ -271,6 +275,79 @@ class Order {
       .sort({ createdAt: -1 })
       .populate("providerId serviceId", "fullName profilePictureUrl name")
       .orFail(() => throwError("No Orders for this Service Client", 404));
+  }
+
+  async getAllOrderWithStatus() {
+    const status = this.data;
+    return await orderSchema
+        .find({status})
+        .orFail(() => throwError(`No Order with status ${status}`, 404));
+  }
+
+  //service user starts all service (online, booking and requesting service)
+  async startOrder() {
+    const {orderId, userId} = this.data;
+    this.data = orderId;
+    const order = await this.getOder();
+    if(order.clientId && order.clientId.toString() !== userId.toString()) {
+      throwError(UNAUTHORIZED_END_SERVICE_MESSAGE);
+    }
+
+    if(order.status !== ORDER_STATUS.PAID) {
+      throwError("Service is pending payment");
+    }
+    order.status = ORDER_STATUS.STARTED;
+    return await order.save();
+  }
+
+  //service user ends online service
+  //service provider ends booking and requesting service
+  async endOrder() {
+    const {orderId, userType, userId, rating, userFeedback, providerFeedback} = this.data;
+    const { isValid, messages } = validateParameters(
+        ["orderId", "userType"],
+        this.data
+    );
+    if (!isValid) {
+        throwError(messages);
+    }
+    const order = await orderSchema
+        .findById(orderId)
+        .populate("serviceId", "type")
+        .orFail(() => throwError("Order Not Found", 404));
+
+    if(order.status !== ORDER_STATUS.STARTED) {
+        throwError("Service Is Yet To Be Started");
+    }
+    const {providerId, clientId, serviceId} = order;
+    const orderType = serviceId.type;
+
+    if(orderType === SERVICE_TYPE.ONLINE && userType !== USER_TYPE.SERVICE_CLIENT && userId.toString() !== clientId.toString()) {
+      throwError(UNAUTHORIZED_END_SERVICE_MESSAGE)
+    }
+
+    if(orderType !== SERVICE_TYPE.ONLINE && userType !== USER_TYPE.SERVICE_PROVIDER && userId.toString() !== providerId.toString()) {
+      throwError(UNAUTHORIZED_END_SERVICE_MESSAGE)
+    }
+
+    const providerWallet = await new Wallet(providerId).getUserWallet();
+    providerWallet.pendingWithdrawal += order.price;
+    await providerWallet.save();
+
+    order.status = ORDER_STATUS.COMPLETED;
+    order.completedDate = new Date();
+    const completedOrder = await order.save();
+
+    this.data = {
+        providerId: providerId,
+        reviewerId: clientId,
+        serviceId: serviceId,
+        rating: rating,
+        review: userFeedback,
+        providerResponse: providerFeedback
+    };
+    new Rating(this.data).createRating();
+    return completedOrder;
   }
 }
 

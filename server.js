@@ -5,6 +5,7 @@ const morgan = require("morgan");
 
 // Custom Dependencies
 require("./src/db/mongoose").db().then();
+require("./src/core/cronjob").updateAvailableBalance();
 const { logger } = require("./src/utils/logger");
 const { PORT } = require("./src/core/config");
 
@@ -45,6 +46,4 @@ app.use("/api", transactionRouter);
 app.use("/api", notificationRouter);
 app.use("/api", walletRouter);
 
-app.listen(PORT, () =>
-  logger.info(`Ventmode Backend Service Started on port ${PORT}`)
-);
+app.listen(PORT, () => logger.info(`Ventmode Backend Service Started on port ${PORT}`));
