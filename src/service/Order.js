@@ -286,6 +286,10 @@ class Order {
       .populate("categoryId", "name")
       .orFail(() => throwError("No Order Found", 404));
   }
+  async clientOrders() {
+    const { clientId } = this.data;
+    return await orderSchema.find({ clientId });
+  }
 }
 
 module.exports = Order;

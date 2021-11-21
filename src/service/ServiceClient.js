@@ -176,7 +176,12 @@ class ServiceClient {
     const { _doc } = await serviceClientSchema
       .findById(this.data)
       .orFail(() => throwError("Service Client Not Found", 404));
-    await getClientOrdersStatistics(_doc);
+    const clientOrders = await new Order({
+      clientId: _doc._id,
+    }).clientOrders();
+    if (clientOrders.length > 0) {
+      await getClientOrdersStatistics(_doc);
+    }
     return _doc;
   }
 
@@ -361,8 +366,16 @@ class ServiceClient {
   // get service client by id
   async getServiceClientById() {
     const id = this.data;
-    const serviceClient = await serviceClientSchema.findById(id);
-    return serviceClient;
+    const { _doc } = await serviceClientSchema
+      .findById(id)
+      .orFail(() => throwError("Service Client Not Found", 404));
+    const clientOrders = await new Order({
+      clientId: _doc._id,
+    }).clientOrders();
+    if (clientOrders.length > 0) {
+      await getClientOrdersStatistics(_doc);
+    }
+    return _doc;
   }
 
   // delete service client by id

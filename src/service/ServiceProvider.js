@@ -194,12 +194,17 @@ class ServiceProvider {
       { $inc: { visitCount: 1 } },
       { new: true }
     );
-    const stats = getProviderServicesStatistics(_doc);
-    const userWallet = new Wallet(_doc._id).getUserWallet();
-    await Promise.all([stats, userWallet]).then((results) => {
-      const { currentBalance } = results[1];
-      _doc["walletBalance"] = currentBalance;
-    });
+    const providerServices = await new Services({
+      userId: _doc._id,
+    }).getServiceByUser();
+    if (providerServices.length > 0) {
+      const stats = getProviderServicesStatistics(_doc);
+      const userWallet = new Wallet(_doc._id).getUserWallet();
+      await Promise.all([stats, userWallet]).then((results) => {
+        const { currentBalance } = results[1];
+        _doc["walletBalance"] = currentBalance;
+      });
+    }
     return _doc;
   }
 
@@ -384,8 +389,23 @@ class ServiceProvider {
   // get service provider by id
   async getServiceProviderById() {
     const id = this.data;
-    const serviceProvider = await serviceProviderSchema.findById(id);
-    return serviceProvider;
+    const { _doc } = await serviceProviderSchema.findOneAndUpdate(
+      { _id: id },
+      { $inc: { visitCount: 1 } },
+      { new: true }
+    );
+    const providerServices = await new Services({
+      userId: _doc._id,
+    }).getServiceByUser();
+    if (providerServices.length > 0) {
+      const stats = getProviderServicesStatistics(_doc);
+      const userWallet = new Wallet(_doc._id).getUserWallet();
+      await Promise.all([stats, userWallet]).then((results) => {
+        const { currentBalance } = results[1];
+        _doc["walletBalance"] = currentBalance;
+      });
+    }
+    return _doc;
   }
 
   // delete service provider by id
