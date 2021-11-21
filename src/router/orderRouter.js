@@ -16,8 +16,8 @@ orderRoute
 orderRoute.route("/orders/:id").get(orderController.getOrderById);
 
 orderRoute
-  .route("/orders/:id/reject")
-  .get(
+  .route("/orders/reject")
+  .put(
     authenticate,
     permit([USER_TYPE.SERVICE_PROVIDER]),
     orderController.rejectOrder

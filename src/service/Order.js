@@ -146,7 +146,8 @@ class Order {
       .populate(
         "serviceId clientId providerId",
         " fullName profilePictureUrl name email"
-      );
+      )
+      .orFail(() => throwError("Order Not Found", 404));
     const notificationDetails = {
       userId: order.clientId,
       orderId: order._id,
