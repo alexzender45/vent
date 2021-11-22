@@ -3,7 +3,6 @@ const { google } = require("googleapis");
 const serviceClientSchema = require("../models/serviceClientModel");
 const serviceProviderSchema = require("../models/serviceProviderModel");
 const serviceSchema = require("../models/servicesModel");
-const Wallet = require("../models/wallet");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
 const util = require("../utils/util");
@@ -19,9 +18,14 @@ const {
   GOOGLE_CONFIG_CLIENT_ID,
   GOOGLE_CONFIG_CLIENT_SECRET,
   GOOGLE_CONFIG_REDIRECT_URI,
+  REFERRAL_PERCENTAGE,
 } = require("../core/config");
 const cloud = require("../utils/cloudinaryConfig");
-const { ACCOUNT_TYPE, NOTIFICATION_TYPE } = require("../utils/constants");
+const {
+  ACCOUNT_TYPE,
+  NOTIFICATION_TYPE,
+  USER_TYPE,
+} = require("../utils/constants");
 const oauth2Client = new google.auth.OAuth2(
   GOOGLE_CONFIG_CLIENT_ID,
   GOOGLE_CONFIG_CLIENT_SECRET,
@@ -113,7 +117,38 @@ class ServiceClient {
     }
     const serviceClient = new serviceClientSchema(this.data);
     const newServiceClient = await serviceClient.save();
-    await new Wallet({ userId: newServiceClient._id }).save();
+    if (
+      this.data.referralIdentity !== undefined ||
+      this.data.referralIdentity !== null
+    ) {
+      const clientReferral = await serviceClientSchema.findOne({
+        email: this.data.referralIdentity,
+      });
+      if (clientReferral) {
+        const referralDetails = {
+          userId: newServiceClient._id,
+          userType: newServiceClient.userType,
+          name: newServiceClient.fullName,
+          paid: false,
+        };
+        clientReferral.referrals.push(referralDetails);
+        clientReferral.save();
+      } else if (clientReferral === null || clientReferral === undefined) {
+        const providerReferral = await serviceProviderSchema.findOne({
+          email: this.data.referralIdentity,
+        });
+        if (providerReferral) {
+          const referralDetails = {
+            userId: newServiceClient._id,
+            userType: newServiceClient.userType,
+            name: newServiceClient.fullName,
+            paid: false,
+          };
+          providerReferral.referrals.push(referralDetails);
+          providerReferral.save();
+        }
+      }
+    }
     return newServiceClient;
   }
 
@@ -141,7 +176,12 @@ class ServiceClient {
     const { _doc } = await serviceClientSchema
       .findById(this.data)
       .orFail(() => throwError("Service Client Not Found", 404));
-    await getClientOrdersStatistics(_doc);
+    const clientOrders = await new Order({
+      clientId: _doc._id,
+    }).clientOrders();
+    if (clientOrders.length > 0) {
+      await getClientOrdersStatistics(_doc);
+    }
     return _doc;
   }
 
@@ -326,8 +366,16 @@ class ServiceClient {
   // get service client by id
   async getServiceClientById() {
     const id = this.data;
-    const serviceClient = await serviceClientSchema.findById(id);
-    return serviceClient;
+    const { _doc } = await serviceClientSchema
+      .findById(id)
+      .orFail(() => throwError("Service Client Not Found", 404));
+    const clientOrders = await new Order({
+      clientId: _doc._id,
+    }).clientOrders();
+    if (clientOrders.length > 0) {
+      await getClientOrdersStatistics(_doc);
+    }
+    return _doc;
   }
 
   // delete service client by id
@@ -480,12 +528,64 @@ class ServiceClient {
         _id: this.data,
       })
       .orFail(() => throwError("User Not Found", 404));
-    const savedServices = await serviceSchema.find({
-      _id: {
-        $in: user.savedServices,
-      },
-    });
+    const savedServices = await serviceSchema
+      .find({
+        _id: {
+          $in: user.savedServices,
+        },
+      })
+      .populate("userId", "fullName profilePictureUrl");
     return savedServices;
+  }
+
+  async getReferralStatistics() {
+    const user = await serviceClientSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const referralDetails = {
+      totalReferral: user.referrals.length,
+      totalProvidersReferred: 0,
+      totalClientsReferred: 0,
+      totalReferralEarned: user.totalReferralEarnings,
+      currentReferralEarned: user.currentReferralBalance,
+    };
+    user.referrals.map((referral) => {
+      if (referral.userType === USER_TYPE.SERVICE_PROVIDER) {
+        referralDetails.totalProvidersReferred++;
+      } else {
+        referralDetails.totalClientsReferred++;
+      }
+    });
+    return referralDetails;
+  }
+
+  async getClientFollowers() {
+    const user = await serviceClientSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const followers = await serviceProviderSchema
+      .find({
+        _id: {
+          $in: user.followers,
+        },
+      })
+      .populate("userId", "fullName profilePictureUrl")
+      .orFail(() => throwError("No followers", 404));
+    return followers;
+  }
+  async getClientFollowing() {
+    const user = await serviceClientSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const following = await serviceProviderSchema
+      .find({
+        _id: {
+          $in: user.following,
+        },
+      })
+      .populate("userId", "fullName profilePictureUrl")
+      .orFail(() => throwError("No followers", 404));
+    return following;
   }
 }
 

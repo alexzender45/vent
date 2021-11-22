@@ -45,11 +45,8 @@ class Order {
         "providerId",
         "serviceId",
         "numberOfItems",
-        "notes",
         "price",
         "serviceType",
-        "dateRequested",
-        "specifiedTime",
         "country",
         "state",
         "address",
@@ -153,7 +150,8 @@ class Order {
       .populate(
         "serviceId clientId providerId",
         " fullName profilePictureUrl name email"
-      );
+      )
+      .orFail(() => throwError("Order Not Found", 404));
     const notificationDetails = {
       userId: order.clientId,
       orderId: order._id,
@@ -275,6 +273,27 @@ class Order {
       .sort({ createdAt: -1 })
       .populate("providerId serviceId", "fullName profilePictureUrl name")
       .orFail(() => throwError("No Orders for this Service Client", 404));
+  }
+
+  async getOrdersForClientOrProvider() {
+    const { id, status } = this.data;
+    return await orderSchema
+      .find({
+        $or: [{ clientId: id }, { providerId: id }],
+        status,
+      })
+      .sort({ createdAt: -1 })
+      .populate(
+        "providerId clientId serviceId",
+        "fullName profilePictureUrl name type price categoryId"
+      )
+      .populate("categoryId", "name")
+      .orFail(() => throwError("No Order Found", 404));
+  }
+
+  async clientOrders() {
+    const { clientId } = this.data;
+    return await orderSchema.find({ clientId });
   }
 
   async getAllOrderWithStatus() {

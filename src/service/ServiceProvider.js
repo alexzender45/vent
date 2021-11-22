@@ -35,6 +35,7 @@ const {
   ORDER_STATUS,
   NOTIFICATION_TYPE,
   SERVICE_TYPE,
+  USER_TYPE,
 } = require("../utils/constants");
 const Services = require("./Services");
 
@@ -115,7 +116,10 @@ class ServiceProvider {
     if (!isValid) {
       throwError(messages);
     }
-
+    const otp = this.data.otp;
+    if (!otp) {
+      throwError("OTP Required To Complete Signup");
+    }
     const cachedOTP = await getCachedData(this.data.email);
     if (!cachedOTP) {
       throwError("OTP Code Expired");
@@ -130,6 +134,38 @@ class ServiceProvider {
     const serviceProvider = new serviceProviderSchema(this.data);
     const newServiceProvider = await serviceProvider.save();
     await new Wallet({ userId: newServiceProvider._id }).createWallet();
+    if (
+      this.data.referralIdentity !== undefined ||
+      this.data.referralIdentity !== null
+    ) {
+      const clientReferral = await serviceClientSchema.findOne({
+        email: this.data.referralIdentity,
+      });
+      if (clientReferral) {
+        const referralDetails = {
+          userId: newServiceProvider._id,
+          userType: newServiceProvider.userType,
+          name: newServiceProvider.fullName,
+          paid: false,
+        };
+        clientReferral.referrals.push(referralDetails);
+        clientReferral.save();
+      } else if (clientReferral === null || clientReferral === undefined) {
+        const providerReferral = await serviceProviderSchema.findOne({
+          email: this.data.referralIdentity,
+        });
+        if (providerReferral) {
+          const referralDetails = {
+            userId: newServiceProvider._id,
+            userType: newServiceProvider.userType,
+            name: newServiceProvider.fullName,
+            paid: false,
+          };
+          providerReferral.referrals.push(referralDetails);
+          providerReferral.save();
+        }
+      }
+    }
     return newServiceProvider;
   }
 
@@ -158,12 +194,17 @@ class ServiceProvider {
       { $inc: { visitCount: 1 } },
       { new: true }
     );
-    const stats = getProviderServicesStatistics(_doc);
-    const userWallet = new Wallet(_doc._id).getUserWallet();
-    await Promise.all([stats, userWallet]).then((results) => {
-      const { currentBalance } = results[1];
-      _doc["walletBalance"] = currentBalance;
-    });
+    const providerServices = await new Services({
+      userId: _doc._id,
+    }).getServiceByUser();
+    if (providerServices.length > 0) {
+      const stats = getProviderServicesStatistics(_doc);
+      const userWallet = new Wallet(_doc._id).getUserWallet();
+      await Promise.all([stats, userWallet]).then((results) => {
+        const { currentBalance } = results[1];
+        _doc["walletBalance"] = currentBalance;
+      });
+    }
     return _doc;
   }
 
@@ -348,8 +389,23 @@ class ServiceProvider {
   // get service provider by id
   async getServiceProviderById() {
     const id = this.data;
-    const serviceProvider = await serviceProviderSchema.findById(id);
-    return serviceProvider;
+    const { _doc } = await serviceProviderSchema.findOneAndUpdate(
+      { _id: id },
+      { $inc: { visitCount: 1 } },
+      { new: true }
+    );
+    const providerServices = await new Services({
+      userId: _doc._id,
+    }).getServiceByUser();
+    if (providerServices.length > 0) {
+      const stats = getProviderServicesStatistics(_doc);
+      const userWallet = new Wallet(_doc._id).getUserWallet();
+      await Promise.all([stats, userWallet]).then((results) => {
+        const { currentBalance } = results[1];
+        _doc["walletBalance"] = currentBalance;
+      });
+    }
+    return _doc;
   }
 
   // delete service provider by id
@@ -481,6 +537,52 @@ class ServiceProvider {
       { communityRating: rating },
       { new: true }
     );
+  }
+  async getReferralStatistics() {
+    const user = await serviceProviderSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const referralDetails = {
+      totalReferral: user.referrals.length,
+      totalProvidersReferred: 0,
+      totalClientsReferred: 0,
+      totalReferralEarned: user.totalReferralEarnings,
+      currentReferralEarned: user.currentReferralBalance,
+    };
+    user.referrals.map((referral) => {
+      if (referral.userType === USER_TYPE.SERVICE_PROVIDER) {
+        referralDetails.totalProvidersReferred++;
+      } else {
+        referralDetails.totalClientsReferred++;
+      }
+    });
+    return referralDetails;
+  }
+
+  async getProviderFollowers() {
+    const serviceProvider = await serviceProviderSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const followers = await serviceClientSchema
+      .find({
+        _id: { $in: serviceProvider.followers },
+      })
+      .populate("userId", "fullName profilePictureUrl")
+      .orFail(() => throwError("No followers", 404));
+    return followers;
+  }
+
+  async getProviderFollowing() {
+    const serviceProvider = await serviceProviderSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    const following = await serviceClientSchema
+      .find({
+        _id: { $in: serviceProvider.following },
+      })
+      .populate("userId", "fullName profilePictureUrl")
+      .orFail(() => throwError("No followers", 404));
+    return following;
   }
 }
 

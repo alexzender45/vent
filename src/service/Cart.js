@@ -62,7 +62,10 @@ class Cart {
   async getAllClientCartItems() {
     return await cartSchema
       .find({ clientId: this.data })
-      .populate("orderId clientId serviceId", "status fullName price type name")
+      .populate(
+        "orderId clientId serviceId",
+        "status fullName price type name portfolioFiles"
+      )
       .orFail(() => throwError(`No Order Found`, 404));
   }
 

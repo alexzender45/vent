@@ -16,8 +16,8 @@ orderRoute
 orderRoute.route("/orders/:id").get(orderController.getOrderById);
 
 orderRoute
-  .route("/orders/:id/reject")
-  .get(
+  .route("/orders/reject")
+  .put(
     authenticate,
     permit([USER_TYPE.SERVICE_PROVIDER]),
     orderController.rejectOrder
@@ -67,6 +67,11 @@ orderRoute
     permit(Object.keys(ADMIN_ROLES)),
     orderController.searchOrdersByClientId
   );
+
+// get order by status
+orderRoute
+  .route("/order/status/:status")
+  .get(authenticate, orderController.getOrdersByStatus);
 
 orderRoute
   .route("/order/start-service")

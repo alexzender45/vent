@@ -284,7 +284,7 @@ exports.saveService = async (req, res) => {
       userId: req.user._id,
     };
     const service = await new ServiceClient(serviceDetails).saveService();
-    return success(res, service);
+    return success(res, { service });
   } catch (err) {
     logger.error(`Unable to save service ${err}`);
     return error(res, { code: err.code, message: err.message });
@@ -294,12 +294,45 @@ exports.saveService = async (req, res) => {
 // get all saved services
 exports.getSavedServices = async (req, res) => {
   try {
-    const savedServices = await new ServiceClient(
-      req.user._id
-    ).getSavedServices();
-    return success(res, savedServices);
+    const services = await new ServiceClient(req.user._id).getSavedServices();
+    return success(res, { services });
   } catch (err) {
     logger.error(`Unable to get saved services ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.getReferralStatistic = async (req, res) => {
+  try {
+    const statistic = await new ServiceClient(
+      req.user._id
+    ).getReferralStatistics();
+    return success(res, { statistic });
+  } catch (err) {
+    logger.error(`Unable to get statistic ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+// get client followers
+exports.getClientFollowers = async (req, res) => {
+  try {
+    const followers = await new ServiceClient(req.user._id).getClientFollowers();
+    return success(res, { followers });
+  } catch (err) {
+    logger.error(`Unable to get followers ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.getClientFollowing = async (req, res) => {
+  try {
+    const following = await new ServiceClient(
+      req.user._id
+    ).getClientFollowing();
+    return success(res, { following });
+  } catch (err) {
+    logger.error(`Unable to get followers ${err}`);
     return error(res, { code: err.code, message: err.message });
   }
 };

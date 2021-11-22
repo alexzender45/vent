@@ -1,11 +1,11 @@
-require('dotenv').config();
+require("dotenv").config();
 
 module.exports = {
   MONGODB_URI: process.env.MONGODB_URI,
   MONGODB_TEST_URI: process.env.MONGODB_TEST_URI,
   JWT_SECRETE_KEY: process.env.JWT_SECRETE_KEY,
   PORT: process.env.PORT || 3000,
-  TOKEN_DURATION: process.env.TOKEN_DURATION || '72h',
+  TOKEN_DURATION: process.env.TOKEN_DURATION || "72h",
   AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
   AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY,
   AWS_REGION: process.env.AWS_REGION,
@@ -40,5 +40,7 @@ module.exports = {
   FACEBOOK_ACCESS_TOKEN_URL: process.env.FACEBOOK_ACCESS_TOKEN_URL,
   FACEBOOK_REDIRECT_URI: process.env.FACEBOOK_REDIRECT_URI,
   FACEBOOK_USER_DATA_URL: process.env.FACEBOOK_USER_DATA_URL,
+  REFERRAL_PERCENTAGE: process.env.REFERRAL_PERCENTAGE,
+  COMPLETED_ORDER: process.env.COMPLETED_ORDER,
   DAILY_CRON_SCHEDULE: process.env.DAILY_CRON_SCHEDULE,
 };

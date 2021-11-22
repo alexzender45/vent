@@ -66,6 +66,9 @@ const orderSchema = new Schema(
       type: String,
       required: true,
     },
+    selectFromProviderTime: {
+      type: String,
+    },
     completedDate: {
       type: Date
     },

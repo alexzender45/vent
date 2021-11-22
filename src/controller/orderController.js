@@ -42,7 +42,7 @@ exports.getOrdersForClient = async (req, res) => {
 
 exports.rejectOrder = async (req, res) => {
   try {
-    await new Order(req.params.id).rejectOrder();
+    await new Order(req.body.id).rejectOrder();
     return success(res, { message: "Reject Order Successfully" });
   } catch (err) {
     logger.error("Error rejecting order", err);
@@ -114,10 +114,28 @@ exports.getOrderByReference = async (req, res) => {
 
 exports.searchOrdersByClientId = async (req, res) => {
   try {
-    const orders = await new Order(req.params.clientId).searchOrdersByClientId();
+    const orders = await new Order(
+      req.params.clientId
+    ).searchOrdersByClientId();
     return success(res, { orders });
   } catch (err) {
     logger.error("Error getting client orders", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+// get all client orders or orders for provider by status
+exports.getOrdersByStatus = async (req, res) => {
+  try {
+    const id = req.user._id;
+    const status = req.params.status;
+    const orders = await new Order({
+      id,
+      status,
+    }).getOrdersForClientOrProvider();
+    return success(res, { orders });
+  } catch (err) {
+    logger.error("Error getting orders by status", err);
     return error(res, { code: err.code, message: err.message });
   }
 };

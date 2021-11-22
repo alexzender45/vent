@@ -6,6 +6,7 @@ const morgan = require("morgan");
 // Custom Dependencies
 require("./src/db/mongoose").db().then();
 require("./src/core/cronjob").updateAvailableBalance();
+require("./src/schedule/cronjob");
 const { logger } = require("./src/utils/logger");
 const { PORT } = require("./src/core/config");
 
