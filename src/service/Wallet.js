@@ -3,6 +3,7 @@ const { throwError } = require("../utils/handleErrors");
 const Bank = require("./Bank");
 const flutterwaveClient = require("../integration/flutterwaveClient");
 const Transaction = require("./Transaction");
+const { TRANSACTION_TYPE } = require("../utils/constants");
 
 class Wallet {
   constructor(data) {
@@ -37,7 +38,7 @@ class Wallet {
           withdrawalReason,
           fullName
       };
-      const {reference, paymentDate} = await flutterwaveClient.transferFunds(paymentData);
+      const {reference, paymentDate, status} = await flutterwaveClient.transferFunds(paymentData);
 
       const debitTransactionDetails = {
           userId: userId,
@@ -46,11 +47,16 @@ class Wallet {
           type: TRANSACTION_TYPE.WITHDRAWAL,
           reference: "WD" + reference,
           paymentDate: paymentDate,
+          status: status
       };
       Transaction.createTransaction(debitTransactionDetails);
 
-      userWallet.amountWithdrawn += amount;
+      userWallet.amountWithdrawn += Number(amount);
       return await userWallet.save();
+  }
+
+  async verifyWithdrawalPayment() {
+      return await flutterwaveClient.verifyPayment(this.data.split("_")[2]);
   }
 }
 

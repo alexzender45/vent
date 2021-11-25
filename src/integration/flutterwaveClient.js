@@ -62,14 +62,14 @@ exports.transferFunds = async (data) => {
             amount: amount,
             narration: withdrawalReason,
             currency: 'NGN', //TODO how many currency are we supporting
-            reference: 'akhlm-pstmnpyt-rfxx007_PMCKDU_1', //TODO generate this
+            reference: new Date().getTime()+'_WD_',
             callback_url: FLUTTER_CALLBACK_URL,
             debit_currency: 'NGN' //TODO how many currency are we supporting
         };
         const response = await axiosInstance.post(`/transfers`, transferRequest);
-        const {reference, created_at} = response.data.data;
+        const {reference, created_at, id} = response.data.data;
         const {status} = response.data;
-        return {reference: reference, paymentDate: created_at, status: status };
+        return {reference: reference+id, paymentDate: created_at, status: status.toUpperCase() };
     } catch (e) {
         let message = {message: 'Error making withdrawal. Kindly Contact The Administrator', code: 500};
         message = processException(e, message);
@@ -78,12 +78,15 @@ exports.transferFunds = async (data) => {
     }
 }
 
-exports.verifyPayment = async (reference) => {
+exports.verifyPayment = async (transferId) => {
     try {
-        const response = await axiosInstance.get(`/verify/${reference}`);
-        return { status: response.data.data.status, message: response.data.data.gateway_response, paymentDate: response.data.data.paidAt };
+        const response = await axiosInstance.get(`/transfers/${transferId}`);
+        const {status, complete_message} = response.data.data;
+        return { status: status, message: complete_message };
     } catch (e) {
-        logger.error('Error verifying booking payment with paystack', e);
-        throwError(e.message, 500)
+        let message = {message: 'Error verifying withdrawal payment. Kindly Contact The Administrator', code: 500};
+        message = processException(e, message);
+        logger.error('Error verifying withdrawal payment with flutterwave', e);
+        throwError(message)
     }
 }

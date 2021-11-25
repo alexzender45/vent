@@ -26,3 +26,13 @@ exports.withdrawFunds = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+
+exports.verifyWithdrawalPayment = async (req, res) => {
+    try {
+        const withdrawal = await new Wallet(req.params.reference).verifyWithdrawalPayment();
+        return success(res, {withdrawal});
+    } catch (err) {
+        logger.error("Unable to verify withdraw payment for user", err);
+        return error(res, {code: err.code, message: err.message});
+    }
+};
