@@ -69,6 +69,9 @@ const orderSchema = new Schema(
     selectFromProviderTime: {
       type: String,
     },
+    completedDate: {
+      type: Date
+    },
   },
   {
     strictQuery: "throw",

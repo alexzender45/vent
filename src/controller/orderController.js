@@ -139,3 +139,25 @@ exports.getOrdersByStatus = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+
+exports.startOrderedService = async (req, res) => {
+  try {
+    const orderedService = await new Order({orderId: req.body.orderId, userId: req.user._id}).startOrder();
+    return success(res, {orderedService});
+  } catch (err) {
+    logger.error("Error starting ordered service", err);
+    return error(res, {code: err.code, message: err.message});
+  }
+};
+
+  exports.endOrderedService = async (req, res) => {
+  try {
+    req.body['userType'] = req.user.userType;
+    req.body['userId'] = req.user._id;
+    const orderedService = await new Order(req.body).endOrder();
+    return success(res, { orderedService });
+  } catch (err) {
+    logger.error("Error ending ordered service", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};

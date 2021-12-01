@@ -1,6 +1,6 @@
 const { Schema, model } = require("mongoose");
 const uniqueValidator = require("mongoose-unique-validator");
-const { TRANSACTION_TYPE } = require("../utils/constants");
+const { TRANSACTION_TYPE, PAYMENT_STATUS } = require("../utils/constants");
 
 const transactionSchema = new Schema(
   {
@@ -29,6 +29,10 @@ const transactionSchema = new Schema(
     paymentDate: {
       type: String,
       required: true,
+    },
+    status: {
+      type: String,
+      default: PAYMENT_STATUS.SUCCESS
     },
   },
   {

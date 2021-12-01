@@ -25,10 +25,6 @@ const bankSchema = new Schema(
             type: String,
             required: true,
         },
-        recipientCode: {
-            type: String,
-            required: true,
-        },
         isDefaultBank: {
             type: Boolean,
             default: false

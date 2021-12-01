@@ -46,6 +46,4 @@ app.use("/api", transactionRouter);
 app.use("/api", notificationRouter);
 app.use("/api", walletRouter);
 
-app.listen(PORT, () =>
-  logger.info(`Ventmode Backend Service Started on port ${PORT}`)
-);
+app.listen(PORT, () => logger.info(`Ventmode Backend Service Started on port ${PORT}`));

@@ -58,8 +58,6 @@ class Rating {
     const newRating = await new ratingSchema(parameters).save();
     const { serviceId, providerId } = newRating;
     // Get Service and Provider Ratings
-    // const serviceRatings = ratingSchema.find({ serviceId }).exec();
-    // const providerRatings = await ratingSchema.find({ providerId });
     const allRatings = await Promise.all([
       ratingSchema.find({ serviceId }).exec(),
       ratingSchema.find({ providerId }).exec(),

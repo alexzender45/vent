@@ -45,10 +45,30 @@ exports.makeDefaultBank = async (req, res) => {
 
 exports.deleteBank = async (req, res) => {
     try {
-        const bank = await new Bank(req.params.id).deleteBank();
+        const bank = await new Bank({userId: req.user._id, bankId: req.params.id}).deleteBank();
         return success(res, { bank });
     } catch (err) {
         logger.error("Unable to delete bank", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+exports.getBankList = async (req, res) => {
+    try {
+        const bankList = await Bank.getBankList();
+        return success(res, { bankList });
+    } catch (err) {
+        logger.error("Unable to get bank list", err);
+        return error(res, { code: err.code, message: err.message });
+    }
+}
+
+exports.resolveAccountDetails = async (req, res) => {
+    try {
+        const bankDetails = await new Bank(req.body).resolveAccountDetails();
+        return success(res, { bankDetails });
+    } catch (err) {
+        logger.error("Unable to resolve bank details", err);
         return error(res, { code: err.code, message: err.message });
     }
 }

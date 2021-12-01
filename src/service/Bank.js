@@ -1,18 +1,14 @@
-const { createTransferRecipient } = require("../integration/paystackClient");
+const { resolveAccountDetails } = require("../integration/flutterwaveClient");
 const bankSchema = require('../models/bankModel');
 const { throwError } = require("../utils/handleErrors");
-const util = require("../utils/util");
 const { validateParameters } = require('../utils/util');
+const flutterwaveClient = require('../integration/flutterwaveClient');
+const redisClient = require('../service/Redis');
 
 class Bank {
     constructor(data) {
         this.data = data;
         this.errors = [];
-    }
-
-    getAllBanks() {
-        const bank = bankSchema.findOne({userId: this.data});
-        return bank ? bank : throwError('Bank Not Found!', 404)
     }
 
     async _bankExist() {
@@ -23,53 +19,103 @@ class Bank {
         }
     }
 
+    async _getDefaultBank(userId) {
+        return await bankSchema
+            .findOne({userId: userId, isDefaultBank: true})
+            .orFail(() => throwError('Bank Not Found', 404));
+    }
+
+    async getAllBanks() {
+        return await bankSchema
+            .find({userId: this.data})
+            .orFail(() => throwError('User Bank Not Found', 404));
+    }
+
     async addBank() {
-        const {userId, bankCode, accountNumber} = this.data;
-        const existingUserBanks = await bankSchema.find({userId});
-        if(!existingUserBanks.length) {
-            this.data['isDefaultBank'] = true;
+        const { isValid, messages } = validateParameters(
+            [
+                "userId",
+                "bankCode",
+                "accountNumber",
+                "accountName",
+                "bankName"
+            ],
+            this.data
+        );
+        if (!isValid) {
+            throwError(messages);
         }
+
         await this._bankExist();
         if (this.errors.length) {
             throwError(this.errors)
         }
-        const bankDetails = await createTransferRecipient({account_number: accountNumber, bank_code: bankCode});
-        this.data = {...this.data, ...bankDetails};
-        const bank = new bankSchema(this.data);
-        let validationError = bank.validateSync();
-        if(validationError){
-            Object.values(validationError.errors)
-                .forEach(e => e.reason ? this.errors.push(e.reason.message) : this.errors.push(e.message.replace('Path ', '')));
-            throwError(this.errors)
+
+        const existingUserBanks = await bankSchema.find({userId: this.data.userId});
+        if(!existingUserBanks.length) {
+            this.data['isDefaultBank'] = true;
         }
-        return await bank.save();
+
+        return await new bankSchema(this.data).save();
     }
 
     async getBank() {
-        const bank = await bankSchema.findById(this.data);
-        return bank ? bank : throwError('Bank Not Found', 404)
-    }
-
-    static async _getDefaultBank(userId) {
-        return await bankSchema.find({userId: userId, isDefaultBank: true});
-        // return bank ? bank : throwError('Bank Not Found', 404)
+        return await bankSchema
+            .findById(this.data)
+            .orFail(() => throwError('Bank Not Found', 404));
     }
 
     async makeDefaultBank() {
-        const defaultBank = await Bank._getDefaultBank(this.data.userId);
+        const {bankId, userId} = this.data;
+        const defaultBank = await this._getDefaultBank(userId);
         defaultBank.isDefaultBank = false;
 
-        this.data = this.data['bankId'];
+        this.data = bankId;
         const bank = await this.getBank();
         bank.isDefaultBank = true;
-
-        const update = await bankSchema.insertMany([defaultBank, bank]);
+        await Promise.all([defaultBank.save(), bank.save()]);
         return 'default bank updated'
     }
 
     async deleteBank() {
-        await bankSchema.deleteOne({_id: this.data});
+        const {userId, bankId} = this.data;
+        await bankSchema.deleteOne({_id: bankId});
+        this.data = userId;
+        const banks = await this.getAllBanks();
+        if(banks && banks.length === 1) {
+            let bank = banks[0];
+            bank.isDefaultBank = true;
+            bank.save();
+        }
         return 'Bank Deleted Successfully'
+    }
+
+    static async getBankList() {
+        const cachedBankList = await redisClient.getCachedData('banks');
+        if(!cachedBankList) {
+            const banksFromPayStack = await flutterwaveClient.getBanks();
+            if(banksFromPayStack) {
+                redisClient.cacheData('banks', JSON.stringify(banksFromPayStack), 2630000);
+                return banksFromPayStack;
+            }
+            throwError("Error Getting Banks. Kindly contact customer support", 500)
+        }
+        return JSON.parse(cachedBankList);
+    }
+
+    async resolveAccountDetails() {
+        const { isValid, messages } = validateParameters(
+            [
+                "accountNumber",
+                "bankCode",
+            ],
+            this.data
+        );
+        if (!isValid) {
+            throwError(messages);
+        }
+        const {accountNumber, bankCode} = this.data;
+        return await resolveAccountDetails({account_number: accountNumber, account_bank: bankCode});
     }
 }
 

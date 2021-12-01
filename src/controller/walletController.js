@@ -13,3 +13,26 @@ exports.getUserWallet = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+
+exports.withdrawFunds = async (req, res) => {
+  try {
+    const {_id, fullName} = req.user;
+    req.body["fullName"] = fullName;
+    req.body["userId"] = _id;
+    const withdrawal = await new Wallet(req.body).withdraw();
+    return success(res, { withdrawal });
+  } catch (err) {
+    logger.error("Unable to withdraw from user wallet", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+exports.verifyWithdrawalPayment = async (req, res) => {
+    try {
+        const withdrawal = await new Wallet(req.params.reference).verifyWithdrawalPayment();
+        return success(res, {withdrawal});
+    } catch (err) {
+        logger.error("Unable to verify withdraw payment for user", err);
+        return error(res, {code: err.code, message: err.message});
+    }
+};
