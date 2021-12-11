@@ -16,47 +16,48 @@ class Wallet {
   }
 
   async getUserWallet() {
-    return await WalletSchema
-        .findOne({ userId: this.data })
-        .orFail(() => throwError("User Wallet Not Found", 404));
+    return await WalletSchema.findOne({ userId: this.data }).orFail(() =>
+      throwError("User Wallet Not Found", 404)
+    );
   }
 
   async withdraw() {
     const { userId, bankId, amount, withdrawalReason, fullName } = this.data;
-      this.data = userId;
-      const userWallet = await this.getUserWallet();
-      if(userWallet.currentBalance < amount) {
-        throwError("Insufficient Available Balance")
-      }
+    this.data = userId;
+    const userWallet = await this.getUserWallet();
+    if (userWallet.currentBalance < amount) {
+      throwError("Insufficient Available Balance");
+    }
 
-      const {bankCode, accountNumber} = await new Bank(bankId).getBank();
+    const { bankCode, accountNumber } = await new Bank(bankId).getBank();
 
-      const paymentData = {
-          bankCode,
-          accountNumber,
-          amount,
-          withdrawalReason,
-          fullName
-      };
-      const {reference, paymentDate, status} = await flutterwaveClient.transferFunds(paymentData);
+    const paymentData = {
+      bankCode,
+      accountNumber,
+      amount,
+      withdrawalReason,
+      fullName,
+    };
+    const { reference, paymentDate, status } =
+      await flutterwaveClient.transferFunds(paymentData);
 
-      const debitTransactionDetails = {
-          userId: userId,
-          amount: amount,
-          reason: withdrawalReason,
-          type: TRANSACTION_TYPE.WITHDRAWAL,
-          reference: "WD" + reference,
-          paymentDate: paymentDate,
-          status: status
-      };
-      Transaction.createTransaction(debitTransactionDetails);
+    const debitTransactionDetails = {
+      userId: userId,
+      amount: amount,
+      reason: `#${amount} ${withdrawalReason}`,
+      type: TRANSACTION_TYPE.WITHDRAWAL,
+      reference: "WD" + reference,
+      paymentDate: paymentDate,
+      status: status,
+    };
+    Transaction.createTransaction(debitTransactionDetails);
 
-      userWallet.amountWithdrawn += Number(amount);
-      return await userWallet.save();
+    userWallet.amountWithdrawn += Number(amount);
+    return await userWallet.save();
   }
 
   async verifyWithdrawalPayment() {
-      return await flutterwaveClient.verifyPayment(this.data.split("_")[2]);
+    return await flutterwaveClient.verifyPayment(this.data.split("_")[2]);
   }
 }
 

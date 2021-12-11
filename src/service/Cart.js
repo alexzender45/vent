@@ -92,7 +92,7 @@ class Cart {
       const debitTransactionDetails = {
         userId: clientId,
         amount: totalPrice,
-        reason: "Pay for accepted services",
+        reason: `Pay #${totalPrice} for accepted services`,
         type: TRANSACTION_TYPE.DEBIT,
         reference: "ORD" + referenceCode,
         paymentDate: Date.now(),
