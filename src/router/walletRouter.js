@@ -20,6 +20,14 @@ walletRoute
   );
 
 walletRoute
+  .route("/wallets/withdraw/referral-earn/client")
+  .post(authenticate, walletController.withdrawReferralEarnClient);
+
+walletRoute
+  .route("/wallets/withdraw/referral-earn/provider")
+  .post(authenticate, walletController.withdrawReferralEarnProvider);
+
+walletRoute
   .route("/wallets/verify-withdrawal/:reference")
   .get(
     authenticate,

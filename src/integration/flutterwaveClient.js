@@ -71,6 +71,7 @@ exports.transferFunds = async (data) => {
         const {status} = response.data;
         return {reference: reference+id, paymentDate: created_at, status: status.toUpperCase() };
     } catch (e) {
+        console.log(e);
         let message = {message: 'Error making withdrawal. Kindly Contact The Administrator', code: 500};
         message = processException(e, message);
         logger.error('Error making withdrawal with flutterwave', e);
