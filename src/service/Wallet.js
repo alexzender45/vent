@@ -3,6 +3,9 @@ const { throwError } = require("../utils/handleErrors");
 const Bank = require("./Bank");
 const flutterwaveClient = require("../integration/flutterwaveClient");
 const Transaction = require("./Transaction");
+const ServiceClient = require("./ServiceClient");
+const ServiceProvider = require("./ServiceProvider");
+const serviceProviderSchema = require("../models/serviceProviderModel");
 const { TRANSACTION_TYPE } = require("../utils/constants");
 
 class Wallet {
@@ -58,6 +61,77 @@ class Wallet {
 
   async verifyWithdrawalPayment() {
     return await flutterwaveClient.verifyPayment(this.data.split("_")[2]);
+  }
+  async withdrawReferralEarnClient() {
+    const { userId, bankId, amount, withdrawalReason, fullName } = this.data;
+    const serviceClient = await new ServiceClient(
+      userId
+    ).serviceClientProfile();
+    if (serviceClient.currentReferralBalance < Number(amount)) {
+      throwError("Insufficient Available Balance");
+    }
+    const { bankCode, accountNumber } = await new Bank(bankId).getBank();
+    const paymentData = {
+      bankCode,
+      accountNumber,
+      amount,
+      withdrawalReason,
+      fullName,
+    };
+    const { reference, paymentDate, status } =
+      await flutterwaveClient.transferFunds(paymentData);
+    const debitTransactionDetails = {
+      userId: userId,
+      amount: amount,
+      reason: `#${amount} ${withdrawalReason}`,
+      type: TRANSACTION_TYPE.WITHDRAWAL,
+      reference: "WD" + reference,
+      paymentDate: paymentDate,
+      status: status,
+    };
+    Transaction.createTransaction(debitTransactionDetails);
+    const currentReferralBalance =
+      serviceClient.currentReferralBalance - Number(amount);
+    await new ServiceClient({
+      userId,
+      currentReferralBalance,
+    }).updateUserCurrentReferralBalance();
+    return serviceClient;
+  }
+
+  async withdrawReferralEarnProvider() {
+    const { userId, bankId, amount, withdrawalReason, fullName } = this.data;
+    const serviceClient = await serviceProviderSchema.findById(userId);
+    if (serviceClient.currentReferralBalance < Number(amount)) {
+      throwError("Insufficient Available Balance");
+    }
+    const { bankCode, accountNumber } = await new Bank(bankId).getBank();
+    const paymentData = {
+      bankCode,
+      accountNumber,
+      amount,
+      withdrawalReason,
+      fullName,
+    };
+    const { reference, paymentDate, status } =
+      await flutterwaveClient.transferFunds(paymentData);
+    const debitTransactionDetails = {
+      userId: userId,
+      amount: amount,
+      reason: `#${amount} ${withdrawalReason}`,
+      type: TRANSACTION_TYPE.WITHDRAWAL,
+      reference: "WD" + reference,
+      paymentDate: paymentDate,
+      status: status,
+    };
+    Transaction.createTransaction(debitTransactionDetails);
+    const currentReferralBalance =
+      serviceClient.currentReferralBalance - Number(amount);
+    await new ServiceProvider({
+      userId,
+      currentReferralBalance,
+    }).updateProviderCurrentReferralBalance();
+    return serviceClient;
   }
 }
 

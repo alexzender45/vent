@@ -585,6 +585,18 @@ class ServiceProvider {
       .orFail(() => throwError("No followers", 404));
     return following;
   }
+  async updateProviderCurrentReferralBalance() {
+    const { userId, currentReferralBalance } = this.data;
+    return await serviceProviderSchema.findByIdAndUpdate(
+      { _id: userId },
+      {
+        currentReferralBalance: currentReferralBalance,
+      },
+      {
+        new: true,
+      }
+    );
+  }
 }
 
 module.exports = ServiceProvider;

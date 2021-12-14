@@ -14,14 +14,11 @@ const {
 } = require("../utils/constants");
 const Notification = require("../service/Notification");
 const Wallet = require("../service/Wallet");
-const {logger} = require("../utils/logger");
-
-
+const { logger } = require("../utils/logger");
 
 // For Service Client
 cron.schedule(DAILY_CRON_SCHEDULE, async () => {
   try {
-    console.log("Daily Cron Job For Client");
     const users = await serviceClientSchema.find({
       referrals: { $exists: true, $ne: [] },
     });
@@ -66,7 +63,6 @@ cron.schedule(DAILY_CRON_SCHEDULE, async () => {
 // For Service Provider
 cron.schedule(DAILY_CRON_SCHEDULE, async () => {
   try {
-    console.log("Daily Cron Job For Provider");
     const users = await serviceProviderSchema.find({
       referrals: { $exists: true, $ne: [] },
     });
@@ -109,33 +105,37 @@ cron.schedule(DAILY_CRON_SCHEDULE, async () => {
 });
 
 cron.schedule(DAILY_CRON_SCHEDULE, async () => {
-    try {
-        logger.info(`cron job started at ${new Date()}...`);
-        const orders = await new Order(ORDER_STATUS.COMPLETED).getAllOrderWithStatus();
-        const filteredOrders = orders.filter(async order => {
-            isOrderLongerThanThreeDays(order.completedDate) &&
-            orderHasNoDisputeOpenInLastThreeDays(order._id)
-        });
-        filteredOrders.map(async (order) => {
-            const providerWallet = await new Wallet(order.providerId).getUserWallet();
-            providerWallet.pendingWithdrawal -= order.price;
-            providerWallet.currentBalance += order.price;
-            await providerWallet.save()
-        });
-        logger.info(`cron job completed ${filteredOrders.length} records at ${new Date()}...`);
-    } catch (e) {
-        logger.error("Cronjob exception...", e)
-    }
-})
+  try {
+    logger.info(`cron job started at ${new Date()}...`);
+    const orders = await new Order(
+      ORDER_STATUS.COMPLETED
+    ).getAllOrderWithStatus();
+    const filteredOrders = orders.filter(async (order) => {
+      isOrderLongerThanThreeDays(order.completedDate) &&
+        orderHasNoDisputeOpenInLastThreeDays(order._id);
+    });
+    filteredOrders.map(async (order) => {
+      const providerWallet = await new Wallet(order.providerId).getUserWallet();
+      providerWallet.pendingWithdrawal -= order.price;
+      providerWallet.currentBalance += order.price;
+      await providerWallet.save();
+    });
+    logger.info(
+      `cron job completed ${filteredOrders.length} records at ${new Date()}...`
+    );
+  } catch (e) {
+    logger.error("Cronjob exception...", e);
+  }
+});
 
 function isOrderLongerThanThreeDays(completedDate) {
-    const today = new Date();
-    const orderCompletionDate = new Date(completedDate);
-    const differenceInTime = today.getTime() - orderCompletionDate.getTime();
-    const differenceInDays = differenceInTime / (3600 * 24 * 1000);
-    return differenceInDays >= 3;
+  const today = new Date();
+  const orderCompletionDate = new Date(completedDate);
+  const differenceInTime = today.getTime() - orderCompletionDate.getTime();
+  const differenceInDays = differenceInTime / (3600 * 24 * 1000);
+  return differenceInDays >= 3;
 }
 
 function orderHasNoDisputeOpenInLastThreeDays(orderId) {
-    return true;
+  return true;
 }
