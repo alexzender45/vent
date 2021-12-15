@@ -2,7 +2,7 @@ const ratingSchema = require("../models/ratingReviewModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
 const Services = require("./Services");
-const ServiceProvider = require("./ServiceProvider");
+const serviceProviderSchema = require("../models/serviceProviderModel");
 
 const computeFiveStarRating = (serviceRatings) => {
   const ratings = new Map();
@@ -46,6 +46,14 @@ class Rating {
     this.errors = [];
   }
 
+  static async updateCommunityRating(userId, rating) {
+      return await serviceProviderSchema.findOneAndUpdate(
+          { _id: userId },
+          { communityRating: rating },
+          { new: true }
+      );
+  }
+
   async createRating() {
     let parameters = this.data;
     const { isValid, messages } = validateParameters(
@@ -69,7 +77,7 @@ class Rating {
     Services.rateService(serviceId, rating);
     // Rate Provider
     const communityRating = computeFiveStarRating(providerRatings);
-    ServiceProvider.updateCommunityRating(providerId, communityRating);
+    Rating.updateCommunityRating(providerId, communityRating);
     return newRating;
   }
 
