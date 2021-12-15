@@ -3,6 +3,7 @@ const { google } = require("googleapis");
 const serviceProviderSchema = require("../models/serviceProviderModel");
 const serviceClientSchema = require("../models/serviceClientModel");
 const orderSchema = require("../models/orderModel");
+const walletSchema = require("../models/wallet");
 const Wallet = require("./Wallet");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
@@ -200,7 +201,7 @@ class ServiceProvider {
     }).getServiceByUser();
     if (providerServices.length > 0) {
       const stats = getProviderServicesStatistics(_doc);
-      const userWallet = new Wallet(_doc._id).getUserWallet();
+      const userWallet = await walletSchema.findOne({ userId: _doc._id });
       await Promise.all([stats, userWallet]).then((results) => {
         const { currentBalance } = results[1];
         _doc["walletBalance"] = currentBalance;
@@ -400,7 +401,7 @@ class ServiceProvider {
     }).getServiceByUser();
     if (providerServices.length > 0) {
       const stats = getProviderServicesStatistics(_doc);
-      const userWallet = new Wallet(_doc._id).getUserWallet();
+      const userWallet = await walletSchema.findOne({ userId: _doc._id });
       await Promise.all([stats, userWallet]).then((results) => {
         const { currentBalance } = results[1];
         _doc["walletBalance"] = currentBalance;
