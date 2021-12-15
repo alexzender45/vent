@@ -3,6 +3,7 @@ const { google } = require("googleapis");
 const serviceClientSchema = require("../models/serviceClientModel");
 const serviceProviderSchema = require("../models/serviceProviderModel");
 const serviceSchema = require("../models/servicesModel");
+const orderSchema = require("../models/orderModel");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
 const util = require("../utils/util");
@@ -44,8 +45,8 @@ const getClientOrdersStatistics = async (serviceClient) => {
   let allOrders = 0;
   let totalAmountSpent = 0;
 
-  await new Order(serviceClient._id)
-    .getOrdersForClient()
+  await orderSchema
+    .find({ clientId: serviceClient._id })
     .then((clientOrders) => {
       clientOrders.forEach((clientOrder) => {
         allOrders++;
@@ -176,9 +177,7 @@ class ServiceClient {
     const { _doc } = await serviceClientSchema
       .findById(this.data)
       .orFail(() => throwError("Service Client Not Found", 404));
-    const clientOrders = await new Order({
-      clientId: _doc._id,
-    }).clientOrders();
+    const clientOrders = await orderSchema.find({ clientId: _doc._id });
     if (clientOrders.length > 0) {
       await getClientOrdersStatistics(_doc);
     }
@@ -586,6 +585,19 @@ class ServiceClient {
       .populate("userId", "fullName profilePictureUrl")
       .orFail(() => throwError("No followers", 404));
     return following;
+  }
+  // update byy id
+  async updateUserCurrentReferralBalance() {
+    const { userId, currentReferralBalance } = this.data;
+    return await serviceClientSchema.findByIdAndUpdate(
+      { _id: userId },
+      {
+        currentReferralBalance: currentReferralBalance,
+      },
+      {
+        new: true,
+      }
+    );
   }
 }
 

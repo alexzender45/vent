@@ -279,7 +279,7 @@ exports.getReferralStatistic = async (req, res) => {
   }
 };
 
-// get providers followers 
+// get providers followers
 exports.getProviderFollowers = async (req, res) => {
   try {
     const followers = await new ServiceProvider(
@@ -303,4 +303,3 @@ exports.getProviderFollowing = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
-

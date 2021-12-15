@@ -32,7 +32,11 @@ const transactionSchema = new Schema(
     },
     status: {
       type: String,
-      default: PAYMENT_STATUS.SUCCESS
+      default: PAYMENT_STATUS.SUCCESS,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {

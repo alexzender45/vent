@@ -2,6 +2,7 @@ const axios = require("axios");
 const { google } = require("googleapis");
 const serviceProviderSchema = require("../models/serviceProviderModel");
 const serviceClientSchema = require("../models/serviceClientModel");
+const orderSchema = require("../models/orderModel");
 const Wallet = require("./Wallet");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
@@ -44,8 +45,8 @@ const getProviderServicesStatistics = async (serviceProvider) => {
   let completedServices = 0;
   let totalAmountReceived = 0;
 
-  await new Order(serviceProvider._id)
-    .getOrdersForProvider()
+  await orderSchema
+    .find({ providerId: serviceProvider._id })
     .then((providerOrders) => {
       providerOrders.forEach((providerOrder) => {
         switch (providerOrder.status) {
@@ -583,6 +584,18 @@ class ServiceProvider {
       .populate("userId", "fullName profilePictureUrl")
       .orFail(() => throwError("No followers", 404));
     return following;
+  }
+  async updateProviderCurrentReferralBalance() {
+    const { userId, currentReferralBalance } = this.data;
+    return await serviceProviderSchema.findByIdAndUpdate(
+      { _id: userId },
+      {
+        currentReferralBalance: currentReferralBalance,
+      },
+      {
+        new: true,
+      }
+    );
   }
 }
 
