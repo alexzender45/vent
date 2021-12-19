@@ -142,22 +142,57 @@ exports.getOrdersByStatus = async (req, res) => {
 
 exports.startOrderedService = async (req, res) => {
   try {
-    const orderedService = await new Order({orderId: req.body.orderId, userId: req.user._id}).startOrder();
-    return success(res, {orderedService});
+    const orderedService = await new Order({
+      orderId: req.body.orderId,
+      userId: req.user._id,
+    }).startOrder();
+    return success(res, { orderedService });
   } catch (err) {
     logger.error("Error starting ordered service", err);
-    return error(res, {code: err.code, message: err.message});
+    return error(res, { code: err.code, message: err.message });
   }
 };
 
-  exports.endOrderedService = async (req, res) => {
+exports.endOrderedService = async (req, res) => {
   try {
-    req.body['userType'] = req.user.userType;
-    req.body['userId'] = req.user._id;
+    req.body["userType"] = req.user.userType;
+    req.body["userId"] = req.user._id;
     const orderedService = await new Order(req.body).endOrder();
     return success(res, { orderedService });
   } catch (err) {
     logger.error("Error ending ordered service", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+// get client orders by status
+exports.getOrdersByStatusForClient = async (req, res) => {
+  try {
+    const clientId = req.user._id;
+    const status = req.query.status;
+    const orders = await new Order({
+      clientId,
+      status,
+    }).getClientOrdersWithStatus();
+    return success(res, { orders });
+  } catch (err) {
+    logger.error("Error getting orders by status", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+
+// get provider orders by status
+exports.getOrdersByStatusForProvider = async (req, res) => {
+  try {
+    const providerId = req.user._id;
+    const status = req.query.status;
+    const orders = await new Order({
+      providerId,
+      status,
+    }).getProviderOrdersWithStatus();
+    return success(res, { orders });
+  } catch (err) {
+    logger.error("Error getting orders by status", err);
     return error(res, { code: err.code, message: err.message });
   }
 };

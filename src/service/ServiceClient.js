@@ -368,9 +368,7 @@ class ServiceClient {
     const { _doc } = await serviceClientSchema
       .findById(id)
       .orFail(() => throwError("Service Client Not Found", 404));
-    const clientOrders = await new Order({
-      clientId: _doc._id,
-    }).clientOrders();
+      const clientOrders = await orderSchema.find({ clientId: _doc._id });
     if (clientOrders.length > 0) {
       await getClientOrdersStatistics(_doc);
     }
