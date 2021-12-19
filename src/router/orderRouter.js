@@ -88,4 +88,22 @@ orderRoute
     permit(Object.keys(USER_TYPE)),
     orderController.endOrderedService
   );
+
+// get order by status for client
+orderRoute
+  .route("/order/status/client/order")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    orderController.getOrdersByStatusForClient
+  );
+
+// get order by status for provider
+orderRoute
+  .route("/order/status/provider/order")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_PROVIDER]),
+    orderController.getOrdersByStatusForProvider
+  );
 module.exports = orderRoute;
