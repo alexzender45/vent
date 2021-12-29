@@ -334,7 +334,6 @@ class ServiceClient {
           });
 
           // eslint-disable-next-line no-use-before-define
-          await registrationSuccessful(newUser.email, newUser.fullName);
           return await newUser;
         }
         // eslint-disable-next-line no-use-before-define
