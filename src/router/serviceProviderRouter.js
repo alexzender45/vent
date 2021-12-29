@@ -119,4 +119,12 @@ serviceProviderRoute
   .route("/service/providers/all/following")
   .get(authenticate, serviceProviderController.getProviderFollowing);
 
+serviceProviderRoute
+  .route("/service/providers/profile/percentage")
+  .get(
+    authenticate,
+    permit([USER_TYPE.SERVICE_PROVIDER]),
+    serviceProviderController.providerProfileCompletePercentage
+  );
+
 module.exports = serviceProviderRoute;
