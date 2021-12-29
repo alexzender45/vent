@@ -361,7 +361,10 @@ class ServiceProvider {
           });
 
           // eslint-disable-next-line no-use-before-define
-          await sendSuccessfulRegistrationEmail(newUser.email, newUser.fullName);
+          await sendSuccessfulRegistrationEmail(
+            newUser.email,
+            newUser.fullName
+          );
           return await newUser;
         }
         // eslint-disable-next-line no-use-before-define
@@ -607,118 +610,41 @@ class ServiceProvider {
     const serviceProvider = await serviceProviderSchema
       .findById(this.data)
       .orFail(() => throwError("User Not Found", 404));
-    if (
-      serviceProvider.phoneNumber !== null ||
-      serviceProvider.phoneNumber !== undefined ||
-      serviceProvider.phoneNumber !== "" ||
-      serviceProvider.dateOfBirth !== null ||
-      serviceProvider.dateOfBirth !== undefined ||
-      serviceProvider.dateOfBirth !== "" ||
-      serviceProvider.profilePictureUrl !== null ||
-      serviceProvider.profilePictureUrl !== undefined ||
-      serviceProvider.profilePictureUrl !== "" ||
-      serviceProvider.occupation !== null ||
-      serviceProvider.occupation !== undefined ||
-      serviceProvider.occupation !== "" ||
-      serviceProvider.bio !== null ||
-      serviceProvider.bio !== undefined ||
-      serviceProvider.bio !== "" ||
-      serviceProvider.location !== undefined ||
-      serviceProvider.location !== null ||
-      serviceProvider.gender !== undefined ||
-      serviceProvider.gender !== null
-    ) {
-      return 100;
-    } else if (
-      serviceProvider.phoneNumber !== null ||
-      serviceProvider.phoneNumber !== undefined ||
-      serviceProvider.phoneNumber !== "" ||
-      serviceProvider.dateOfBirth !== null ||
-      serviceProvider.dateOfBirth !== undefined ||
-      serviceProvider.dateOfBirth !== "" ||
-      serviceProvider.profilePictureUrl !== null ||
-      serviceProvider.profilePictureUrl !== undefined ||
-      serviceProvider.profilePictureUrl !== "" ||
-      serviceProvider.occupation !== null ||
-      serviceProvider.occupation !== undefined ||
-      serviceProvider.occupation !== "" ||
-      serviceProvider.bio !== null ||
-      serviceProvider.bio !== undefined ||
-      serviceProvider.bio !== "" ||
-      serviceProvider.location === undefined ||
-      serviceProvider.location === null
-    ) {
-      return 85;
-    } else if (
-      serviceProvider.phoneNumber !== null ||
-      serviceProvider.phoneNumber !== undefined ||
-      serviceProvider.phoneNumber !== "" ||
-      serviceProvider.dateOfBirth !== null ||
-      serviceProvider.dateOfBirth !== undefined ||
-      serviceProvider.dateOfBirth !== "" ||
-      serviceProvider.profilePictureUrl !== null ||
-      serviceProvider.profilePictureUrl !== undefined ||
-      serviceProvider.profilePictureUrl !== "" ||
-      serviceProvider.occupation !== null ||
-      serviceProvider.occupation !== undefined ||
-      serviceProvider.occupation !== "" ||
-      serviceProvider.bio === null ||
-      serviceProvider.bio === undefined ||
-      serviceProvider.bio === "" ||
-      serviceProvider.location !== undefined ||
-      serviceProvider.location !== null
-    ) {
-      return 70;
-    } else if (
-      serviceProvider.phoneNumber !== null ||
-      serviceProvider.phoneNumber !== undefined ||
-      serviceProvider.phoneNumber !== "" ||
-      serviceProvider.dateOfBirth !== null ||
-      serviceProvider.dateOfBirth !== undefined ||
-      serviceProvider.dateOfBirth !== "" ||
-      serviceProvider.profilePictureUrl !== null ||
-      serviceProvider.profilePictureUrl !== undefined ||
-      serviceProvider.profilePictureUrl !== "" ||
-      serviceProvider.occupation !== null ||
-      serviceProvider.occupation !== undefined ||
-      serviceProvider.occupation !== "" ||
-      serviceProvider.bio !== null ||
-      serviceProvider.bio !== undefined ||
-      serviceProvider.bio !== "" ||
-      serviceProvider.location === undefined ||
-      serviceProvider.location === null
-    ) {
-      return 56;
-    } else if (
-      serviceProvider.phoneNumber !== null ||
-      serviceProvider.phoneNumber !== undefined ||
-      serviceProvider.phoneNumber !== "" ||
-      serviceProvider.dateOfBirth !== null ||
-      serviceProvider.dateOfBirth !== undefined ||
-      serviceProvider.dateOfBirth !== "" ||
-      serviceProvider.profilePictureUrl !== null ||
-      serviceProvider.profilePictureUrl !== undefined ||
-      serviceProvider.profilePictureUrl !== ""
-    ) {
-      return 42;
-    } else if (
-      serviceProvider.phoneNumber !== null ||
-      serviceProvider.phoneNumber !== undefined ||
-      serviceProvider.phoneNumber !== "" ||
-      serviceProvider.dateOfBirth !== null ||
-      serviceProvider.dateOfBirth !== undefined ||
-      serviceProvider.dateOfBirth !== ""
-    ) {
-      return 28;
-    } else if (
-      serviceProvider.phoneNumber !== null ||
-      serviceProvider.phoneNumber !== undefined ||
-      serviceProvider.phoneNumber !== ""
-    ) {
-      return 14;
-    } else {
-      return 0;
+    const profileCompletePercentage = {
+      profileCompletePercentage: 0,
+      profileCompletePercentageMessage: "",
+    };
+    if (serviceProvider.profilePictureUrl) {
+      profileCompletePercentage.profileCompletePercentage += 14;
     }
+    if (serviceProvider.dateOfBirth) {
+      profileCompletePercentage.profileCompletePercentage += 14;
+    }
+    if (serviceProvider.phoneNumber) {
+      profileCompletePercentage.profileCompletePercentage += 14;
+    }
+    if (serviceProvider.location) {
+      profileCompletePercentage.profileCompletePercentage += 15;
+    }
+    if (serviceProvider.occupation) {
+      profileCompletePercentage.profileCompletePercentage += 14;
+    }
+    if (serviceProvider.bio) {
+      profileCompletePercentage.profileCompletePercentage += 14;
+    }
+    if (serviceProvider.gender) {
+      profileCompletePercentage.profileCompletePercentage += 15;
+    }
+    if (serviceProvider.profileCompletePercentage === 100) {
+      profileCompletePercentage.profileCompletePercentageMessage =
+        "Your Profile is 100% Complete";
+    } else {
+      profileCompletePercentage.profileCompletePercentageMessage =
+        "Your Profile is " +
+        profileCompletePercentage.profileCompletePercentage +
+        "% Complete";
+    }
+    return profileCompletePercentage;
   }
 }
 
