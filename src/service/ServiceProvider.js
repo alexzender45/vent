@@ -13,7 +13,7 @@ const {
   sendResetPasswordToken,
   verificationCode,
   SuccessfulPasswordReset,
-  registrationSuccessful,
+  sendSuccessfulRegistrationEmail,
 } = require("../utils/sendgrid");
 const { getCachedData } = require("./Redis");
 const {
@@ -361,6 +361,7 @@ class ServiceProvider {
           });
 
           // eslint-disable-next-line no-use-before-define
+          await sendSuccessfulRegistrationEmail(newUser.email, newUser.fullName);
           return await newUser;
         }
         // eslint-disable-next-line no-use-before-define

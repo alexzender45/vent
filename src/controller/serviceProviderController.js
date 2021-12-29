@@ -141,10 +141,6 @@ exports.googleAccessToken = async (req, res) => {
       userType: newServiceProvider.userType,
       role: newServiceProvider.role,
     });
-    await sendSuccessfulRegistrationEmail(
-      newServiceProvider.email,
-      newServiceProvider.fullName
-    );
     return success(res, { token, message: `<h1>Successfully logged in</h1>` });
   } catch (err) {
     logger.error("Unable to complete service provider update request", err);
@@ -314,4 +310,4 @@ exports.providerProfileCompletePercentage = async (req, res) => {
     logger.error(`Unable to get percentage ${err}`);
     return error(res, { code: err.code, message: err.message });
   }
-}
+};
