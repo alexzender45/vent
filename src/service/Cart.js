@@ -19,6 +19,7 @@ const {
 } = require("../utils/constants");
 const Transaction = require("../service/Transaction");
 const Notification = require("./Notification");
+const { encrypt } = require("../core/userAuth");
 
 class Cart {
   constructor(data) {
@@ -70,8 +71,9 @@ class Cart {
   }
 
   async checkOut() {
-    const { clientId, paymentStatus } = this.data;
+    const { clientId, paymentStatus, payload } = this.data;
     const referenceCode = Math.floor(100000 + Math.random() * 100000);
+    const payment = await encrypt(FLUTTER_WAVE_SECRET_KEY, payload);
     const cartItems = await cartSchema
       .find({ clientId: clientId })
       .populate(

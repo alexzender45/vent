@@ -122,7 +122,9 @@ class ServiceProvider {
     if (!otp) {
       throwError("OTP Required To Complete Signup");
     }
-    const cachedOTP = await getCachedData(this.data.email);
+    const email = this.data.email;
+    const removeWhiteSpace = email.replace(/\s+/g, " ").trim();
+    const cachedOTP = await getCachedData(removeWhiteSpace);
     if (!cachedOTP) {
       throwError("OTP Code Expired");
     } else if (cachedOTP !== this.data.otp) {
@@ -172,7 +174,8 @@ class ServiceProvider {
   }
 
   async login() {
-    const { loginId, password } = this.data;
+    let { loginId, password } = this.data;
+    loginId = loginId.replace(/\s+/g, " ").trim();
     const validParameters = validateParameters(
       ["loginId", "password"],
       this.data
@@ -228,12 +231,13 @@ class ServiceProvider {
 
   async forgotPassword() {
     const { email } = this.data;
+    const removeWhiteSpace = email.replace(/\s+/g, " ").trim();
     const verificationCode = Math.floor(100000 + Math.random() * 100000);
     if (!email) {
       throwError("Please Input Your Email");
     }
     const updateServiceProvider = await serviceProviderSchema.findOneAndUpdate(
-      { email },
+      { removeWhiteSpace },
       { token: verificationCode },
       { new: true }
     );
@@ -597,6 +601,124 @@ class ServiceProvider {
         new: true,
       }
     );
+  }
+
+  async providerProfileCompletePercentage() {
+    const serviceProvider = await serviceProviderSchema
+      .findById(this.data)
+      .orFail(() => throwError("User Not Found", 404));
+    if (
+      serviceProvider.phoneNumber !== null ||
+      serviceProvider.phoneNumber !== undefined ||
+      serviceProvider.phoneNumber !== "" ||
+      serviceProvider.dateOfBirth !== null ||
+      serviceProvider.dateOfBirth !== undefined ||
+      serviceProvider.dateOfBirth !== "" ||
+      serviceProvider.profilePictureUrl !== null ||
+      serviceProvider.profilePictureUrl !== undefined ||
+      serviceProvider.profilePictureUrl !== "" ||
+      serviceProvider.occupation !== null ||
+      serviceProvider.occupation !== undefined ||
+      serviceProvider.occupation !== "" ||
+      serviceProvider.bio !== null ||
+      serviceProvider.bio !== undefined ||
+      serviceProvider.bio !== "" ||
+      serviceProvider.location !== undefined ||
+      serviceProvider.location !== null ||
+      serviceProvider.gender !== undefined ||
+      serviceProvider.gender !== null
+    ) {
+      return 100;
+    } else if (
+      serviceProvider.phoneNumber !== null ||
+      serviceProvider.phoneNumber !== undefined ||
+      serviceProvider.phoneNumber !== "" ||
+      serviceProvider.dateOfBirth !== null ||
+      serviceProvider.dateOfBirth !== undefined ||
+      serviceProvider.dateOfBirth !== "" ||
+      serviceProvider.profilePictureUrl !== null ||
+      serviceProvider.profilePictureUrl !== undefined ||
+      serviceProvider.profilePictureUrl !== "" ||
+      serviceProvider.occupation !== null ||
+      serviceProvider.occupation !== undefined ||
+      serviceProvider.occupation !== "" ||
+      serviceProvider.bio !== null ||
+      serviceProvider.bio !== undefined ||
+      serviceProvider.bio !== "" ||
+      serviceProvider.location === undefined ||
+      serviceProvider.location === null
+    ) {
+      return 85;
+    } else if (
+      serviceProvider.phoneNumber !== null ||
+      serviceProvider.phoneNumber !== undefined ||
+      serviceProvider.phoneNumber !== "" ||
+      serviceProvider.dateOfBirth !== null ||
+      serviceProvider.dateOfBirth !== undefined ||
+      serviceProvider.dateOfBirth !== "" ||
+      serviceProvider.profilePictureUrl !== null ||
+      serviceProvider.profilePictureUrl !== undefined ||
+      serviceProvider.profilePictureUrl !== "" ||
+      serviceProvider.occupation !== null ||
+      serviceProvider.occupation !== undefined ||
+      serviceProvider.occupation !== "" ||
+      serviceProvider.bio === null ||
+      serviceProvider.bio === undefined ||
+      serviceProvider.bio === "" ||
+      serviceProvider.location !== undefined ||
+      serviceProvider.location !== null
+    ) {
+      return 70;
+    } else if (
+      serviceProvider.phoneNumber !== null ||
+      serviceProvider.phoneNumber !== undefined ||
+      serviceProvider.phoneNumber !== "" ||
+      serviceProvider.dateOfBirth !== null ||
+      serviceProvider.dateOfBirth !== undefined ||
+      serviceProvider.dateOfBirth !== "" ||
+      serviceProvider.profilePictureUrl !== null ||
+      serviceProvider.profilePictureUrl !== undefined ||
+      serviceProvider.profilePictureUrl !== "" ||
+      serviceProvider.occupation !== null ||
+      serviceProvider.occupation !== undefined ||
+      serviceProvider.occupation !== "" ||
+      serviceProvider.bio !== null ||
+      serviceProvider.bio !== undefined ||
+      serviceProvider.bio !== "" ||
+      serviceProvider.location === undefined ||
+      serviceProvider.location === null
+    ) {
+      return 56;
+    } else if (
+      serviceProvider.phoneNumber !== null ||
+      serviceProvider.phoneNumber !== undefined ||
+      serviceProvider.phoneNumber !== "" ||
+      serviceProvider.dateOfBirth !== null ||
+      serviceProvider.dateOfBirth !== undefined ||
+      serviceProvider.dateOfBirth !== "" ||
+      serviceProvider.profilePictureUrl !== null ||
+      serviceProvider.profilePictureUrl !== undefined ||
+      serviceProvider.profilePictureUrl !== ""
+    ) {
+      return 42;
+    } else if (
+      serviceProvider.phoneNumber !== null ||
+      serviceProvider.phoneNumber !== undefined ||
+      serviceProvider.phoneNumber !== "" ||
+      serviceProvider.dateOfBirth !== null ||
+      serviceProvider.dateOfBirth !== undefined ||
+      serviceProvider.dateOfBirth !== ""
+    ) {
+      return 28;
+    } else if (
+      serviceProvider.phoneNumber !== null ||
+      serviceProvider.phoneNumber !== undefined ||
+      serviceProvider.phoneNumber !== ""
+    ) {
+      return 14;
+    } else {
+      return 0;
+    }
   }
 }
 

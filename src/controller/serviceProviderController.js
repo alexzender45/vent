@@ -303,3 +303,15 @@ exports.getProviderFollowing = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+
+exports.providerProfileCompletePercentage = async (req, res) => {
+  try {
+    const percentage = await new ServiceProvider(
+      req.user._id
+    ).providerProfileCompletePercentage();
+    return success(res, { percentage });
+  } catch (err) {
+    logger.error(`Unable to get percentage ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+}

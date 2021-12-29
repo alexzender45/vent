@@ -105,8 +105,9 @@ class ServiceClient {
     if (!otp) {
       throwError("OTP Required To Complete Signup");
     }
-    const cachedOTP = await getCachedData(this.data.email);
-
+    const email = this.data.email;
+    const removeWhiteSpace = email.replace(/\s+/g, " ").trim();
+    const cachedOTP = await getCachedData(removeWhiteSpace);
     if (!cachedOTP) {
       throwError("OTP Code Expired");
     } else if (cachedOTP !== otp) {
@@ -154,7 +155,8 @@ class ServiceClient {
   }
 
   async login() {
-    const { loginId, password } = this.data;
+    let { loginId, password } = this.data;
+    loginId = loginId.replace(/\s+/g, " ").trim();
     const validParameters = validateParameters(
       ["loginId", "password"],
       this.data
@@ -202,12 +204,13 @@ class ServiceClient {
 
   async forgotPassword() {
     const { email } = this.data;
+    const removeWhiteSpace = email.replace(/\s+/g, " ").trim();
     const verificationCode = Math.floor(100000 + Math.random() * 100000);
     if (!email) {
       throwError("Please Input Your Email");
     }
     const updateServiceClient = await serviceClientSchema.findOneAndUpdate(
-      { email },
+      { removeWhiteSpace },
       { token: verificationCode },
       { new: true }
     );
@@ -368,7 +371,7 @@ class ServiceClient {
     const { _doc } = await serviceClientSchema
       .findById(id)
       .orFail(() => throwError("Service Client Not Found", 404));
-      const clientOrders = await orderSchema.find({ clientId: _doc._id });
+    const clientOrders = await orderSchema.find({ clientId: _doc._id });
     if (clientOrders.length > 0) {
       await getClientOrdersStatistics(_doc);
     }

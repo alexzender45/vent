@@ -72,6 +72,7 @@ const serviceProviderSchema = new Schema(
     presence: {
       type: String,
       enum: ["ACTIVE", "OFFLINE"],
+      default: "ACTIVE",
     },
     visitCount: {
       type: Number,
