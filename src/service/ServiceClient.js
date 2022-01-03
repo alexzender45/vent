@@ -87,7 +87,7 @@ class ServiceClient {
       .findOne({ email: this.data.email })
       .exec();
     if (existingUser) {
-      this.errors.push("Email already exists");
+      throwError("Email Already Exist", 401);
       return { emailExist: true, user: existingUser };
     }
     return { emailExist: false };
@@ -210,7 +210,7 @@ class ServiceClient {
       throwError("Please Input Your Email");
     }
     const updateServiceClient = await serviceClientSchema.findOneAndUpdate(
-      { removeWhiteSpace },
+      { email: removeWhiteSpace },
       { token: verificationCode },
       { new: true }
     );
@@ -334,7 +334,10 @@ class ServiceClient {
           });
 
           // eslint-disable-next-line no-use-before-define
-          await sendSuccessfulRegistrationEmail(newUser.email, newUser.fullName);
+          await sendSuccessfulRegistrationEmail(
+            newUser.email,
+            newUser.fullName
+          );
           return await newUser;
         }
         // eslint-disable-next-line no-use-before-define
