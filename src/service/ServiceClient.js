@@ -87,7 +87,7 @@ class ServiceClient {
       .findOne({ email: this.data.email })
       .exec();
     if (existingUser) {
-      throwError("Email Already Exist", 401);
+      throwError("Email Already Exist", 301);
       return { emailExist: true, user: existingUser };
     }
     return { emailExist: false };
