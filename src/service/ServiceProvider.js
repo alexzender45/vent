@@ -104,7 +104,7 @@ class ServiceProvider {
       .findOne({ email: this.data.email })
       .exec();
     if (existingUser) {
-      this.errors.push("Email already exists");
+      throwError("Email Already Exist", 401);
       return { emailExist: true, user: existingUser };
     }
     return { emailExist: false };
@@ -237,7 +237,7 @@ class ServiceProvider {
       throwError("Please Input Your Email");
     }
     const updateServiceProvider = await serviceProviderSchema.findOneAndUpdate(
-      { removeWhiteSpace },
+      { email: removeWhiteSpace },
       { token: verificationCode },
       { new: true }
     );
