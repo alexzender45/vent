@@ -73,7 +73,6 @@ class Cart {
   async checkOut() {
     const { clientId, paymentStatus, payload } = this.data;
     const referenceCode = Math.floor(100000 + Math.random() * 100000);
-    const payment = await encrypt(FLUTTER_WAVE_SECRET_KEY, payload);
     const cartItems = await cartSchema
       .find({ clientId: clientId })
       .populate(

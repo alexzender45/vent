@@ -451,7 +451,6 @@ class ServiceProvider {
     }
     throwError("Error signing in");
   }
-
   async followUser() {
     const { userId, followedUserId } = this.data;
     const user = await serviceClientSchema
