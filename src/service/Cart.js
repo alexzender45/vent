@@ -19,7 +19,6 @@ const {
 } = require("../utils/constants");
 const Transaction = require("../service/Transaction");
 const Notification = require("./Notification");
-const { encrypt } = require("../core/userAuth");
 
 class Cart {
   constructor(data) {
@@ -65,13 +64,13 @@ class Cart {
       .find({ clientId: this.data })
       .populate(
         "orderId clientId serviceId",
-        "status fullName price type name portfolioFiles"
+        "status fullName price type name portfolioFiles email"
       )
       .orFail(() => throwError(`No Order Found`, 404));
   }
 
   async checkOut() {
-    const { clientId, paymentStatus, payload } = this.data;
+    const { clientId, paymentStatus } = this.data;
     const referenceCode = Math.floor(100000 + Math.random() * 100000);
     const cartItems = await cartSchema
       .find({ clientId: clientId })
