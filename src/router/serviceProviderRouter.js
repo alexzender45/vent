@@ -1,7 +1,7 @@
 const serviceProviderRoute = require("../core/routerConfig");
 const serviceProviderController = require("../controller/serviceProviderController");
 const { authenticate, permit } = require("../core/userAuth");
-const { USER_TYPE } = require("../utils/constants");
+const { USER_TYPE, ADMIN_ROLES } = require("../utils/constants");
 const upload = require("../core/multer");
 
 serviceProviderRoute
@@ -22,7 +22,7 @@ serviceProviderRoute
   .route("/service/providers/all")
   .get(
     authenticate,
-    permit([USER_TYPE.SERVICE_PROVIDER]),
+    permit([ADMIN_ROLES]),
     serviceProviderController.getAllServiceProvider
   );
 
