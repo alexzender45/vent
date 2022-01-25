@@ -22,7 +22,7 @@ serviceClientRoute
   .route("/service/clients/all")
   .get(
     authenticate,
-    permit([ADMIN_ROLES.SUPER_ADMIN]),
+   //permit([ADMIN_ROLES.SUPER_ADMIN]),
     serviceClientController.getAllServiceClient
   );
 

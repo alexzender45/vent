@@ -22,7 +22,7 @@ serviceProviderRoute
   .route("/service/providers/all")
   .get(
     authenticate,
-    permit([ADMIN_ROLES.SUPER_ADMIN]),
+    //permit([ADMIN_ROLES.SUPER_ADMIN]),
     serviceProviderController.getAllServiceProvider
   );
 
