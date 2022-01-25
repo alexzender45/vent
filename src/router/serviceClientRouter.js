@@ -1,7 +1,7 @@
 const serviceClientRoute = require("../core/routerConfig");
 const serviceClientController = require("../controller/serviceClientController");
 const { authenticate, permit } = require("../core/userAuth");
-const { USER_TYPE } = require("../utils/constants");
+const { USER_TYPE, ADMIN_ROLES } = require("../utils/constants");
 const upload = require("../core/multer");
 
 serviceClientRoute
@@ -22,7 +22,7 @@ serviceClientRoute
   .route("/service/clients/all")
   .get(
     authenticate,
-    permit([USER_TYPE.SERVICE_CLIENT]),
+    permit([ADMIN_ROLES]),
     serviceClientController.getAllServiceClient
   );
 
