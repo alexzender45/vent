@@ -576,7 +576,6 @@ class ServiceProvider {
         _id: { $in: serviceProvider.followers },
       })
       .populate("userId", "fullName profilePictureUrl")
-      .orFail(() => throwError("No followers", 404));
     return followers;
   }
 
@@ -589,7 +588,6 @@ class ServiceProvider {
         _id: { $in: serviceProvider.following },
       })
       .populate("userId", "fullName profilePictureUrl")
-      .orFail(() => throwError("No followers", 404));
     return following;
   }
   async updateProviderCurrentReferralBalance() {

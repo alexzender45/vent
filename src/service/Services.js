@@ -78,7 +78,6 @@ class Services {
     return await serviceSchema
       .find(query)
       .populate("userId", "fullName")
-      .orFail(() => throwError("No Service Offered By User", 404));
   }
 
   async deleteService() {

@@ -370,16 +370,15 @@ class ServiceClient {
 
   // get service client by id
   async getServiceClientById() {
-    const id = this.data;
     const { _doc } = await serviceClientSchema
-      .findById(id)
+      .findById(this.data)
       .orFail(() => throwError("Service Client Not Found", 404));
     const clientOrders = await orderSchema.find({ clientId: _doc._id });
     if (clientOrders.length > 0) {
       await getClientOrdersStatistics(_doc);
     }
     return _doc;
-  }
+  } 
 
   // delete service client by id
   async deleteServiceClientById() {
@@ -573,7 +572,6 @@ class ServiceClient {
         },
       })
       .populate("userId", "fullName profilePictureUrl")
-      .orFail(() => throwError("No followers", 404));
     return followers;
   }
   async getClientFollowing() {
@@ -587,7 +585,6 @@ class ServiceClient {
         },
       })
       .populate("userId", "fullName profilePictureUrl")
-      .orFail(() => throwError("No followers", 404));
     return following;
   }
   // update byy id

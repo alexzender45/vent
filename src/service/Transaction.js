@@ -21,9 +21,8 @@ class Transaction {
   }
 
   async getAllUserTransactions() {
-    return await TransactionSchema.find({ userId: this.data }).orFail(() =>
-      TRANSACTION_NOT_FOUND("User Transactions Not Found")
-    );
+    const transactions = await TransactionSchema.find({ userId: this.data });
+    return transactions;
   }
 
   async getTransaction() {
@@ -34,9 +33,7 @@ class Transaction {
 
   async getTransactionByReference() {
     const reference = this.data;
-    return await TransactionSchema.find({ reference }).orFail(() =>
-      TRANSACTION_NOT_FOUND(`No Transaction Found With Reference ${reference}`)
-    );
+    return await TransactionSchema.find({ reference });
   }
 }
 
