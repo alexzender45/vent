@@ -56,6 +56,8 @@ class Wallet {
     Transaction.createTransaction(debitTransactionDetails);
 
     userWallet.amountWithdrawn += Number(amount);
+    userWallet.currentBalance -= Number(amount);
+    userWallet.availableBalance -= Number(amount);
     return await userWallet.save();
   }
 
