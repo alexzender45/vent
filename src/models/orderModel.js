@@ -72,6 +72,10 @@ const orderSchema = new Schema(
     completedDate: {
       type: Date
     },
+    dispute: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     strictQuery: "throw",

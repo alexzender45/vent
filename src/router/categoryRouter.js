@@ -7,7 +7,7 @@ categoryRoute
   .route("/categories")
   .post(
     authenticate,
-    permit(Object.keys(ADMIN_ROLES)),
+    //permit([ADMIN_ROLES.SUPER_ADMIN]),
     categoryController.create
   )
   .get(authenticate, categoryController.getAllCategory);
@@ -17,7 +17,7 @@ categoryRoute
   .get(authenticate, categoryController.getCategoryById)
   .delete(
     authenticate,
-    permit(Object.keys(ADMIN_ROLES)),
+    permit([ADMIN_ROLES.SUPER_ADMIN]),
     categoryController.deleteCategory
   );
 

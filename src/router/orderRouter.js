@@ -77,7 +77,7 @@ orderRoute
   .route("/order/start-service")
   .post(
     authenticate,
-    permit([USER_TYPE.SERVICE_CLIENT]),
+    permit([USER_TYPE.SERVICE_PROVIDER]),
     orderController.startOrderedService
   );
 

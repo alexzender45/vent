@@ -20,9 +20,11 @@ const {
 const Notification = require("./Notification");
 const Wallet = require("./Wallet");
 const Rating = require("./Rating");
+const { error } = require("winston");
 const UNAUTHORIZED_END_SERVICE_MESSAGE =
   "You are not authorized to end the service";
-
+const UNAUTHORIZED_START_SERVICE_MESSAGE =
+  "You are not authorized to start the service";
 function addOrderLocation(parameters) {
   const { useProfileLocation, country, state, address } = parameters;
   parameters["location"] = {
@@ -333,8 +335,8 @@ class Order {
     const { orderId, userId } = this.data;
     this.data = orderId;
     const order = await this.getOder();
-    if (order.clientId && order.clientId.toString() !== userId.toString()) {
-      throwError(UNAUTHORIZED_END_SERVICE_MESSAGE);
+    if (order.providerId && order.providerId.toString() !== userId.toString()) {
+      throwError(UNAUTHORIZED_START_SERVICE_MESSAGE);
     }
 
     if (order.status !== ORDER_STATUS.PAID) {
@@ -351,9 +353,6 @@ class Order {
       orderId,
       userType,
       userId,
-      rating,
-      userFeedback,
-      providerFeedback,
     } = this.data;
     const { isValid, messages } = validateParameters(
       ["orderId", "userType"],
@@ -370,19 +369,9 @@ class Order {
     if (order.status !== ORDER_STATUS.STARTED) {
       throwError("Service Is Yet To Be Started");
     }
-    const { providerId, clientId, serviceId } = order;
-    const orderType = serviceId.type;
+    const { providerId } = order;
 
     if (
-      orderType === SERVICE_TYPE.ONLINE &&
-      userType !== USER_TYPE.SERVICE_CLIENT &&
-      userId.toString() !== clientId.toString()
-    ) {
-      throwError(UNAUTHORIZED_END_SERVICE_MESSAGE);
-    }
-
-    if (
-      orderType !== SERVICE_TYPE.ONLINE &&
       userType !== USER_TYPE.SERVICE_PROVIDER &&
       userId.toString() !== providerId.toString()
     ) {
@@ -396,17 +385,20 @@ class Order {
     order.status = ORDER_STATUS.COMPLETED;
     order.completedDate = new Date();
     const completedOrder = await order.save();
-
-    this.data = {
-      providerId: providerId,
-      reviewerId: clientId,
-      serviceId: serviceId,
-      rating: rating,
-      review: userFeedback,
-      providerResponse: providerFeedback,
-    };
-    new Rating(this.data).createRating();
     return completedOrder;
+  }
+  async orderDispute(orderId) {
+    const order = await orderSchema.findOne({ _id: orderId, dispute: true });
+    if(order && order !== null) {
+      return { error: "Order already has a dispute" };
+    }
+    const notCompletedOrder = await orderSchema.findOne({ _id: orderId, status: { $ne: ORDER_STATUS.COMPLETED } });
+    if(notCompletedOrder && notCompletedOrder !== null) {
+      return { error: "Order is not completed" };
+    }
+    return await orderSchema.findByIdAndUpdate(orderId, {
+      dispute: true,
+    });
   }
 }
 

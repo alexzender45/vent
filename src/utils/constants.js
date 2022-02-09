@@ -31,7 +31,8 @@ module.exports = {
   },
   CATEGORY_TYPE: {
     ONLINE: "ONLINE",
-    INPERSON: "INPERSON",
+    REQUESTING: "REQUESTING",
+    BOOKING: "BOOKING",
   },
   ORDER_STATUS: {
     PENDING: "PENDING",

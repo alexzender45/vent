@@ -124,7 +124,7 @@ class Services {
   }
 
   async getAllService() {
-    const { categoryId, type, bestRated, recentlyAdded } = this.data;
+    const { categoryId, type, bestRated, recentlyAdded, serviceSearch } = this.data;
     const page = Number(this.data.page);
     const limit = Number(this.data.limit);
     const startIndex = (page - 1) * limit;
@@ -140,7 +140,15 @@ class Services {
     if (categoryId) {
       query.categoryId = categoryId;
     }
-
+     
+   if(serviceSearch){
+    serviceSearch.replace(/\s+/g, " ").trim();
+    query.$or = [
+      {
+        name: { $regex: serviceSearch, $options: "i" },
+      },
+    ];
+  }
     const all_existing_services_count = await serviceSchema
       .countDocuments(query)
       .exec();
