@@ -76,6 +76,9 @@ const orderSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    dateToCompleteService: {
+      type: Date,
+    },
   },
   {
     strictQuery: "throw",

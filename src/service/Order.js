@@ -133,12 +133,20 @@ class Order {
   async getOder() {
     return await orderSchema
       .findById(this.data)
+      .populate(
+        "providerId clientId serviceId",
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+      )
       .orFail(() => throwError("Order Not Found", 404));
   }
 
   static async getAllOrders() {
     return await orderSchema
       .find()
+      .populate(
+        "providerId clientId serviceId",
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+      )
       .orFail(() => throwError("No Order Found", 404));
   }
 
@@ -243,7 +251,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
       )
       .orFail(() => throwError("No Order Found", 404));
   }
@@ -254,7 +262,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
       )
       .orFail(() => throwError("No Order Found", 404));
   }
@@ -265,7 +273,7 @@ class Order {
       .findOne({ orderReference: this.data })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
       )
       .orFail(() => throwError("Order Not Found", 404));
   }
@@ -274,7 +282,10 @@ class Order {
     return await orderSchema
       .find({ clientId: this.data })
       .sort({ createdAt: -1 })
-      .populate("providerId serviceId", "fullName profilePictureUrl name")
+      .populate(
+        "providerId clientId serviceId",
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+      )
       .orFail(() => throwError("No Orders for this Service Client", 404));
   }
 
@@ -288,7 +299,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type price categoryId"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
       )
       .populate("categoryId", "name")
       .orFail(() => throwError("No Order Found", 404));
@@ -303,7 +314,10 @@ class Order {
     const status = this.data;
     return await orderSchema
       .find({ status })
-      .orFail(() => throwError(`No Order with status ${status}`, 404));
+      .populate(
+        "providerId clientId serviceId",
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+      ).orFail(() => throwError(`No Order with status ${status}`, 404));
   }
 
   // get client orders with status
@@ -314,7 +328,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type price categoryId"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
       );
   }
 
@@ -326,13 +340,19 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type price categoryId"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation"
       );
   }
 
   //service user starts all service (online, booking and requesting service)
   async startOrder() {
-    const { orderId, userId } = this.data;
+    const { orderId, userId, dateToCompleteService } = this.data;
+    if(!dateToCompleteService || dateToCompleteService === "") {
+      throwError("Please select a date to complete service", 400);
+    }
+    if(new Date(dateToCompleteService) < new Date()) {
+      throwError("Please select date in future", 400);
+    }
     this.data = orderId;
     const order = await this.getOder();
     if (order.providerId && order.providerId.toString() !== userId.toString()) {
@@ -343,6 +363,7 @@ class Order {
       throwError("Service is pending payment");
     }
     order.status = ORDER_STATUS.STARTED;
+    order.dateToCompleteService = new Date(dateToCompleteService);
     return await order.save();
   }
 

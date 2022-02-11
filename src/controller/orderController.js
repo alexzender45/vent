@@ -145,6 +145,7 @@ exports.startOrderedService = async (req, res) => {
     const orderedService = await new Order({
       orderId: req.body.orderId,
       userId: req.user._id,
+      dateToCompleteService: req.body.dateToCompleteService,
     }).startOrder();
     return success(res, { orderedService });
   } catch (err) {
