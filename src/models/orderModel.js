@@ -78,6 +78,7 @@ const orderSchema = new Schema(
     },
     dateToCompleteService: {
       type: Date,
+      default: null,
     },
   },
   {
