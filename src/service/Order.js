@@ -135,7 +135,7 @@ class Order {
       .findById(this.data)
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       )
       .orFail(() => throwError("Order Not Found", 404));
   }
@@ -145,7 +145,7 @@ class Order {
       .find()
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       )
       .orFail(() => throwError("No Order Found", 404));
   }
@@ -251,7 +251,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       )
       .orFail(() => throwError("No Order Found", 404));
   }
@@ -262,7 +262,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       )
       .orFail(() => throwError("No Order Found", 404));
   }
@@ -273,7 +273,7 @@ class Order {
       .findOne({ orderReference: this.data })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       )
       .orFail(() => throwError("Order Not Found", 404));
   }
@@ -284,7 +284,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       )
       .orFail(() => throwError("No Orders for this Service Client", 404));
   }
@@ -299,7 +299,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       )
       .populate("categoryId", "name")
       .orFail(() => throwError("No Order Found", 404));
@@ -316,7 +316,7 @@ class Order {
       .find({ status })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       ).orFail(() => throwError(`No Order with status ${status}`, 404));
   }
 
@@ -328,7 +328,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       );
   }
 
@@ -340,7 +340,7 @@ class Order {
       .sort({ createdAt: -1 })
       .populate(
         "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation"
+        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
       );
   }
 
