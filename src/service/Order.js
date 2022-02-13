@@ -355,7 +355,7 @@ class Order {
     }
     this.data = orderId;
     const order = await this.getOder();
-    if (order.providerId && order.providerId.toString() !== userId.toString()) {
+    if (order.providerId && order.providerId._id.toString() !== userId.toString()) {
       throwError(UNAUTHORIZED_START_SERVICE_MESSAGE);
     }
 
@@ -394,7 +394,7 @@ class Order {
 
     if (
       userType !== USER_TYPE.SERVICE_PROVIDER &&
-      userId.toString() !== providerId.toString()
+      userId.toString() !== providerId._id.toString()
     ) {
       throwError(UNAUTHORIZED_END_SERVICE_MESSAGE);
     }

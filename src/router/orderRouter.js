@@ -85,7 +85,7 @@ orderRoute
   .route("/order/end-service")
   .post(
     authenticate,
-    permit(Object.keys(USER_TYPE)),
+    permit([USER_TYPE.SERVICE_PROVIDER]),
     orderController.endOrderedService
   );
 
