@@ -57,6 +57,7 @@ exports.getServiceProviderProfile = async (req, res) => {
     ).serviceProviderProfile();
     return success(res, { serviceProvider });
   } catch (err) {
+    console.log(err);
     logger.error("Unable to fetch service provider profile", err);
     return error(res, { code: err.code, message: err.message });
   }

@@ -206,8 +206,10 @@ class ServiceProvider {
       const stats = getProviderServicesStatistics(_doc);
       const userWallet = await walletSchema.findOne({ userId: _doc._id });
       await Promise.all([stats, userWallet]).then((results) => {
+        if(results[1]){
         const { currentBalance } = results[1];
         _doc["walletBalance"] = currentBalance;
+        }
       });
     }
     return _doc;
