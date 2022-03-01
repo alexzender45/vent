@@ -108,9 +108,10 @@ class ServiceClient {
     const email = this.data.email;
     const removeWhiteSpace = email.replace(/\s+/g, " ").trim();
     const cachedOTP = await getCachedData(removeWhiteSpace);
+    const removeWhiteSpaceOTP = otp.replace(/\s+/g, " ").trim();
     if (!cachedOTP) {
       throwError("OTP Code Expired");
-    } else if (cachedOTP !== otp) {
+    } else if (Number(cachedOTP) !== Number(removeWhiteSpaceOTP)) {
       throwError("Invalid OTP");
     }
     await this.emailExist();

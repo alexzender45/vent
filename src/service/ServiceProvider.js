@@ -125,19 +125,19 @@ class ServiceProvider {
     const email = this.data.email;
     const removeWhiteSpace = email.replace(/\s+/g, " ").trim();
     const cachedOTP = await getCachedData(removeWhiteSpace);
+    const removeWhiteSpaceOTP = otp.replace(/\s+/g, " ").trim();
     if (!cachedOTP) {
       throwError("OTP Code Expired");
-    } else if (cachedOTP !== this.data.otp) {
+    } else if (Number(cachedOTP) !== Number(removeWhiteSpaceOTP)) {
       throwError("Invalid OTP");
     }
-
     await this.emailExist();
     if (this.errors.length) {
       throwError(this.errors);
     }
     const serviceProvider = new serviceProviderSchema(this.data);
     const newServiceProvider = await serviceProvider.save();
-    await new Wallet({ userId: newServiceProvider._id }).createWallet();
+    await new walletSchema({userId: newServiceProvider._id}).save();
     if (
       this.data.referralIdentity !== undefined ||
       this.data.referralIdentity !== null
