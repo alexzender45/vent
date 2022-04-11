@@ -122,7 +122,14 @@ serviceClientRoute
     permit([USER_TYPE.SERVICE_CLIENT]),
     serviceClientController.getSavedServices
   );
-
+// delete saved service
+serviceClientRoute
+  .route("/service/clients/saved/services/:id")
+  .delete(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    serviceClientController.deleteSavedService
+  );
 // get referral statistics
 serviceClientRoute
   .route("/service/clients/referral/statistics")

@@ -40,6 +40,8 @@ const {
   USER_TYPE,
 } = require("../utils/constants");
 const Services = require("./Services");
+const { io } = require("socket.io-client");
+const socket = io("http://localhost:3000");
 
 const getProviderServicesStatistics = async (serviceProvider) => {
   let activeServices = 0;
@@ -184,7 +186,16 @@ class ServiceProvider {
     if (!isValid) {
       throwError(messages);
     }
-    return await serviceProviderSchema.findByCredentials(loginId, password);
+    const provider = await serviceProviderSchema.findByCredentials(loginId, password);
+    socket.on("connect" , async() => {
+      socket.emit("online", provider._id);
+      socket.on("online", async (provider_id) => {
+        provider.isOnline = true;
+        await provider.save();
+        console.log(provider_id);
+      });
+    });
+      return provider;
   }
 
   static async getAllServiceProvider() {
@@ -646,6 +657,28 @@ class ServiceProvider {
         "% Complete";
     }
     return profileCompletePercentage;
+  }
+  async getProviderByIdChat() {
+    const serviceProvider = await serviceProviderSchema
+      .findById(this.data)
+      .sort('-createdAt')
+    return serviceProvider;
+  }
+
+  async updateProviderIsOnline(email, isOnline, socketId) {
+    return await serviceProviderSchema.findOneAndUpdate({
+      $or: [
+        { email },
+        { socketId },
+      ],
+    },
+      {
+        $set: { isOnline, socketId },
+      },
+      {
+        new: true,
+      }
+    );
   }
 }
 

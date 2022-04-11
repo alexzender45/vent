@@ -49,9 +49,10 @@ exports.updateService = async (req, res) => {
 
 exports.deleteService = async (req, res) => {
   try {
-    const message = await new Services({_id: req.params.id, userId: req.user._id}).deleteService();
+    const message = await new Services({_id:req.params.id, userId:req.user._id}).deleteService();
     return success(res, { message });
   } catch (err) {
+    console.log(err);
     logger.error("Error deleting service", err);
     return error(res, { code: err.code, message: err.message });
   }

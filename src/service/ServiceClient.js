@@ -169,7 +169,7 @@ class ServiceClient {
     return await serviceClientSchema.findByCredentials(loginId, password);
   }
 
-  static async getAllServiceClient() {
+  async getAllServiceClient() {
     const serviceClient = await serviceClientSchema.find();
     return serviceClient
       ? serviceClient
@@ -541,6 +541,22 @@ class ServiceClient {
     return savedServices;
   }
 
+  // delete saved service
+  async deleteSavedService() {
+    const { userId, serviceId } = this.data;
+    const user = await serviceClientSchema
+      .findById({
+        _id: userId,
+      })
+      .orFail(() => throwError("User Not Found", 404));
+    if(user && user.savedServices.includes(serviceId)) {
+      user.savedServices.splice(user.savedServices.indexOf(serviceId), 1);
+      await user.save();
+      return user;
+    }
+    throwError("Service Not Found");
+  }
+
   async getReferralStatistics() {
     const user = await serviceClientSchema
       .findById(this.data)
@@ -595,6 +611,29 @@ class ServiceClient {
       { _id: userId },
       {
         currentReferralBalance: currentReferralBalance,
+      },
+      {
+        new: true,
+      }
+    );
+  }
+  // get by id
+  async getClientByIdChat() {
+    const user = await serviceClientSchema
+      .findById(this.data)
+      .sort('-createdAt')
+    return user;
+  }
+
+  async updateClientIsOnline(email, isOnline, socketId) {
+    return await serviceClientSchema.findOneAndUpdate({
+      $or: [
+        { email },
+        { socketId },
+      ],
+    }, 
+      {
+        $set: { isOnline, socketId },
       },
       {
         new: true,

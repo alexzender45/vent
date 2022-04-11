@@ -96,6 +96,13 @@ const serviceClientSchema = new Schema(
       type: Number,
       default: 0,
     },
+    isOnline: {
+      type: Boolean,
+      default: false,
+    },
+    socketId: {
+      type: String,
+    },
   },
   {
     timestamps: true,

@@ -1,7 +1,8 @@
 const serviceSchema = require("../models/servicesModel");
+const serviceClientSchema = require("../models/serviceClientModel");
 const { throwError } = require("../utils/handleErrors");
 const { validateParameters, performUpdate } = require("../utils/util");
-
+const ServiceClient = require("../service/ServiceClient");
 function addServiceLocation(parameters) {
   const { useProfileLocation, country, state, address } = parameters;
   parameters["location"] = {
@@ -81,11 +82,18 @@ class Services {
   }
 
   async deleteService() {
-    const service = await serviceSchema.deleteOne(this.data);
+    const service = await serviceSchema.deleteOne(this.data)
+    const serviceClients = await serviceClientSchema.find();
+    serviceClients.forEach(async(client) => {
+      if(client.savedServices.includes(this.data.id)){
+        client.savedServices.splice(client.savedServices.indexOf(this.data.id), 1);
+        await client.save();
+      }
+    });
     if (service.deletedCount) {
       return "Service Deleted Successfully";
     }
-    return "Service Not Listed By Provider";
+    return "User Not authorized to delete this service";
   }
 
   async updateService() {

@@ -42,7 +42,7 @@ exports.login = async (req, res) => {
 
 exports.getAllServiceClient = async (req, res) => {
   try {
-    const serviceClients = await ServiceClient.getAllServiceClient();
+    const serviceClients = await new ServiceClient().getAllServiceClient();
     return success(res, { serviceClients });
   } catch (err) {
     logger.error("Unable to complete request", err);
@@ -294,6 +294,20 @@ exports.getSavedServices = async (req, res) => {
     return success(res, { services });
   } catch (err) {
     logger.error(`Unable to get saved services ${err}`);
+    return error(res, { code: err.code, message: err.message });
+  }
+};
+// delete saved service
+exports.deleteSavedService = async (req, res) => {
+  try {
+    const serviceDetails = {
+      serviceId: req.params.id,
+      userId: req.user._id,
+    };
+    const service = await new ServiceClient(serviceDetails).deleteSavedService();
+    return success(res, { service });
+  } catch (err) {
+    logger.error(`Unable to delete saved service ${err}`);
     return error(res, { code: err.code, message: err.message });
   }
 };
