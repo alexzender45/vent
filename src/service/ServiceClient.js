@@ -156,7 +156,7 @@ class ServiceClient {
   }
 
   async login() {
-    let { loginId, password } = this.data;
+    let { loginId, password, firebaseToken } = this.data;
     loginId = loginId.replace(/\s+/g, " ").trim();
     const validParameters = validateParameters(
       ["loginId", "password"],
@@ -166,7 +166,12 @@ class ServiceClient {
     if (!isValid) {
       throwError(messages);
     }
-    return await serviceClientSchema.findByCredentials(loginId, password);
+    const serviceClient = await serviceClientSchema.findByCredentials(loginId, password);
+    if(firebaseToken){
+      serviceClient.firebaseToken = firebaseToken;
+      await serviceClient.save();
+    }
+    return serviceClient;
   }
 
   async getAllServiceClient() {

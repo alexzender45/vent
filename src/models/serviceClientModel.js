@@ -103,6 +103,9 @@ const serviceClientSchema = new Schema(
     socketId: {
       type: String,
     },
+    firebaseToken: {
+      type: String
+    },
   },
   {
     timestamps: true,

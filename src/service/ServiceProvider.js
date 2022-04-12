@@ -176,7 +176,7 @@ class ServiceProvider {
   }
 
   async login() {
-    let { loginId, password } = this.data;
+    let { loginId, password, firebaseToken } = this.data;
     loginId = loginId.replace(/\s+/g, " ").trim();
     const validParameters = validateParameters(
       ["loginId", "password"],
@@ -187,14 +187,10 @@ class ServiceProvider {
       throwError(messages);
     }
     const provider = await serviceProviderSchema.findByCredentials(loginId, password);
-    socket.on("connect" , async() => {
-      socket.emit("online", provider._id);
-      socket.on("online", async (provider_id) => {
-        provider.isOnline = true;
-        await provider.save();
-        console.log(provider_id);
-      });
-    });
+    if(firebaseToken){
+      provider.firebaseToken = firebaseToken;
+      await provider.save();
+    }
       return provider;
   }
 
