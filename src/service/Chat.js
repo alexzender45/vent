@@ -3,6 +3,7 @@ const { throwError } = require("../utils/handleErrors");
 const { validateParameters } = require("../utils/util");
 const ServiceClient = require("../service/ServiceClient");
 const ServiceProvider = require("../service/ServiceProvider");
+const { showNotification, sendMessage } = require("../utils/notification");
 
 class Chat {
   constructor(data) {
@@ -24,12 +25,45 @@ class Chat {
       senderId: this.data.senderId,
       receiverId: this.data.receiverId,
     });
+    let serviceClient = await new ServiceClient(
+      this.data.receiverId
+    ).getClientByIdChat();
+    let serviceProvider = await new ServiceProvider(
+      this.data.receiverId
+    ).getProviderByIdChat();
+    const token = [];
+    let name;
+    let profileImage;
+    if (serviceClient) {
+      token.push(serviceClient.firebaseToken);
+      name = serviceClient.fullName;
+      profileImage = serviceClient.profilePictureUrl;
+    } else if (serviceProvider) {
+      token.push(serviceProvider.firebaseToken);
+      name = serviceProvider.fullName;
+      profileImage = serviceProvider.profilePictureUrl;
+    }
     if (chatExist) {
       this.data.roomId = chatExist.roomId;
-      return await new chatSchema(this.data).save();
+      const  chat = await new chatSchema(this.data).save();
+      const data = {
+        id: chat._id.toString(),
+        senderId: chat.senderId.toString(),
+      }
+      const message = await sendMessage(name, chat.message, data);
+      await showNotification(token, message);
+      return chat;
     }
     this.data["roomId"] = this.data.senderId + this.data.receiverId;
-    return await new chatSchema(this.data).save();
+    const  chat = await new chatSchema(this.data).save();
+    const data = {
+      id: chat._id.toString(),
+      senderId: chat.senderId.toString(),
+    }
+    const message = await sendMessage(name, chat.message, profileImage, data);
+    console.log(message);
+    await showNotification(token, message);
+    return chat;
   }
 
   // get user chats

@@ -35,3 +35,18 @@ exports.checkOut = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+
+exports.updateCartItems = async (req, res) => {
+  try {
+    const clientId = req.user._id;
+    const transactionId = req.query.transactionId;
+    await new Cart({
+      clientId,
+      transactionId,
+    }).updateCartItems();
+    return success(res, { message: "Cart Items Updated Successfully" });
+  } catch (err) {
+    logger.error("Error updating cart item", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+}

@@ -19,6 +19,7 @@ const {
 } = require("../utils/constants");
 const Transaction = require("../service/Transaction");
 const Notification = require("./Notification");
+const { verifyTransaction } = require("../integration/flutterwaveClient");
 
 class Cart {
   constructor(data) {
@@ -70,7 +71,7 @@ class Cart {
   }
 
   async checkOut() {
-    const { clientId, paymentStatus } = this.data;
+    const { clientId, paymentStatus, transactionId } = this.data;
     const referenceCode = Math.floor(100000 + Math.random() * 100000);
     const cartItems = await cartSchema
       .find({ clientId: clientId })
@@ -80,7 +81,7 @@ class Cart {
       )
       .orFail(() => throwError(`No Order Found`, 404));
     const acceptedOrders = cartItems.filter(
-      (order) => order.orderId.status === ORDER_STATUS.ACCEPTED
+      (order) => order.orderId.status === ORDER_STATUS.ACCEPTED && order.transactionId === transactionId
     );
     if (acceptedOrders.length === 0) {
       throwError("No accepted orders found", 404);
@@ -88,7 +89,8 @@ class Cart {
     const totalPrice = acceptedOrders.reduce((acc, order) => {
       return acc + order.orderId.price;
     }, 0);
-    if (paymentStatus === PAYMENT_STATUS.SUCCESS) {
+    const { status } = await verifyTransaction(transactionId);
+    if (paymentStatus === PAYMENT_STATUS.SUCCESS && status === "success") {
       const debitTransactionDetails = {
         userId: clientId,
         amount: totalPrice,
@@ -142,6 +144,26 @@ class Cart {
     } else {
       throwError("Payment Failed", 400);
     }
+  }
+  // update all client cart items that are accepted
+  async updateCartItems() {
+    const cartItems = await cartSchema
+      .find({ clientId: this.data.clientId })
+      .populate(
+        "orderId clientId providerId serviceId",
+        "status fullName price type name userId numberOfItems orderReference email phoneNumber"
+      )
+      .orFail(() => throwError(`No Order Found`, 404));
+    const acceptedOrders = cartItems.filter(
+      (order) => order.orderId.status === ORDER_STATUS.ACCEPTED
+    );
+    if (acceptedOrders.length === 0) {
+      throwError("No accepted orders found", 404);
+    }
+    acceptedOrders.forEach(async(order) => {
+      order.transactionId = this.data.transactionId;
+      await order.save();
+});
   }
 }
 

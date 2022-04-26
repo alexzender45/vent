@@ -91,3 +91,16 @@ exports.verifyPayment = async (transferId) => {
         throwError(message)
     }
 }
+
+exports.verifyTransaction = async (transactionId) => {
+    try {
+        const response = await axiosInstance.get(`/transactions/${transactionId}/verify`);
+        const {status, complete_message} = response.data.data;
+        return { status: status, message: complete_message };
+    } catch (e) {
+        let message = {message: 'Error verifying transaction. Kindly Contact The Administrator', code: 500};
+        message = processException(e, message);
+        logger.error('Error verifying transaction with flutterwave', e);
+        throwError(message)
+    }
+}

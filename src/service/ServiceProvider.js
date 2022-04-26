@@ -177,7 +177,7 @@ class ServiceProvider {
 
   async login() {
     let { loginId, password, firebaseToken } = this.data;
-    loginId = loginId.replace(/\s+/g, " ").trim();
+    loginId = loginId.replace(/\s+/g, " ").trim().toLowerCase();
     const validParameters = validateParameters(
       ["loginId", "password"],
       this.data

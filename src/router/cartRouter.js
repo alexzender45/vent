@@ -28,4 +28,12 @@ cartRoute
     cartController.checkOut
   );
 
+cartRoute
+  .route("/carts/update")
+  .put(
+    authenticate,
+    permit([USER_TYPE.SERVICE_CLIENT]),
+    cartController.updateCartItems
+  );
+
 module.exports = cartRoute;

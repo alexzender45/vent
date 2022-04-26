@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "172127988918",
+    "project_id": "ventmode-22e28",
+    "storage_bucket": "ventmode-22e28.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:172127988918:android:fe19d84688de0010284a17",
+        "android_client_info": {
+          "package_name": "com.ventmode.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "172127988918-4l1pfppfofmpmmbojc0kttm05322eatp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9r60lYxHBstS8oVSYBbXEEG92u9cxIDw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "172127988918-4l1pfppfofmpmmbojc0kttm05322eatp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

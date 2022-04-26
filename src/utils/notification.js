@@ -1,6 +1,6 @@
 const admin = require("firebase-admin");
-const serviceAccount = require('../../google-services.json');
-const firebasePrivateKey = require('../../firebase-private-key.json');
+const serviceAccount = require('../config/google-services.json');
+const firebasePrivateKey = require('../config/ventmode.json');
 admin.initializeApp({
   credential: admin.credential.cert({
     serviceAccount,
@@ -13,7 +13,6 @@ admin.initializeApp({
 });
 
 const options = {
-  priority: "high",
   timeToLive: 60 * 60 * 24,
 };
 
@@ -22,15 +21,39 @@ async function showNotification(registrationToken, message) {
     .messaging()
     .sendToDevice(registrationToken, message, options)
     .then((response) => {
-      //console.log("Successfully sent message:", response);
+      console.log("Successfully sent message:", response);
       return { message: "Notification sent successfully" };
     })
     .catch((error) => {
-      //console.log("Error sending message:", error);
+      console.log("Error sending message:", error);
       return { message: "Notification sent failed" };
     });
 }
 
+async function sendMessage(title, body, icon, data) {
+  let notification;
+  console.log(icon === undefined);
+  if(icon) {
+      notification = {
+        title,
+        body,
+        image: icon,
+      }
+    } else {
+      notification = {
+        title,
+        body,
+      }
+    }
+  const message = {
+    notification,
+    data,
+  };
+  //console.log(message);
+  return message;
+}
+
 module.exports = {
   showNotification,
+  sendMessage,
 };

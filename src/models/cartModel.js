@@ -27,9 +27,15 @@ const cartSchema = new Schema(
       type: Number,
       required: true,
     },
+    transactionId: {
+      type: String,
+    },
     createdAt: {
       type: Date,
       default: Date.now,
+    },
+    image: {
+      type: String,
     },
   },
   {
