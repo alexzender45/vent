@@ -28,7 +28,8 @@ exports.checkOut = async (req, res) => {
   try {
     const clientId = req.user._id;
     const paymentStatus = req.query.paymentStatus;
-    await new Cart({ clientId, paymentStatus }).checkOut();
+    const transactionId = req.query.transactionId;
+    await new Cart({ clientId, paymentStatus, transactionId }).checkOut();
     return success(res, { message: "Checkout Successful" });
   } catch (err) {
     logger.error("Error checking out", err);
