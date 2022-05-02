@@ -45,15 +45,21 @@ async function sendMessage(title, body, icon, data) {
         body,
       }
     }
+  }
+    async function sendMessageorder(title, body, data) {
+          notification = {
+            title,
+            body,
+          };
   const message = {
     notification,
     data,
-  };
-  //console.log(message);
+  }
   return message;
 }
 
 module.exports = {
   showNotification,
   sendMessage,
+  sendMessageorder,
 };

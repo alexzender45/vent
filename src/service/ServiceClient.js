@@ -4,6 +4,7 @@ const serviceClientSchema = require("../models/serviceClientModel");
 const serviceProviderSchema = require("../models/serviceProviderModel");
 const serviceSchema = require("../models/servicesModel");
 const orderSchema = require("../models/orderModel");
+const { showNotification, sendMessageorder } = require("../utils/notification");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
 const util = require("../utils/util");
@@ -34,7 +35,6 @@ const oauth2Client = new google.auth.OAuth2(
 );
 const socialAuthService = require("../integration/socialAuthClient");
 const CLIENTS = "clients";
-const Order = require("./Order");
 const { ORDER_STATUS } = require("../utils/constants");
 const Notification = require("./Notification");
 
@@ -215,6 +215,10 @@ class ServiceClient {
     if (!email) {
       throwError("Please Input Your Email");
     }
+    const serviceClient = await serviceClientSchema.findOne({ email: removeWhiteSpace });
+    if(serviceClient.isGoogleSignIn === true){
+      throwError("Google Sign In Account Cannot Change Password");
+    }
     const updateServiceClient = await serviceClientSchema.findOneAndUpdate(
       { email: removeWhiteSpace },
       { token: verificationCode },
@@ -258,6 +262,9 @@ class ServiceClient {
       throwError("Please Input Your Old Password and New Password");
     }
     const user = await serviceClientSchema.findById(userId);
+    if(user.isGoogleSignIn === true){
+      throwError("Google Sign In User Can't Change Password");
+    }
     if (!bcrypt.compareSync(oldPassword, user.password)) {
       throwError("Incorrect Old Password");
     }
@@ -447,7 +454,7 @@ class ServiceClient {
       image: user.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
-    Notification.createNotification(followerNotificationDetails);
+     Notification.createNotification(followerNotificationDetails);
     const followingNotificationDetails = {
       userId: user._id,
       message: `${follower.fullName} Started Following You`,
@@ -455,6 +462,19 @@ class ServiceClient {
       notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      followerId: follower._id.toString(),
+      followingId: user._id.toString(),
+      type: NOTIFICATION_TYPE.FOLLOW_REQUEST,
+    }
+    const message = await sendMessageorder(
+      `Follow Request`, 
+      `${follower.fullName} Started Following You`, 
+      data);
+      if (user.firebaseToken) {
+      await showNotification(user.firebaseToken, message);
+      }
     return await follower.save();
   }
 
@@ -505,6 +525,19 @@ class ServiceClient {
       notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      userId: user._id.toString(),
+      unfollowingId: follower._id.toString(),
+      type: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
+    }
+    const message = await sendMessageorder(
+      `UnFollow Request`, 
+      `${follower.fullName} Unfollowed You`, 
+      data);
+      if (user.firebaseToken) {
+      await showNotification(user.firebaseToken, message);
+      }
     await user.save();
     return updatedUser;
   }

@@ -20,6 +20,7 @@ const {
 const Transaction = require("../service/Transaction");
 const Notification = require("./Notification");
 const { verifyTransaction } = require("../integration/flutterwaveClient");
+const { showNotification, sendMessageorder } = require("../utils/notification");
 
 class Cart {
   constructor(data) {
@@ -33,13 +34,24 @@ class Cart {
       .orFail(() => throwError("Cart item not found"));
     const order = await orderSchema
       .findById(cartItem.orderId)
-      .populate(
-        "serviceId clientId providerId",
-        " fullName profilePictureUrl name email"
-      )
+      .populate("serviceId clientId providerId")
       .orFail(() => throwError("Order not found"));
     await cartItem.remove();
     order.status = ORDER_STATUS.CANCELLED;
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      orderId: order._id.toString(),
+      serviceId: order.serviceId.toString(),
+      type: NOTIFICATION_TYPE.SERVICE_REQUEST_CANCLLED
+    };
+    const message = await sendMessageorder(
+      `Hi ${order.providerId.fullName}`,
+      `Order ${order.serviceId.name} has been Cancelled by ${order.clientId.fullName}.Please login to check the order status`,
+      data
+    );
+    if (order.providerId.firebaseToken) {
+      await showNotification(order.providerId.firebaseToken, message);
+    }
     order.save();
     const notificationDetails = {
       userId: order.clientId,
@@ -81,7 +93,9 @@ class Cart {
       )
       .orFail(() => throwError(`No Order Found`, 404));
     const acceptedOrders = cartItems.filter(
-      (order) => order.orderId.status === ORDER_STATUS.ACCEPTED && order.transactionId === transactionId
+      (order) =>
+        order.orderId.status === ORDER_STATUS.ACCEPTED &&
+        order.transactionId === transactionId
     );
     if (acceptedOrders.length === 0) {
       throwError("No accepted orders found", 404);
@@ -118,7 +132,7 @@ class Cart {
         };
         Notification.createNotification(notificationDetails);
       });
-      acceptedOrders.forEach((order) => {
+      acceptedOrders.forEach(async (order) => {
         order.orderId.status = ORDER_STATUS.PAID;
         orderPaidNotificationForProvider(
           order.providerId.email,
@@ -132,6 +146,21 @@ class Cart {
           order.serviceId.name
         );
         order.orderId.save();
+        const data = {
+          click_action: "FLUTTER_NOTIFICATION_CLICK",
+          orderId: order._id.toString(),
+          serviceId: order.serviceId.toString(),
+          type: NOTIFICATION_TYPE.SERVICE_PAID,
+        };
+        const message = await sendMessageorder(
+          `Hi ${order.providerId.fullName}`,
+          `Order ${order.serviceId.name} has been PAID for, by ${order.clientId.fullName}.
+           Please check your notifications to confirm and START the service`,
+          data
+        );
+        if (order.providerId.firebaseToken) {
+          await showNotification(order.providerId.firebaseToken, message);
+        }
       });
       orderPaidNotification(
         serviceClient.email,
@@ -160,10 +189,10 @@ class Cart {
     if (acceptedOrders.length === 0) {
       throwError("No accepted orders found", 404);
     }
-    acceptedOrders.forEach(async(order) => {
+    acceptedOrders.forEach(async (order) => {
       order.transactionId = this.data.transactionId;
       await order.save();
-});
+    });
   }
 }
 

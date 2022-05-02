@@ -106,6 +106,10 @@ const serviceClientSchema = new Schema(
     firebaseToken: {
       type: String
     },
+    isGoogleSignIn: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

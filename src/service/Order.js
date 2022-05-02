@@ -20,6 +20,7 @@ const {
 const Notification = require("./Notification");
 const Wallet = require("./Wallet");
 const Rating = require("./Rating");
+const { showNotification, sendMessageorder } = require("../utils/notification");
 const { error } = require("winston");
 const UNAUTHORIZED_END_SERVICE_MESSAGE =
   "You are not authorized to end the service";
@@ -63,7 +64,8 @@ class Order {
       clientId: parameters.clientId,
       serviceId: parameters.serviceId,
     });
-    const service = await serviceSchema.findById(parameters.serviceId);
+    const service = await serviceSchema.findById(parameters.serviceId)
+    .populate('userId');
     const serviceClient = await serviceClientSchema.findById(
       parameters.clientId
     );
@@ -84,7 +86,8 @@ class Order {
       if (parameters.serviceType === SERVICE_TYPE.REQUESTING) {
         addOrderLocation(parameters);
         const order = await new orderSchema(parameters).save();
-        const service = await serviceSchema.findById(parameters.serviceId);
+        const service = await serviceSchema.findById(parameters.serviceId)
+        .populate('userId');
         const serviceClient = await serviceClientSchema.findById(
           parameters.clientId
         );
@@ -98,7 +101,7 @@ class Order {
           serviceName: service.name,
           notificationType: NOTIFICATION_TYPE.SERVICE_REQUEST,
         };
-        Notification.createNotification(notificationDetails);
+        const notification = await Notification.createNotification(notificationDetails);
         new cartSchema({
           clientId: order.clientId,
           orderId: order._id,
@@ -106,6 +109,21 @@ class Order {
           amount: order.price,
           providerId: order.providerId,
         }).save();
+        const data = {
+          click_action: "FLUTTER_NOTIFICATION_CLICK",
+          orderId: order._id.toString(),
+          serviceId: order.serviceId.toString(),
+          notificationId: notification._id.toString(),
+          type: NOTIFICATION_TYPE.SERVICE_REQUEST,
+        }
+        const message = await sendMessageorder(
+          `Hi ${service.userId.fullName}`, 
+          `Your Service ${service.name} has been Ordered by ${serviceClient.fullName}.Please check your notifications to ACCEPT or REJECT the Service`, 
+          data);
+          if (service.userId.firebaseToken) {
+          await showNotification(service.userId.firebaseToken, message);
+          }
+          return order;
       } else {
         this.data["status"] = ORDER_STATUS.ACCEPTED;
         addOrderLocation(parameters);
@@ -125,6 +143,19 @@ class Order {
           ACCEPTED_STATUS,
           ACCEPTED_MESSAGE
         );
+        const data = {
+          click_action: "FLUTTER_NOTIFICATION_CLICK",
+          orderId: order._id.toString(),
+          serviceId: order.serviceId.toString(),
+          type: NOTIFICATION_TYPE.SERVICE_REQUEST,
+        }
+        const message = await sendMessageorder(
+          `Hi ${service.userId.fullName}`, 
+          `Your Service ${service.name} has been Ordered by ${serviceClient.fullName}.Please check your notifications for Order Details`, 
+          data);
+          if (service.userId.firebaseToken) {
+          await showNotification(service.userId.firebaseToken, message);
+          }
         return order;
       }
     }
@@ -134,8 +165,7 @@ class Order {
     return await orderSchema
       .findById(this.data)
       .populate(
-        "providerId clientId serviceId",
-        "fullName profilePictureUrl name type priceDescription categoryId occupation phoneNumber email"
+        "providerId clientId serviceId"
       )
       .orFail(() => throwError("Order Not Found", 404));
   }
@@ -159,8 +189,7 @@ class Order {
         { new: true }
       )
       .populate(
-        "serviceId clientId providerId",
-        " fullName profilePictureUrl name email"
+        "serviceId clientId providerId"
       )
       .orFail(() => throwError("Order Not Found", 404));
     const notificationDetails = {
@@ -171,7 +200,7 @@ class Order {
       image: order.providerId.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.ACCEPT_SERVICE_REQUEST,
     };
-    Notification.createNotification(notificationDetails);
+    const notification = await Notification.createNotification(notificationDetails);
     orderNotification(
       order.clientId.email,
       order.clientId.fullName,
@@ -180,6 +209,21 @@ class Order {
       REJECTED_STATUS,
       REJECTED_MESSAGE
     );
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      orderId: order._id.toString(),
+      serviceId: order.serviceId.toString(),
+      notificationId: notification._id.toString(),
+      type: NOTIFICATION_TYPE.SERVICE_REQUEST_REJECTED
+    }
+    const message = await sendMessageorder(
+      `Hi ${order.clientId.fullName}`, 
+      `Order ${order.serviceId.name} has been Rejected by ${order.providerId.fullName}.Please login to your account to check the status of your order`, 
+      data);
+      if (order.clientId.firebaseToken) {
+      await showNotification(order.clientId.firebaseToken, message);
+      }
+    return order;
   }
 
   // accept order
@@ -191,8 +235,7 @@ class Order {
         { new: true }
       )
       .populate(
-        "serviceId clientId providerId",
-        " fullName profilePictureUrl name email"
+        "serviceId clientId providerId"
       );
     const notificationDetails = {
       userId: order.clientId,
@@ -202,7 +245,7 @@ class Order {
       image: order.providerId.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.ACCEPT_SERVICE_REQUEST,
     };
-    Notification.createNotification(notificationDetails);
+    const notification = await Notification.createNotification(notificationDetails);
     orderNotification(
       order.clientId.email,
       order.clientId.fullName,
@@ -211,6 +254,21 @@ class Order {
       ACCEPTED_STATUS,
       ACCEPTED_MESSAGE
     );
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      orderId: order._id.toString(),
+      serviceId: order.serviceId.toString(),
+      notificationId: notification._id.toString(),
+      type: NOTIFICATION_TYPE.ACCEPT_SERVICE_REQUEST,
+    }
+    const message = await sendMessageorder(
+      `Hi ${order.clientId.fullName}`, 
+      `Order ${order.serviceId.name} has been Accepted by ${order.providerId.fullName}.Please login to make payment`, 
+      data);
+      if (order.clientId.firebaseToken) {
+      await showNotification(order.clientId.firebaseToken, message);
+      }
+    return order;
   }
 
   //cancel order
@@ -222,8 +280,7 @@ class Order {
         { new: true }
       )
       .populate(
-        "serviceId clientId providerId",
-        " fullName profilePictureUrl name email"
+        "serviceId clientId providerId"
       );
     const notificationDetails = {
       userId: order.clientId,
@@ -233,7 +290,7 @@ class Order {
       image: order.clientId.profilePictureUrl,
       notificationType: NOTIFICATION_TYPE.SERVICE_REQUEST_REJECTED,
     };
-    Notification.createNotification(notificationDetails);
+    const notification = await Notification.createNotification(notificationDetails);
     orderNotification(
       order.providerId.email,
       order.clientId.fullName,
@@ -242,6 +299,21 @@ class Order {
       CANCELLED_STATUS,
       CANCELLED_MESSAGE
     );
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      orderId: order._id.toString(),
+      serviceId: order.serviceId.toString(),
+      notificationId: notification._id.toString(),
+      type: NOTIFICATION_TYPE.SERVICE_REQUEST_CANCLLED
+    }
+    const message = await sendMessageorder(
+      `Hi ${order.providerId.fullName}`, 
+      `Order ${order.serviceId.name} has been Cancelled by ${order.clientId.fullName}.Please login to check the order status`, 
+      data);
+      if (order.providerId.firebaseToken) {
+      await showNotification(order.providerId.firebaseToken, message);
+      }
+    return order;
   }
 
   // get all orders for a client
@@ -364,6 +436,19 @@ class Order {
     }
     order.status = ORDER_STATUS.STARTED;
     order.dateToCompleteService = new Date(dateToCompleteService);
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      orderId: order._id.toString(),
+      serviceId: order.serviceId.toString(),
+      type: NOTIFICATION_TYPE.SERVICE_REQUEST_STARTED
+    }
+    const message = await sendMessageorder(
+      `Hi ${order.clientId.fullName}`, 
+      `Order ${order.serviceId.name} has been STARTED by ${order.providerId.fullName}.Please login to check the order status`, 
+      data);
+      if (order.clientId.firebaseToken) {
+      await showNotification(order.clientId.firebaseToken, message);
+      }
     return await order.save();
   }
 
@@ -384,7 +469,7 @@ class Order {
     }
     const order = await orderSchema
       .findById(orderId)
-      .populate("serviceId", "type")
+      .populate("serviceId providerId clientId")
       .orFail(() => throwError("Order Not Found", 404));
 
     if (order.status !== ORDER_STATUS.STARTED) {
@@ -405,6 +490,19 @@ class Order {
 
     order.status = ORDER_STATUS.COMPLETED;
     order.completedDate = new Date();
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      orderId: order._id.toString(),
+      serviceId: order.serviceId.toString(),
+      type: NOTIFICATION_TYPE.SERVICE_REQUEST_COMPLETED
+    }
+    const message = await sendMessageorder(
+      `Hi ${order.clientId.fullName}`, 
+      `Order ${order.serviceId.name} has been COMPLETED by ${order.providerId.fullName}.Please login to check the order status`, 
+      data);
+      if (order.clientId.firebaseToken) {
+      await showNotification(order.clientId.firebaseToken, message);
+      }
     const completedOrder = await order.save();
     return completedOrder;
   }

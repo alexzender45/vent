@@ -103,6 +103,10 @@ const serviceProviderSchema = new Schema(
     firebaseToken: {
       type: String
     },
+    isGoogleSignIn: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

@@ -36,6 +36,7 @@ exports.withdrawReferralEarnClient = async (req, res) => {
     await new Wallet(req.body).withdrawReferralEarnClient();
     return success(res, "success");
   } catch (err) {
+    console.log(err);
     logger.error("Unable to withdraw from user referral earn", err);
     return error(res, { code: err.code, message: err.message });
   }

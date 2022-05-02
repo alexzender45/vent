@@ -40,8 +40,7 @@ const {
   USER_TYPE,
 } = require("../utils/constants");
 const Services = require("./Services");
-const { io } = require("socket.io-client");
-const socket = io("http://localhost:3000");
+const { showNotification, sendMessageorder } = require("../utils/notification");
 
 const getProviderServicesStatistics = async (serviceProvider) => {
   let activeServices = 0;
@@ -245,6 +244,10 @@ class ServiceProvider {
     if (!email) {
       throwError("Please Input Your Email");
     }
+    const user = await serviceProviderSchema.findOne({ email: removeWhiteSpace });
+    if (user && user.isGoogleSignIn === false) {
+      throwError("Google Sign In Account Cannot Change Password");
+    }
     const updateServiceProvider = await serviceProviderSchema.findOneAndUpdate(
       { email: removeWhiteSpace },
       { token: verificationCode },
@@ -288,6 +291,9 @@ class ServiceProvider {
       throwError("Please Input Your Old Password and New Password");
     }
     const user = await serviceProviderSchema.findById(userId);
+    if(user && user.isGoogleSignIn === true){
+      throwError("Google Sign In User Cannot Change Password");
+    }
     if (!bcrypt.compareSync(oldPassword, user.password)) {
       throwError("Incorrect Old Password");
     }
@@ -496,6 +502,19 @@ class ServiceProvider {
       notificationType: NOTIFICATION_TYPE.FOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      followerId: follower._id.toString(),
+      followingId: user._id.toString(),
+      type: NOTIFICATION_TYPE.FOLLOW_REQUEST,
+    }
+    const message = await sendMessageorder(
+      `Follow Request`, 
+      `${follower.fullName} Started Following You`, 
+      data);
+      if (user.firebaseToken) {
+      await showNotification(user.firebaseToken, message);
+      }
     return await follower.save();
   }
 
@@ -546,6 +565,19 @@ class ServiceProvider {
       notificationType: NOTIFICATION_TYPE.UNFOLLOW_REQUEST,
     };
     Notification.createNotification(followingNotificationDetails);
+    const data = {
+      click_action: "FLUTTER_NOTIFICATION_CLICK",
+      followerId: follower._id.toString(),
+      followingId: user._id.toString(),
+      type: NOTIFICATION_TYPE.FOLLOW_REQUEST,
+    }
+    const message = await sendMessageorder(
+      `UnFollow Request`, 
+      `${follower.fullName} Unfollowed You`, 
+      data);
+      if (user.firebaseToken) {
+      await showNotification(user.firebaseToken, message);
+      }
     await user.save();
     return updatedUser;
   }
