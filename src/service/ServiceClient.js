@@ -642,19 +642,6 @@ class ServiceClient {
       .populate("userId", "fullName profilePictureUrl")
     return following;
   }
-  // update byy id
-  async updateUserCurrentReferralBalance() {
-    const { userId, currentReferralBalance } = this.data;
-    return await serviceClientSchema.findByIdAndUpdate(
-      { _id: userId },
-      {
-        currentReferralBalance: currentReferralBalance,
-      },
-      {
-        new: true,
-      }
-    );
-  }
   // get by id
   async getClientByIdChat() {
     const user = await serviceClientSchema

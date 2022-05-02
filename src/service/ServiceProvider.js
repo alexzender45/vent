@@ -633,18 +633,6 @@ class ServiceProvider {
       .populate("userId", "fullName profilePictureUrl")
     return following;
   }
-  async updateProviderCurrentReferralBalance() {
-    const { userId, currentReferralBalance } = this.data;
-    return await serviceProviderSchema.findByIdAndUpdate(
-      { _id: userId },
-      {
-        currentReferralBalance: currentReferralBalance,
-      },
-      {
-        new: true,
-      }
-    );
-  }
 
   async providerProfileCompletePercentage() {
     const serviceProvider = await serviceProviderSchema

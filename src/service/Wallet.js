@@ -109,10 +109,15 @@ class Wallet {
     Transaction.createTransaction(debitTransactionDetails);
     const currentReferralBalance =
       serviceClient.currentReferralBalance - Number(amount);
-    await new ServiceClient({
-      userId,
-      currentReferralBalance,
-    }).updateUserCurrentReferralBalance();
+    await serviceClientSchema.findByIdAndUpdate(
+      { _id: userId },
+      {
+        currentReferralBalance: currentReferralBalance,
+      },
+      {
+        new: true,
+      }
+    );
     const data = {
       click_action: "FLUTTER_NOTIFICATION_CLICK",
       userId: serviceClient._id.toString(),
@@ -156,10 +161,15 @@ class Wallet {
     Transaction.createTransaction(debitTransactionDetails);
     const currentReferralBalance =
       serviceClient.currentReferralBalance - Number(amount);
-    await new ServiceProvider({
-      userId,
-      currentReferralBalance,
-    }).updateProviderCurrentReferralBalance();
+    await serviceProviderSchema.findByIdAndUpdate(
+      { _id: userId },
+      {
+        currentReferralBalance: currentReferralBalance,
+      },
+      {
+        new: true,
+      }
+    );
     const data = {
       click_action: "FLUTTER_NOTIFICATION_CLICK",
       userId: serviceClient._id.toString(),
