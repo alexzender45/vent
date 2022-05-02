@@ -22,7 +22,6 @@ class Wallet {
 
   async getUserWallet() {
     return await WalletSchema.findOne({ userId: this.data })
-    .populate("userId")
     .orFail(() =>
       throwError("User Wallet Not Found", 404)
     );
@@ -32,10 +31,14 @@ class Wallet {
     const { userId, bankId, amount, withdrawalReason, fullName } = this.data;
     this.data = userId;
     const userWallet = await this.getUserWallet();
+    let user;
+    user = await serviceClientSchema.findById(userWallet.userId);
+    if (!user) {
+      user = await serviceProviderSchema.findById(userWallet.userId);
+    }
     if (userWallet.currentBalance < amount) {
       throwError("Insufficient Available Balance");
     }
-
     const { bankCode, accountNumber } = await new Bank(bankId).getBank();
 
     const paymentData = {
@@ -72,8 +75,8 @@ class Wallet {
       `Withdrawal Request Successful`,
       `You have successfully withdrawn ₦${amount} from your wallet.`, 
       data);
-      if (userWallet.userId.firebaseToken) {
-      await showNotification(userWallet.userId.firebaseToken, message);
+      if (user.firebaseToken) {
+      await showNotification(user.firebaseToken, message);
       }
     return await userWallet.save();
   }
