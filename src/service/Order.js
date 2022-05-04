@@ -64,11 +64,11 @@ class Order {
       clientId: parameters.clientId,
       serviceId: parameters.serviceId,
     });
-    const service = await serviceSchema.findById(parameters.serviceId)
-    .populate('userId');
-    const serviceClient = await serviceClientSchema.findById(
-      parameters.clientId
-    );
+    // const service = await serviceSchema.findById(parameters.serviceId)
+    // .populate('userId');
+    // const serviceClient = await serviceClientSchema.findById(
+    //   parameters.clientId
+    // );
     if (cart) {
       const order = await orderSchema.findOne({
         clientId: parameters.clientId,
@@ -83,7 +83,7 @@ class Order {
       cart.save();
       return order;
     } else {
-      if (parameters.serviceType === SERVICE_TYPE.REQUESTING) {
+      // if (parameters.serviceType === SERVICE_TYPE.REQUESTING) {
         addOrderLocation(parameters);
         const order = await new orderSchema(parameters).save();
         const service = await serviceSchema.findById(parameters.serviceId)
@@ -122,42 +122,42 @@ class Order {
           data);
           if (service.userId.firebaseToken) {
           await showNotification(service.userId.firebaseToken, message);
-          }
+          //}
           return order;
-      } else {
-        this.data["status"] = ORDER_STATUS.ACCEPTED;
-        addOrderLocation(parameters);
-        const order = await new orderSchema(parameters).save();
-        new cartSchema({
-          clientId: order.clientId,
-          orderId: order._id,
-          serviceId: order.serviceId,
-          amount: order.price,
-          providerId: order.providerId,
-        }).save();
-        orderNotification(
-          serviceClient.email,
-          serviceClient.fullName,
-          service.name,
-          order.orderReference,
-          ACCEPTED_STATUS,
-          ACCEPTED_MESSAGE
-        );
-        const data = {
-          click_action: "FLUTTER_NOTIFICATION_CLICK",
-          orderId: order._id.toString(),
-          serviceId: order.serviceId.toString(),
-          type: NOTIFICATION_TYPE.SERVICE_REQUEST,
-        }
-        const message = await sendMessageorder(
-          `Hi ${service.userId.fullName}`, 
-          `Your Service ${service.name} has been Ordered by ${serviceClient.fullName}.Please check your notifications for Order Details`, 
-          data);
-          if (service.userId.firebaseToken) {
-          await showNotification(service.userId.firebaseToken, message);
-          }
-        return order;
-      }
+      // } else {
+      //   this.data["status"] = ORDER_STATUS.ACCEPTED;
+      //   addOrderLocation(parameters);
+      //   const order = await new orderSchema(parameters).save();
+      //   new cartSchema({
+      //     clientId: order.clientId,
+      //     orderId: order._id,
+      //     serviceId: order.serviceId,
+      //     amount: order.price,
+      //     providerId: order.providerId,
+      //   }).save();
+      //   orderNotification(
+      //     serviceClient.email,
+      //     serviceClient.fullName,
+      //     service.name,
+      //     order.orderReference,
+      //     ACCEPTED_STATUS,
+      //     ACCEPTED_MESSAGE
+      //   );
+      //   const data = {
+      //     click_action: "FLUTTER_NOTIFICATION_CLICK",
+      //     orderId: order._id.toString(),
+      //     serviceId: order.serviceId.toString(),
+      //     type: NOTIFICATION_TYPE.SERVICE_REQUEST,
+      //   }
+      //   const message = await sendMessageorder(
+      //     `Hi ${service.userId.fullName}`, 
+      //     `Your Service ${service.name} has been Ordered by ${serviceClient.fullName}.Please check your notifications for Order Details`, 
+      //     data);
+      //     if (service.userId.firebaseToken) {
+      //     await showNotification(service.userId.firebaseToken, message);
+      //     }
+      //   return order;
+       }
     }
   }
 
