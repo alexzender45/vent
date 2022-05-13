@@ -103,8 +103,7 @@ class Cart {
     const totalPrice = acceptedOrders.reduce((acc, order) => {
       return acc + order.orderId.price;
     }, 0);
-    const { status } = await verifyTransaction(transactionId);
-    if (paymentStatus === PAYMENT_STATUS.SUCCESS && status === "success") {
+    if (paymentStatus === PAYMENT_STATUS.SUCCESS) {
       const debitTransactionDetails = {
         userId: clientId,
         amount: totalPrice,
