@@ -471,7 +471,6 @@ class Order {
       .findById(orderId)
       .populate("serviceId providerId clientId")
       .orFail(() => throwError("Order Not Found", 404));
-
     if (order.status !== ORDER_STATUS.STARTED) {
       throwError("Service Is Yet To Be Started");
     }
@@ -484,7 +483,7 @@ class Order {
       throwError(UNAUTHORIZED_END_SERVICE_MESSAGE);
     }
 
-    const providerWallet = await new Wallet(providerId).getUserWallet();
+    const providerWallet = await new Wallet(providerId._id).getUserWallet();
     providerWallet.pendingWithdrawal += order.price;
     await providerWallet.save();
 
@@ -493,7 +492,7 @@ class Order {
     const data = {
       click_action: "FLUTTER_NOTIFICATION_CLICK",
       orderId: order._id.toString(),
-      serviceId: order.serviceId.toString(),
+      serviceId: order.serviceId._id.toString(),
       type: NOTIFICATION_TYPE.SERVICE_REQUEST_COMPLETED
     }
     const message = await sendMessageorder(
