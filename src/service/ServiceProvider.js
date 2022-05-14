@@ -5,6 +5,7 @@ const serviceClientSchema = require("../models/serviceClientModel");
 const orderSchema = require("../models/orderModel");
 const walletSchema = require("../models/wallet");
 const Wallet = require("./Wallet");
+const serviceSchema = require("../models/servicesModel");
 const { throwError } = require("../utils/handleErrors");
 const bcrypt = require("bcrypt");
 const util = require("../utils/util");
@@ -407,6 +408,15 @@ class ServiceProvider {
     const serviceProvider = await serviceProviderSchema.findByIdAndRemove({
       _id: userId,
     });
+    // delete all the service provider's services
+    const services = await serviceSchema.find({
+      userId,
+    });
+    if (services && services.length > 0) {
+      await services.forEach(async (service) => {
+        await service.remove();
+      });
+    }
     return serviceProvider;
   }
 

@@ -61,6 +61,10 @@ const serviceSchema = new Schema(
       type: String,
       enum: Object.keys(CURRENCY),
     },
+    status: {
+      type: Boolean,
+      default: true,
+    },
     priceDescription: [],
     others: String,
     rating: {
