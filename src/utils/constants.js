@@ -6,7 +6,6 @@ module.exports = {
   ADMIN_ROLES: {
     SUPER_ADMIN: "SUPER_ADMIN",
     ADMIN: "ADMIN",
-    HOSTEL_MANAGER: "HOSTEL_MANAGER",
   },
   USER_TYPE: {
     SERVICE_CLIENT: "SERVICE_CLIENT",
@@ -69,6 +68,10 @@ module.exports = {
     PENDING: "PENDING",
     SUCCESS: "SUCCESS",
     FAILED: "FAILED",
+  },
+  ACCESS: {
+    LIMITED: "LIMITED",
+    ALL_ACCESS: "ALL_ACCESS",
   },
   ACCEPTED_MESSAGE: "Please login and proceed to payment",
   REJECTED_MESSAGE: "Please login and look for other providers on the platform",

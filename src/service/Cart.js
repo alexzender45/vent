@@ -89,7 +89,7 @@ class Cart {
       .find({ clientId: clientId })
       .populate(
         "orderId clientId providerId serviceId",
-        "status fullName price type name userId numberOfItems orderReference email phoneNumber"
+        "status fullName price type name userId numberOfItems orderReference email phoneNumber firebaseToken"
       )
       .orFail(() => throwError(`No Order Found`, 404));
     const acceptedOrders = cartItems.filter(

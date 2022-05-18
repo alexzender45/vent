@@ -33,6 +33,7 @@ const notificationRouter = require("./src/router/notificationRouter");
 const walletRouter = require("./src/router/walletRouter");
 const disputeRouter = require("./src/router/disputeRouter");
 const chatRouter = require("./src/router/chatRouter");
+const adminRouter = require("./src/router/adminRouter");
 
 // App Init
 
@@ -57,6 +58,7 @@ app.use("/api", notificationRouter);
 app.use("/api", walletRouter);
 app.use("/api", disputeRouter);
 app.use("/api", chatRouter);
+app.use("/api", adminRouter);
 
 io.sockets.on('connection', async function(socket) {
     socket.on("disconnect", async function() {

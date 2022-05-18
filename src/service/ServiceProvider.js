@@ -114,13 +114,14 @@ class ServiceProvider {
 
   async signup() {
     const { isValid, messages } = validateParameters(
-      ["fullName", "email", "otp"],
+      ["fullName", "email"],
       this.data
     );
     if (!isValid) {
       throwError(messages);
     }
-    const otp = this.data.otp;
+    if(this.data.isGoogleSignIn === false || !this.data.isGoogleSignIn){
+      const otp = this.data.otp;
     if (!otp) {
       throwError("OTP Required To Complete Signup");
     }
@@ -132,6 +133,7 @@ class ServiceProvider {
       throwError("OTP Code Expired");
     } else if (Number(cachedOTP) !== Number(removeWhiteSpaceOTP)) {
       throwError("Invalid OTP");
+    }
     }
     await this.emailExist();
     if (this.errors.length) {

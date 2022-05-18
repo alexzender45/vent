@@ -20,7 +20,7 @@ class Notification {
       )
       .orFail(() => throwError("User Notification Not Found"));
   }
-
+  
   async getAllUserNotifications() {
     return await NotificationSchema.find({ userId: this.data })
       .sort({ createdAt: -1 })

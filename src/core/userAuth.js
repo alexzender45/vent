@@ -7,7 +7,7 @@ const {
   isCastError,
 } = require("../utils/handleErrors");
 const { error } = require("../utils/baseController");
-const { USER_TYPE, ADMIN_ROLES } = require("../utils/constants");
+const { USER_TYPE, ADMIN_ROLES, ACCESS } = require("../utils/constants");
 const ServiceClient = require("../models/serviceClientModel");
 const ServiceProvider = require("../models/serviceProviderModel");
 
@@ -32,7 +32,6 @@ const authenticate = async (req, res, next) => {
 // Decoding Jwt token
 function decodeJwtToken(req) {
   const requestHeaderAuthorization = req.headers.authorization;
-
   if (!requestHeaderAuthorization) {
     throwError("Authentication Failed. Please login", 401);
   }
@@ -96,15 +95,15 @@ function permit(roles) {
   };
 }
 
-function isAllowed(users) {
+function isAdmin(roles, access) {
   return (req, res, next) => {
-    const isAuthorized = users.includes(req.user.verified);
-
+    const jwtPayload = decodeJwtToken(req);
+    const isAuthorized = roles.includes(jwtPayload.role) && access.includes(jwtPayload.access) && jwtPayload.status !== false;
     if (!isAuthorized) {
       return error(res, {
         code: 403,
         message:
-          "You are not a verified user yet. Please contact the Administrator for further directives",
+          "Unauthorized Access. Contact the admin. You are not authorized to perform this action",
       });
     }
 
@@ -144,7 +143,7 @@ module.exports = {
   authenticate,
   permit,
   generateAuthToken,
-  isAllowed,
+  isAdmin,
   restrict,
   verifyToken,
   encrypt,

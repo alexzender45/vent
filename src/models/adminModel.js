@@ -3,22 +3,17 @@ const { Schema, model } = require('mongoose');
 const validator = require('validator');
 const uniqueValidator = require('mongoose-unique-validator');
 const { throwError } = require("../utils/handleErrors");
-const { GENDER, USER_TYPE } = require('../utils/constants');
+const { GENDER, ADMIN_ROLES, ACCESS } = require('../utils/constants');
 const { SUPPORTED_PHONE_FORMAT } = require('../core/config')
 
 const adminSchema = new Schema(
   {
-    firstName: {
-      type: String,
-      required: true,
-    },
-    lastName: {
+    fullName: {
       type: String,
       required: true,
     },
     gender: {
       type: String,
-      required: true,
       enum: Object.keys(GENDER)
     },
     email: {
@@ -35,14 +30,6 @@ const adminSchema = new Schema(
     },
     phoneNumber: {
       type: String,
-      required: true,
-      unique: true,
-      validate(value) {
-        if (!validator.isMobilePhone(value, SUPPORTED_PHONE_FORMAT)) {
-          throw new Error('Invalid Phone Number!');
-        }
-        return validator.isMobilePhone(value);
-      },
     },
     image: {
       type: String,
@@ -52,7 +39,7 @@ const adminSchema = new Schema(
       required: true,
       minlength: 6,
     },
-    isActive: {
+    status: {
       type: Boolean,
       default: false,
     },
@@ -61,7 +48,12 @@ const adminSchema = new Schema(
       },
     role: {
       type: String,
-      default: USER_TYPE.PASSENGER,
+      enum: Object.keys(ADMIN_ROLES),
+      required: true,
+    },
+    access: {
+      type: String,
+      enum: Object.keys(ACCESS),
     },
     createdAt: {
       type: Date,
