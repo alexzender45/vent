@@ -63,6 +63,13 @@ class Rating {
     if (!isValid) {
       throwError(messages);
     }
+    const ratingExists = await ratingSchema.findOne({
+      serviceId: this.data.serviceId,
+      reviewerId: this.data.reviewerId,
+    });
+    if (ratingExists) {
+      throwError("Rating already exists");
+    }
     const newRating = await new ratingSchema(parameters).save();
     const { serviceId, providerId } = newRating;
     // Get Service and Provider Ratings
