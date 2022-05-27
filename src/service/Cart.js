@@ -121,7 +121,7 @@ class Cart {
       pendingOrders.map((order) => {
         const notificationDetails = {
           userId: order.serviceId.userId,
-          orderId: order._id,
+          orderId: order.orderId._id,
           message: `${serviceClient.fullName} requested a service`,
           serviceId: order.serviceId._id,
           image: serviceClient.profilePictureUrl,
@@ -144,10 +144,10 @@ class Cart {
           order.clientId.email,
           order.serviceId.name
         );
-        order.orderId.save();
+        await order.orderId.save();
         const data = {
           click_action: "FLUTTER_NOTIFICATION_CLICK",
-          orderId: order._id.toString(),
+          orderId: order.orderId._id.toString(),
           serviceId: order.serviceId.toString(),
           type: NOTIFICATION_TYPE.SERVICE_PAID,
         };

@@ -80,6 +80,10 @@ const orderSchema = new Schema(
       type: Date,
       default: null,
     },
+    serviceFeatures: {
+      type: String,
+      default: null,
+    }
   },
   {
     strictQuery: "throw",
