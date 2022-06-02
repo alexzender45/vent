@@ -29,7 +29,11 @@ const ratingReviewSchema = new Schema(
     providerResponse: {
       type: String,
     },
+    createdAt: {
+      type: Date,
+      default: Date.now,
   },
+},
   {
     strictQuery: "throw",
   }

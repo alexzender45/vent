@@ -64,6 +64,7 @@ const serviceClientSchema = new Schema(
       country: String,
       state: String,
       address: String,
+      city: String,
     },
     role: {
       type: String,

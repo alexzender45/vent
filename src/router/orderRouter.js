@@ -64,7 +64,7 @@ orderRoute
   .route("/order/search/:clientId")
   .get(
     authenticate,
-    permit(Object.keys(ADMIN_ROLES)),
+    //permit(Object.keys(ADMIN_ROLES)),
     orderController.searchOrdersByClientId
   );
 

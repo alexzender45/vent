@@ -35,4 +35,11 @@ walletRoute
     walletController.verifyWithdrawalPayment
   );
 
+walletRoute
+  .route("/wallets/provider-wallet/:providerId")
+  .get(
+    authenticate,
+    walletController.getProviderWallet
+  );
+
 module.exports = walletRoute;

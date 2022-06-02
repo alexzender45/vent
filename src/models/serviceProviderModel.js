@@ -40,6 +40,7 @@ const serviceProviderSchema = new Schema(
       country: String,
       state: String,
       address: String,
+      city: String,
     },
     token: String,
     userType: {

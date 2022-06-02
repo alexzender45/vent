@@ -177,10 +177,47 @@ class ServiceClient {
   }
 
   async getAllServiceClient() {
-    const serviceClient = await serviceClientSchema.find();
-    return serviceClient
-      ? serviceClient
-      : throwError("No Service Client Found", 404);
+    const { serviceClientSearch } = this.data;
+    const page = Number(this.data.page);
+    const limit = Number(this.data.limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const data = {};
+    const query = {};
+    const sort = {};
+
+   if(serviceClientSearch){
+    serviceClientSearch.replace(/\s+/g, " ").trim();
+    query.$or = [
+      {
+        fullName: { $regex: serviceClientSearch, $options: "i" },
+      },
+      {
+        email: { $regex: serviceClientSearch, $options: "i" },
+      },
+    ];
+  }
+  const all_existing_service_client_count = await serviceClientSchema
+  .countDocuments(query)
+  .exec();
+if (endIndex < all_existing_service_client_count) {
+  data.next = {
+    page: page + 1,
+    limit: limit,
+  };
+}
+if (startIndex > 0) {
+  data.previous = {
+    page: page - 1,
+    limit: limit,
+  };
+}
+    return await serviceClientSchema.find()
+      .find()
+      .find(query)
+      .sort(sort)
+      .limit(limit)
+      .skip(startIndex);
   }
 
   async serviceClientProfile() {

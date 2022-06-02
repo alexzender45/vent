@@ -17,7 +17,7 @@ categoryRoute
   .get(authenticate, categoryController.getCategoryById)
   .delete(
     authenticate,
-    permit([ADMIN_ROLES.SUPER_ADMIN]),
+    //permit([ADMIN_ROLES.SUPER_ADMIN]),
     categoryController.deleteCategory
   );
 

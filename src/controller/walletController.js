@@ -66,3 +66,15 @@ exports.verifyWithdrawalPayment = async (req, res) => {
     return error(res, { code: err.code, message: err.message });
   }
 };
+exports.getProviderWallet = async (req, res) => {
+  try {
+    const { _doc } = await new Wallet(req.params).getProviderWallet();
+    const { currentBalance, pendingWithdrawal, amountWithdrawn } = _doc;
+    _doc.totalAmountReceived =
+      currentBalance + pendingWithdrawal + amountWithdrawn;
+    return success(res, { wallet: _doc });
+  } catch (err) {
+    logger.error("Unable to get provider wallet", err);
+    return error(res, { code: err.code, message: err.message });
+  }
+}

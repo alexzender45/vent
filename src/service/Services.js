@@ -4,12 +4,13 @@ const { throwError } = require("../utils/handleErrors");
 const { validateParameters, performUpdate } = require("../utils/util");
 const ServiceClient = require("../service/ServiceClient");
 function addServiceLocation(parameters) {
-  const { useProfileLocation, country, state, address } = parameters;
+  const { useProfileLocation, country, state, address, city } = parameters;
   parameters["location"] = {
     useProfileLocation,
     country,
     state,
     address,
+    city,
   };
 }
 
@@ -35,6 +36,7 @@ class Services {
         "country",
         "state",
         "address",
+        "city",
       ],
       parameters
     );

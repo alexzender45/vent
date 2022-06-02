@@ -187,6 +187,13 @@ class Wallet {
       }
     return serviceClient;
   }
+  // get provider wallet by user id
+  async getProviderWallet() {
+    return await WalletSchema.findOne({ userId: this.data.providerId })
+    .orFail(() =>
+      throwError("User Wallet Not Found", 404)
+    );
+  }
 }
 
 module.exports = Wallet;

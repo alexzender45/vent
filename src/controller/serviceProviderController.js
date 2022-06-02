@@ -42,7 +42,7 @@ exports.login = async (req, res) => {
 
 exports.getAllServiceProvider = async (req, res) => {
   try {
-    const serviceProvider = await ServiceProvider.getAllServiceProvider();
+    const serviceProvider = await new ServiceProvider(req.query).getAllServiceProvider();
     return success(res, { serviceProvider });
   } catch (err) {
     logger.error("Unable to complete request", err);

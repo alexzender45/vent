@@ -4,11 +4,12 @@ const Services = require("../service/Services");
 
 function addUserLocationToService(parameters, userLocation) {
     const { useProfileLocation } = parameters;
-    const { country, state, address } = userLocation;
+    const { country, state, address, city } = userLocation;
     if (useProfileLocation) {
         parameters["country"] = country;
         parameters["state"] = state;
         parameters["address"] = address;
+        parameters["city"] = city;
     }
 }
 

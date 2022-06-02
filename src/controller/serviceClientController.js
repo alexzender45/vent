@@ -42,7 +42,7 @@ exports.login = async (req, res) => {
 
 exports.getAllServiceClient = async (req, res) => {
   try {
-    const serviceClients = await new ServiceClient().getAllServiceClient();
+    const serviceClients = await new ServiceClient(req.query).getAllServiceClient();
     return success(res, { serviceClients });
   } catch (err) {
     logger.error("Unable to complete request", err);

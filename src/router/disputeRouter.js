@@ -10,10 +10,10 @@ disputeRoute
     permit([USER_TYPE.SERVICE_CLIENT]),
     disputeController.createDispute
   )
-  .get(permit(Object.keys(ADMIN_ROLES)), authenticate, disputeController.getAllDisputes);
+  .get(authenticate, disputeController.getAllDisputes);
 
 disputeRoute
   .route("/disputes/:id")
-  .get(permit(Object.keys(ADMIN_ROLES)), authenticate, disputeController.getDisputeById)
+  .get(authenticate, disputeController.getDisputeById)
 
 module.exports = disputeRoute;

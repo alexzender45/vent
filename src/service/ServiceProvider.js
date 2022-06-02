@@ -196,10 +196,48 @@ class ServiceProvider {
       return provider;
   }
 
-  static async getAllServiceProvider() {
+   async getAllServiceProvider() {
+    const { serviceProviderSearch } = this.data;
+    const page = Number(this.data.page);
+    const limit = Number(this.data.limit);
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+    const data = {};
+    const query = {};
+    const sort = {};
+     
+   if(serviceProviderSearch){
+    serviceProviderSearch.replace(/\s+/g, " ").trim();
+    query.$or = [
+      {
+        fullName: { $regex: serviceProviderSearch, $options: "i" }
+      },
+      {
+        email: { $regex: serviceProviderSearch, $options: "i" },
+      },
+    ];
+  }
+  const all_existing_service_providers_count = await serviceProviderSchema
+  .countDocuments(query)
+  .exec();
+if (endIndex < all_existing_service_providers_count) {
+  data.next = {
+    page: page + 1,
+    limit: limit,
+  };
+}
+if (startIndex > 0) {
+  data.previous = {
+    page: page - 1,
+    limit: limit,
+  };
+}
     return await serviceProviderSchema
       .find()
-      .orFail(() => throwError("No Service Provider Found", 404));
+      .find(query)
+      .sort(sort)
+      .limit(limit)
+      .skip(startIndex);
   }
 
   async serviceProviderProfile() {
