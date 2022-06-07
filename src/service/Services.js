@@ -201,7 +201,16 @@ class Services {
       .sort(sort)
       .limit(limit)
       .skip(startIndex);
-    return data;
+      // show featured services first
+      return data.services.sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) {
+          return -1;
+        } else if (!a.isFeatured && b.isFeatured) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
   }
 
   async getServiceByUser() {

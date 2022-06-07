@@ -422,9 +422,11 @@ if (startIndex > 0) {
 
   // get service client by id
   async getServiceClientById() {
-    const { _doc } = await serviceClientSchema
-      .findById(this.data)
-      .orFail(() => throwError("Service Client Not Found", 404));
+    const { _doc } = await serviceClientSchema.findOneAndUpdate(
+      { _id: this.data },
+      { $inc: { visitCount: 1 } },
+      { new: true }
+    );
     const clientOrders = await orderSchema.find({ clientId: _doc._id });
     if (clientOrders.length > 0) {
       await getClientOrdersStatistics(_doc);

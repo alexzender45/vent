@@ -74,6 +74,17 @@ const serviceSchema = new Schema(
       type: String,
       default: "0",
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+    transactionId: {
+      type: String,
+    },
+    featuredServiceId: {
+      type: Schema.Types.ObjectId,
+      ref: "FeaturedService",
+    },
   },
   {
     timestamps: true,

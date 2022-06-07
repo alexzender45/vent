@@ -108,6 +108,9 @@ const serviceProviderSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    profileVisit: {
+      type: Number,
+    },
   },
   {
     timestamps: true,

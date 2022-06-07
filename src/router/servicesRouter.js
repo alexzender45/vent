@@ -15,7 +15,7 @@ servicesRoute
   .route("/services/all")
   .get(
     authenticate,
-    permit(Object.keys(USER_TYPE)),
+    //permit(Object.keys(USER_TYPE)),
     servicesController.getAllService
   );
 

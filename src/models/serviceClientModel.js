@@ -51,8 +51,9 @@ const serviceClientSchema = new Schema(
       enum: Object.keys(ACCOUNT_TYPE),
       default: ACCOUNT_TYPE.VENT_ACCOUNT,
     },
-    profileVisit: {
+    visitCount: {
       type: Number,
+      default: 0,
     },
     bio: {
       type: String,
