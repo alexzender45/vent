@@ -120,6 +120,7 @@ class Services {
       "priceDescription",
       "others",
       "location",
+      "city"
     ];
     addServiceLocation(newDetails);
     return await performUpdate(newDetails, allowedUpdates, serviceDetails);
