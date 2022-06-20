@@ -243,6 +243,7 @@ if (startIndex > 0) {
       "presence",
       "occupation",
       "phoneNumber",
+      "city",
       "firebaseToken"
     ];
     return await util.performUpdate(newDetails, allowedUpdates, oldDetails);

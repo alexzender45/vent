@@ -34,7 +34,9 @@ const walletRouter = require("./src/router/walletRouter");
 const disputeRouter = require("./src/router/disputeRouter");
 const chatRouter = require("./src/router/chatRouter");
 const adminRouter = require("./src/router/adminRouter");
-const featuredServiceRoute = require("./src/router/featuredServiceRouter");
+const discountRouter = require("./src/router/discountRouter");
+const accessRouter = require("./src/router/accessRouter");
+const featuredServiceRoute = require("./src/router/featureServiceRouter")
 
 // App Init
 
@@ -60,7 +62,9 @@ app.use("/api", walletRouter);
 app.use("/api", disputeRouter);
 app.use("/api", chatRouter);
 app.use("/api", adminRouter);
-app.use("/api", featuredServiceRoute);
+app.use("/api", discountRouter);
+app.use("/api", accessRouter);
+app.use("/app", featuredServiceRoute);
 
 io.sockets.on('connection', async function(socket) {
     socket.on("disconnect", async function() {
