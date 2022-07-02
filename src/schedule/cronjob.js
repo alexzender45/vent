@@ -1,4 +1,5 @@
 const cron = require("node-cron");
+const moment = require("moment");
 const {
   DAILY_CRON_SCHEDULE,
   REFERRAL_PERCENTAGE,
@@ -6,6 +7,8 @@ const {
 } = require("../core/config");
 const serviceClientSchema = require("../models/serviceClientModel");
 const serviceProviderSchema = require("../models/serviceProviderModel");
+const { showNotification, sendMessageorder } = require("../utils/notification");
+const serviceSchema = require("../models/servicesModel");
 const Order = require("../service/Order");
 const {
   USER_TYPE,
@@ -139,3 +142,27 @@ function isOrderLongerThanThreeDays(completedDate) {
 function orderHasNoDisputeOpenInLastThreeDays(orderId) {
   return true;
 }
+
+cron.schedule(DAILY_CRON_SCHEDULE, async () => {
+  const services = await serviceSchema.find({ isFeatured: true })
+  .populate('featuredServiceId userId');
+  services.map(async (service) => {
+    if(service.featuredServiceId.activeFor <= moment(service.createdAt).days()){
+      service.isFeatured = false;
+      service.featuredServiceId = null;
+      await service.save();
+      const data = {
+        click_action: "FLUTTER_NOTIFICATION_CLICK",
+        serviceId: service._id.toString(),
+        type: NOTIFICATION_TYPE.FEATURED_SERVICE_ENDED,
+      }
+      const message = await sendMessageorder(
+        `Hi ${service.userId.fullName}`, 
+        `${service.name} has ended its featured service`,
+        data);
+        if (service.userId.firebaseToken) {
+        await showNotification(service.userId.firebaseToken, message);
+        }
+    }
+  })
+  })
