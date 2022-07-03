@@ -122,7 +122,7 @@ class Cart {
         const notificationDetails = {
           userId: order.serviceId.userId,
           orderId: order.orderId._id,
-          message: `${serviceClient.fullName} requested a service`,
+          message: `${order.serviceId.name} has been PAID for, by ${order.clientId.fullName}`,
           serviceId: order.serviceId._id,
           image: serviceClient.profilePictureUrl,
           price: totalPrice,
