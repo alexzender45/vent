@@ -12,27 +12,7 @@ adminRoute
     adminController.getAllAdmins
   )
 
-  adminRoute.route("/admin/:id")
-  .get(
-    authenticate,
-    isAdmin([ADMIN_ROLES.SUPER_ADMIN, ADMIN_ROLES.ADMIN], [ACCESS.ALL_ACCESS, ACCESS.LIMITED]),
-    adminController.getAdminById
-  )
-
-  adminRoute.route("/admin/approve/:id")
-  .get(
-    authenticate,
-    isAdmin([ADMIN_ROLES.SUPER_ADMIN], [ACCESS.ALL_ACCESS]),
-    adminController.approveAdmin
-  )
-
-    adminRoute.route("/admin/deactivate/:id")
-    .get(
-        authenticate,
-        isAdmin([ADMIN_ROLES.SUPER_ADMIN], [ACCESS.ALL_ACCESS]),
-        adminController.deactivateAdmin
-    )
-
+  
   adminRoute.route("/admin/login")
   .post(adminController.login);
 
@@ -77,6 +57,76 @@ adminRoute
         isAdmin([ADMIN_ROLES.SUPER_ADMIN, ADMIN_ROLES.ADMIN], [ACCESS.ALL_ACCESS, ACCESS.LIMITED]),
         adminController.getSuccessfulTransactions
     )
+    adminRoute
+      .route("/admin/service-clients")
+      .get(
+        authenticate,
+        isAdmin(
+          [ADMIN_ROLES.SUPER_ADMIN, ADMIN_ROLES.ADMIN],
+          [ACCESS.ALL_ACCESS, ACCESS.LIMITED]
+        ),
+        adminController.getAllServiceClient
+      );
+  
+    adminRoute
+      .route("/admin/recent-service-client")
+      .get(
+        authenticate,
+        isAdmin(
+          [ADMIN_ROLES.SUPER_ADMIN, ADMIN_ROLES.ADMIN],
+          [ACCESS.ALL_ACCESS, ACCESS.LIMITED]
+        ),
+        adminController.getRecentServiceClient
+      );
+
+       adminRoute
+         .route("/admin/service-provider")
+         .get(
+           authenticate,
+           isAdmin(
+             [ADMIN_ROLES.SUPER_ADMIN, ADMIN_ROLES.ADMIN],
+             [ACCESS.ALL_ACCESS, ACCESS.LIMITED]
+           ),
+           adminController.getAllServiceProvider
+         );
+
+          adminRoute
+            .route("/admin/recent-service-provider")
+            .get(
+              authenticate,
+              isAdmin(
+                [ADMIN_ROLES.SUPER_ADMIN, ADMIN_ROLES.ADMIN],
+                [ACCESS.ALL_ACCESS, ACCESS.LIMITED]
+              ),
+              adminController.getRecentServiceProvider
+            );
+
+   adminRoute
+     .route("/admin/:id")
+     .get(
+       authenticate,
+       isAdmin(
+         [ADMIN_ROLES.SUPER_ADMIN, ADMIN_ROLES.ADMIN],
+         [ACCESS.ALL_ACCESS, ACCESS.LIMITED]
+       ),
+       adminController.getAdminById
+     );
+
+   adminRoute
+     .route("/admin/approve/:id")
+     .get(
+       authenticate,
+       isAdmin([ADMIN_ROLES.SUPER_ADMIN], [ACCESS.ALL_ACCESS]),
+       adminController.approveAdmin
+     );
+
+   adminRoute
+     .route("/admin/deactivate/:id")
+     .get(
+       authenticate,
+       isAdmin([ADMIN_ROLES.SUPER_ADMIN], [ACCESS.ALL_ACCESS]),
+       adminController.deactivateAdmin
+     );
 
 module.exports = adminRoute;
 

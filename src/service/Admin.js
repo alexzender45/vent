@@ -235,7 +235,67 @@ class Admin {
             { $limit: limit },
         ]).exec();
     }
-}
 
+    //get all clients
+    async getAllServiceClient () {
+         const { offset, limit, adminSearch } = this.data;
+          const query = {};
+          if (adminSearch) {
+            adminSearch.replace(/\s+/g, " ").trim();
+            query.$or = [
+              {
+                fullName: { $regex: adminSearch, $options: "i" },
+                email: { $regex: adminSearch, $options: "i" },
+              },
+            ];
+          }
+          return serviceClientSchema.find({})
+          .skip(offset)
+          .limit(limit)
+    }
+
+    // get recent client within two days
+    async getRecentServiceClient () {
+        const { offset, limit } = this.data;
+      return await serviceClientSchema.aggregate([
+            { $match: { createdAt : { $gte: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000)} } },
+            {$sort: {createdAt: -1}},
+            {$limit: limit},
+            {$skip: offset}
+        ]).exec()
+}
+    async getAllServiceProvider () {
+            const { offset, limit, adminSearch } = this.data;
+          const query = {};
+          if (adminSearch) {
+            adminSearch.replace(/\s+/g, " ").trim();
+            query.$or = [
+              {
+                fullName: { $regex: adminSearch, $options: "i" },
+                email: { $regex: adminSearch, $options: "i" },
+              },
+            ];
+          }
+          return serviceProviderSchema.find({})
+          .skip(offset)
+          .limit(limit)
+    }
+    async getRecentServiceProvider () {
+        const {offset,limit} = this.data
+        return await serviceProviderSchema.aggregate([
+          {
+            $match: {
+              createdAt: {
+                $gte: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+              },
+            },
+          },
+          {$skip: offset},
+          {$limit: limit}
+        ]).exec();
+
+    }
+
+}
 
 module.exports = Admin;

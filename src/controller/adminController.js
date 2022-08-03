@@ -149,3 +149,55 @@ exports.login = async (req, res) => {
             return error(res, { code: err.code, message: err });
         }
     }
+
+    exports.getAllServiceClient = async (req,res) => {
+        try {
+             req.query["limit"] = req.query["limit"] || 10
+             req.query["offset"] = req.query["offset"] || 0
+             const ServiceClient = await new Admin(req.query).getAllServiceClient()
+             return success(res, { ServiceClient })
+        }
+        catch (err) {
+            logger.error("Error occurred at getAllServiceClient", err);
+            return error(res, { code: err.code, message: err });
+        }
+    }
+    exports.getRecentServiceClient = async (req,res) => {
+        try {
+
+            req.query["limit"] = req.query["limit"] || 10
+            req.query["offset"] = req.query["offset"] || 0
+            const recentServiceClient = await new Admin(req.query).getRecentServiceClient()
+              return success(res, { recentServiceClient });
+        }
+        catch(err) {
+            logger.error("Error occurred at getRecentServiceClient", err);
+            return error(res, { code: err.code, message: err });
+        }
+    }
+
+    exports.getAllServiceProvider = async (req, res) => {
+      try {
+        req.query["limit"] = req.query["limit"] || 10;
+        req.query["offset"] = req.query["offset"] || 0;
+        const ServiceClient = await new Admin(req.query).getAllServiceProvider();
+        return success(res, { ServiceClient });
+      } catch (err) {
+        logger.error("Error occurred at getAllServiceClient", err);
+        return error(res, { code: err.code, message: err });
+      }
+    };
+
+    exports.getRecentServiceProvider = async (req,res) => {
+        try {
+
+            req.query["limit"] = req.query["limit"] || 10
+            req.query["offset"] = req.query["offset"] || 0
+            const recentServiceClient = await new Admin(req.query).getRecentServiceProvider()
+              return success(res, { recentServiceClient });
+        }
+        catch(err) {
+            logger.error("Error occurred at getRecentServiceClient", err);
+            return error(res, { code: err.code, message: err });
+        }
+    }
